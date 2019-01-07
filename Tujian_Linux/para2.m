@@ -1,4 +1,24 @@
 parfor i=single(1):single(length(fswzx))
+    %11111-------------------------------------------------------------11111--------------------------------
+    Ex=zeros(nx,ny+1,nz+1);
+    UEyz=zeros(nx,ny+1,nz+1);
+    UEzy=zeros(nx,ny+1,nz+1);
+    Ey=zeros(nx+1,ny,nz+1);
+    UEzx=zeros(nx+1,ny,nz+1);
+    UExz=zeros(nx+1,ny,nz+1);
+    Ez=zeros(nx+1,ny+1,nz);
+    UExy=zeros(nx+1,ny+1,nz);
+    UEyx=zeros(nx+1,ny+1,nz);
+    Hx=zeros(nx+1,ny,nz);
+    UHyz=zeros(nx+1,ny,nz);
+    UHzy=zeros(nx+1,ny,nz);
+    Hy=zeros(nx,ny+1,nz);
+    UHzx=zeros(nx,ny+1,nz);
+    UHxz=zeros(nx,ny+1,nz);
+    Hz=zeros(nx,ny,nz+1);
+    UHxy=zeros(nx,ny,nz+1);
+    UHyx=zeros(nx,ny,nz+1);
+
     Ex_zheng_1=single(zeros(2*npml,ny-2*npml,nz-2*npml,it));
     Ex_zheng_2=single(zeros(nx-2*npml,2*npml,nz-2*npml,it));
     Ex_zheng_3=single(zeros(nx-2*npml,ny-2*npml,2*npml,it));
@@ -30,37 +50,10 @@ parfor i=single(1):single(length(fswzx))
     Hy_zheng_last=single(zeros(nx-2*npml,ny-2*npml,nz-2*npml));
     Hz_zheng_last=single(zeros(nx-2*npml,ny-2*npml,nz-2*npml));
 
-    Ex_zheng_last=single(zeros(nx,ny+1,nz+1));
-    Ey_zheng_last=single(zeros(nx+1,ny,nz+1));
-    Ez_zheng_last=single(zeros(nx+1,ny+1,nz));
-    Hx_zheng_last=single(zeros(nx+1,ny,nz));
-    Hy_zheng_last=single(zeros(nx,ny+1,nz));
-    Hz_zheng_last=single(zeros(nx,ny,nz+1));
-    
     fan=single(zeros(nx-2*npml,ny-2*npml,nz-2*npml));
     huanyuan=single(zeros(nx-2*npml,ny-2*npml,nz-2*npml));
 
-    Ex=zeros(nx,ny+1,nz+1);
-    UEyz=zeros(nx,ny+1,nz+1);
-    UEzy=zeros(nx,ny+1,nz+1);
-    Ey=zeros(nx+1,ny,nz+1);
-    UEzx=zeros(nx+1,ny,nz+1);
-    UExz=zeros(nx+1,ny,nz+1);
-    Ez=zeros(nx+1,ny+1,nz);
-    UExy=zeros(nx+1,ny+1,nz);
-    UEyx=zeros(nx+1,ny+1,nz);
-    Hx=zeros(nx+1,ny,nz);
-    UHyz=zeros(nx+1,ny,nz);
-    UHzy=zeros(nx+1,ny,nz);
-    Hy=zeros(nx,ny+1,nz);
-    UHzx=zeros(nx,ny+1,nz);
-    UHxz=zeros(nx,ny+1,nz);
-    Hz=zeros(nx,ny,nz+1);
-    UHxy=zeros(nx,ny,nz+1);
-    UHyx=zeros(nx,ny,nz+1);
-
     V=zeros(it,1);
-
 
     for j=single(1):single(it)
         
@@ -122,6 +115,7 @@ parfor i=single(1):single(length(fswzx))
         % Ex中10 * ny-20 * nz-20的大小赋值给Ex_zheng_1
         % 因为在GPU中是行优先存储，j放在最后一维对读取速度影响较大，改为j放在第一维较好
         Ex_zheng_1(:,:,:,j)=Ex([npml+1:npml+npml nx-npml-npml+1:nx-npml],npml+1:ny-npml,npml+1:nz-npml);
+
         Ex_zheng_2(:,:,:,j)=Ex(npml+1:nx-npml,[npml+1:npml+npml ny-npml-npml+1:ny-npml],npml+1:nz-npml);
         Ex_zheng_3(:,:,:,j)=Ex(npml+1:nx-npml,npml+1:ny-npml,[npml+1:npml+npml nz-npml-npml+1:nz-npml]);    
         
@@ -150,10 +144,10 @@ parfor i=single(1):single(length(fswzx))
         Ez_zheng_last=Ez(npml+1:nx-npml,npml+1:ny-npml,npml+1:nz-npml);
         Hx_zheng_last=Hx(npml+1:nx-npml,npml+1:ny-npml,npml+1:nz-npml);
         Hy_zheng_last=Hy(npml+1:nx-npml,npml+1:ny-npml,npml+1:nz-npml);
-        Hz_zheng_last=Hz(npml+1:nx-npml,npml+1:ny-npml,npml+1:nz-npml);
-        
+        Hz_zheng_last=Hz(npml+1:nx-npml,npml+1:ny-npml,npml+1:nz-npml);    
     end
-    
+
+     %22222-------------------------------------------------------------22222--------------------------------
     Ex=zeros(nx,ny+1,nz+1);
     UEyz=zeros(nx,ny+1,nz+1);
     UEzy=zeros(nx,ny+1,nz+1);
@@ -179,13 +173,12 @@ parfor i=single(1):single(length(fswzx))
     Hx1=zeros(nx+1,ny,nz);
     Hy1=zeros(nx,ny+1,nz);
     Hz1=zeros(nx,ny,nz+1);
+
     for j=single(it):-1:single(1)
         
         if mod(j,100)==0
             disp([num2str(i+length(fswzx)) '/' num2str(length(fswzx)*2) '    ' num2str(j) '/' num2str(it)]);
         end
-        
-    
         
         Ex(fswzx(i),fswzy(i),fswzz(i))=E_obs(j,i);
          
@@ -296,18 +289,15 @@ parfor i=single(1):single(length(fswzx))
             Ez1(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml)=1./CAEz(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml).*Ez1(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml)...
                 -1./CAEz(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml).*CBEz(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml)./dx.*(Hy1(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml)-Hy1(npml+npml:nx-npml-npml-1,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml))...
                 +1./CAEz(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml).*CBEz(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml)./dy.*(Hx1(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml)-Hx1(npml+npml+1:nx-npml-npml,npml+npml:ny-npml-npml-1,npml+npml+1:nz-npml-npml));
-        end
+        end %end of if(j==it)&else
         
         huanyuan=Ex1(npml+1:nx-npml,npml+1:ny-npml,npml+1:nz-npml);
-%         
-%         ns=ns+huanyuan.*fan;
-%         zv=zv+huanyuan.*huanyuan;
-%         fv=ns./zv;
-        
+        %ns=ns+huanyuan.*fan;
+        %zv=zv+huanyuan.*huanyuan;
+        %fv=ns./zv;
         ns=ns+mean(huanyuan.*fan,4);
         zv=zv+mean(huanyuan.*huanyuan,4);
         fv=fv+mean(fan.*fan,4);
-      
-    end
+    end % end of for j=single(it):-1:single(1)
 
-end
+end % end of parfor i=single(1):single(length(fswzx))

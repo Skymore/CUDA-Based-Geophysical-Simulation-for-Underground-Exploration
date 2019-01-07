@@ -14,7 +14,7 @@
 
 
 /************************************************************************************
-* 函数定义
+* GPU计算单个矩阵的函数
 ************************************************************************************/
 
 dim3 blockUHyz(nz);
@@ -966,7 +966,6 @@ void gpu_memory_set_zero(int flag)
 	int szHy = nx * (ny + 1)*nz;
 	int szHz = nx * ny*(nz + 1);
 
-
 	//gpu显存新创建数组，原来内存中不存在
 	cudaMemset(dev_Ex, 0, szEx * sizeof(float));
 	cudaMemset(dev_UEyz, 0, szEx * sizeof(float));
@@ -991,8 +990,6 @@ void gpu_memory_set_zero(int flag)
 	cudaMemset(dev_Hz, 0, szHz * sizeof(float));
 	cudaMemset(dev_UHxy, 0, szHz * sizeof(float));
 	cudaMemset(dev_UHyx, 0, szHz * sizeof(float));
-
-
 
 	if (flag == 0)
 	{
@@ -1030,6 +1027,7 @@ void gpu_memory_set_zero(int flag)
 		cudaMemSet(dev_Ex_zheng_last, 0, sizeof(Ex_zheng_last));
 		cudaMemSet(dev_Ey_zheng_last, 0, sizeof(Ey_zheng_last));
 		cudaMemSet(dev_Ez_zheng_last, 0, sizeof(Ez_zheng_last));
+
 		cudaMemSet(dev_Hx_zheng_last, 0, sizeof(Hx_zheng_last));
 		cudaMemSet(dev_Hy_zheng_last, 0, sizeof(Hy_zheng_last));
 		cudaMemSet(dev_Hz_zheng_last, 0, sizeof(Hz_zheng_last));
@@ -1167,47 +1165,82 @@ Error:
 
 void gpu_memory_free()
 {
+	cudaFree(dev_Ex);
+	cudaFree(dev_Ey);
+	cudaFree(dev_Ez);
+
+	cudaFree(dev_UEyz);
+	cudaFree(dev_UEzy);
+	cudaFree(dev_UExz);
+	cudaFree(dev_UEzx);
+	cudaFree(dev_UExy);
+	cudaFree(dev_UEyx);
+
+	cudaFree(dev_Hx);
+	cudaFree(dev_Hy);
+	cudaFree(dev_Hz);
+
+	cudaFree(dev_UHyz);
+	cudaFree(dev_UHzy);
+	cudaFree(dev_UHxz);
+	cudaFree(dev_UHzx);
+	cudaFree(dev_UHxy);
+	cudaFree(dev_UHyx);
+
 	cudaFree(dev_CAEx);
-	cudaFree(dev_CBEx);
-	cudaFree(dev_RAEyz);
-	cudaFree(dev_RBEyz);
-	cudaFree(dev_RAEzy);
-	cudaFree(dev_RBEzy);
-
 	cudaFree(dev_CAEy);
-	cudaFree(dev_CBEy);
-	cudaFree(dev_RAExz);
-	cudaFree(dev_RBExz);
-	cudaFree(dev_RAEzx);
-	cudaFree(dev_RBEzx);
-
 	cudaFree(dev_CAEz);
+
+	cudaFree(dev_CBEx);
+	cudaFree(dev_CBEy);
 	cudaFree(dev_CBEz);
+
+	cudaFree(dev_RAEyz);
+	cudaFree(dev_RAEzy);
+	cudaFree(dev_RAEzx);
+	cudaFree(dev_RAExz);
 	cudaFree(dev_RAExy);
-	cudaFree(dev_RBExy);
 	cudaFree(dev_RAEyx);
+
+	cudaFree(dev_RBEyz);
+	cudaFree(dev_RBEzy);
+	cudaFree(dev_RBEzx);
+	cudaFree(dev_RBExz);
+	cudaFree(dev_RBExy);
 	cudaFree(dev_RBEyx);
 
 	cudaFree(dev_CPHx);
 	cudaFree(dev_CQHx);
-	cudaFree(dev_RAHyz);
-	cudaFree(dev_RBHyz);
-	cudaFree(dev_RAHzy);
-	cudaFree(dev_RBHzy);
-
 	cudaFree(dev_CPHy);
 	cudaFree(dev_CQHy);
-	cudaFree(dev_RAHxz);
-	cudaFree(dev_RBHxz);
-	cudaFree(dev_RAHzx);
-	cudaFree(dev_RBHzx);
-
 	cudaFree(dev_CPHz);
 	cudaFree(dev_CQHz);
+
+	cudaFree(dev_RAHyz);
+	cudaFree(dev_RAHzy);
+	cudaFree(dev_RAHzx);
+	cudaFree(dev_RAHxz);
 	cudaFree(dev_RAHxy);
-	cudaFree(dev_RBHxy);
 	cudaFree(dev_RAHyx);
+
+	cudaFree(dev_RBHyz);
+	cudaFree(dev_RBHzy);
+	cudaFree(dev_RBHzx);
+	cudaFree(dev_RBHxz);
+	cudaFree(dev_RBHxy);
 	cudaFree(dev_RBHyx);
+
+
+	cudaFree(fswzx);
+	cudaFree(fswzy);
+	cudaFree(fswzz);
+	cudaFree(jswzx);
+	cudaFree(jswzy);
+	cudaFree(jswzz);
+
+	cudaFree(dev_E_obs);
+	cudaFree(dev_V);
+	cudaFree(dev_source);
 
 	cudaFree(dev_kx_Ey);
 	cudaFree(dev_kx_Ez);
@@ -1223,37 +1256,44 @@ void gpu_memory_free()
 	cudaFree(dev_kz_Hx);
 	cudaFree(dev_kz_Hy);
 
-	cudaFree(dev_Ex);
-	cudaFree(dev_UEyz);
-	cudaFree(dev_UEzy);
+	cudaFree(dev_Ex_zheng_1);
+	cudaFree(dev_Ex_zheng_2);
+	cudaFree(dev_Ex_zheng_3);
 
-	cudaFree(dev_Ey);
-	cudaFree(dev_UEzx);
-	cudaFree(dev_UExz);
+	cudaFree(dev_Ey_zheng_1);
+	cudaFree(dev_Ey_zheng_2);
+	cudaFree(dev_Ey_zheng_3);
 
-	cudaFree(dev_Ez);
-	cudaFree(dev_UExy);
-	cudaFree(dev_UEyx);
+	cudaFree(dev_Ez_zheng_1);
+	cudaFree(dev_Ez_zheng_2);
+	cudaFree(dev_Ez_zheng_3);
 
-	cudaFree(dev_Hx);
-	cudaFree(dev_UHyz);
-	cudaFree(dev_UHzy);
+	cudaFree(dev_Hx_zheng_1);
+	cudaFree(dev_Hx_zheng_2);
+	cudaFree(dev_Hx_zheng_3);
 
-	cudaFree(dev_Hy);
-	cudaFree(dev_UHzx);
-	cudaFree(dev_UHxz);
+	cudaFree(dev_Hy_zheng_1);
+	cudaFree(dev_Hy_zheng_2);
+	cudaFree(dev_Hy_zheng_3);
 
-	cudaFree(dev_Hz);
-	cudaFree(dev_UHxy);
-	cudaFree(dev_UHyx);
+	cudaFree(dev_Hz_zheng_1);
+	cudaFree(dev_Hz_zheng_2);
+	cudaFree(dev_Hz_zheng_3);
 
-	cudaFree(dev_V);
-	cudaFree(dev_E_obs);
-	cudaFree(dev_source);
+	cudaFree(dev_Ex_zheng_last);
+	cudaFree(dev_Ey_zheng_last);
+	cudaFree(dev_Ez_zheng_last);
+
+	cudaFree(dev_Hx_zheng_last);
+	cudaFree(dev_Hy_zheng_last);
+	cudaFree(dev_Hz_zheng_last);
+
+	cudaFree(dev_fan);
+	cudaFree(dev_huanyuan);
 }
 
 // 计算UH H UE E
-cudaError_t zhengYan()
+cudaError_t zheng_yan()
 {
 	cudaError_t cudaStatus;	
 	calcUHyz << < gridUHyz, blockUHyz >> > (dev_UHyz, dev_RBHyz, dev_RAHyz, dev_Ez, dy);
@@ -1289,12 +1329,11 @@ cudaError_t gpu_parallel_one()
 {
 	cudaError_t cudaStatus;
 
-	// 调用kernel函数计算。
 	int i, j;
 	for (i = 0; i < szfsw; i++)
 	{
-		// flag == 1代表后半部分的并行，将GPU显存中的E*, UE**, H*, UH**, (V, E*_zheng_*, H*_zheng_*, E*_zheng_last, H*_zheng_last, fan, huanyuan)置零
-		gpu_memory_set_zero(1);
+		gpu_memory_set_zero(0);	// flag == 0 将GPU显存中的E*, UE**, H*, UH**, (V, E_obs)置零
+
 		for (j = 0; j < it; j++)
 		{
 			if (j % 200 == 0)
@@ -1305,6 +1344,9 @@ cudaError_t gpu_parallel_one()
 			// 实现MATLAB中的Ex[fswzx[i] - 1][fswzy[i] - 1][fswzz[i] - 1] = source[j];
 			int fidx = (fswzx[i] - 1)*(ny + 1)*(nz + 1) + (fswzy[i] - 1)*(nz + 1) + fswzz[i] - 1;
 			cudaStatus = cudaMemcpy(&(dev_Ex[fidx]), &(dev_source[j]), sizeof(float), cudaMemcpyDeviceToDevice);
+
+			// 调用GPU运算正演
+			zheng_yan();
 
 			// 实现MATLAB中的V(j)=Ex(jswzx(i), jswzy(i), jswzz(i));
 			int jidx = (jswzx[i] - 1)*(ny + 1)*(nz + 1) + (jswzy[i] - 1)*(nz + 1) + jswzz[i] - 1;
@@ -1327,22 +1369,27 @@ cudaError_t gpu_parallel_two()
 {
 	cudaError_t cudaStatus;
 
-	// 调用kernel函数计算。
 	int i, j;
 	for (i = 0; i < szfsw; i++)
 	{
-		// flag == 1代表后半部分的并行，将GPU显存中的E*, UE**, H*, UH**, (V, E*_zheng_*, H*_zheng_*, E*_zheng_last, H*_zheng_last, fan, huanyuan)置零
-		gpu_memory_set_zero(1);
+		gpu_memory_set_zero(1); // flag == 1 将GPU显存中的E*, UE**, H*, UH**, (V, E*_zheng_*, H*_zheng_*, E*_zheng_last, H*_zheng_last, fan, huanyuan)置零
 		for (j = 0; j < it; j++)
 		{
-			if (j % 200 == 0)
-			{
-				printf("i = %3d / %d,  j = %4d / %d\n", i, szfsw, j, it);
-			}
+			if (j % 200 == 0) { printf("i = %3d / %d,  j = %4d / %d\n", i, szfsw, j, it); }
 
 			// 实现MATLAB中的Ex[fswzx[i] - 1][fswzy[i] - 1][fswzz[i] - 1] = source[j];
 			int fidx = (fswzx[i] - 1)*(ny + 1)*(nz + 1) + (fswzy[i] - 1)*(nz + 1) + fswzz[i] - 1;
 			cudaStatus = cudaMemcpy(&(dev_Ex[fidx]), &(dev_source[j]), sizeof(float), cudaMemcpyDeviceToDevice);
+
+			// 调用GPU运算正演
+			zheng_yan();
+			size_t numBytes = (nz-2*npml) * sizeof(float);
+
+			// 复制的块大小 [npml,ny-2*npml,nz-2*npml]
+			// Ex_zheng_1(:,:,:,j)=Ex(npml+1:npml+npml      ,npml+1:ny-npml,npml+1:nz-npml);
+			// Ex_zheng_1(:,:,:,j)=Ex(nx-npml-npml+1:nx-npml,npml+1:ny-npml,npml+1:nz-npml);
+			 
+
 
 			// 实现MATLAB中的V(j)=Ex(jswzx(i), jswzy(i), jswzz(i));
 			int jidx = (jswzx[i] - 1)*(ny + 1)*(nz + 1) + (jswzy[i] - 1)*(nz + 1) + jswzz[i] - 1;
