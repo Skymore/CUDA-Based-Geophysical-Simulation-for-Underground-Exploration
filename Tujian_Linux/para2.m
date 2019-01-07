@@ -39,6 +39,7 @@ parfor i=single(1):single(length(fswzx))
     
     fan=single(zeros(nx-2*npml,ny-2*npml,nz-2*npml));
     huanyuan=single(zeros(nx-2*npml,ny-2*npml,nz-2*npml));
+
     Ex=zeros(nx,ny+1,nz+1);
     UEyz=zeros(nx,ny+1,nz+1);
     UEzy=zeros(nx,ny+1,nz+1);
@@ -57,6 +58,7 @@ parfor i=single(1):single(length(fswzx))
     Hz=zeros(nx,ny,nz+1);
     UHxy=zeros(nx,ny,nz+1);
     UHyx=zeros(nx,ny,nz+1);
+
     V=zeros(it,1);
 
 
@@ -117,6 +119,8 @@ parfor i=single(1):single(length(fswzx))
             -CBEz(2:nx,2:ny,:)./kx_Ez(2:nx,2:ny,:)./dy.*(Hx(2:nx,2:ny,:)-Hx(2:nx,1:ny-1,:))...
              +CBEz(2:nx,2:ny,:).*UExy(2:nx,2:ny,:)-CBEz(2:nx,2:ny,:).*UEyx(2:nx,2:ny,:);  
 
+        % Ex中10 * ny-20 * nz-20的大小赋值给Ex_zheng_1
+        % 因为在GPU中是行优先存储，j放在最后一维对读取速度影响较大，改为j放在第一维较好
         Ex_zheng_1(:,:,:,j)=Ex([npml+1:npml+npml nx-npml-npml+1:nx-npml],npml+1:ny-npml,npml+1:nz-npml);
         Ex_zheng_2(:,:,:,j)=Ex(npml+1:nx-npml,[npml+1:npml+npml ny-npml-npml+1:ny-npml],npml+1:nz-npml);
         Ex_zheng_3(:,:,:,j)=Ex(npml+1:nx-npml,npml+1:ny-npml,[npml+1:npml+npml nz-npml-npml+1:nz-npml]);    

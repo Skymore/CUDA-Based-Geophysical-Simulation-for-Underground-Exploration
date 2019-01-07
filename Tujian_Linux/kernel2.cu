@@ -1,10 +1,8 @@
 /************************************************************************************
 * Author: Tao Rui
-* °æ±¾: V1.0 µ¥¿¨£¬Linux°æ
-* ËµÃ÷: 
-*		Êı¾İ´Ó´Óµ±Ç°Ä¿Â¼ÏÂµÄdataÎÄ¼ş¼Ğ¶ÁÈë
-*		½á¹ûÊä³öµ½µ±Ç°Ä¿Â¼ÏÂµÄoutputÎÄ¼ş¼ĞÖĞE_obs.txt
-*		²ÎÊıÔÚglobal_variables.cppÖĞĞŞ¸Ä
+* ç‰ˆæœ¬: V1.0 å•å¡ï¼ŒLinuxç‰ˆ
+* è¯´æ˜: 
+*		è®¡ç®—ç¬¬äºŒéƒ¨åˆ†çš„å¹¶è¡Œã€‚
 ************************************************************************************/
 
 #include "cuda_runtime.h"
@@ -16,11 +14,11 @@
 
 
 /************************************************************************************
-* º¯Êı¶¨Òå
+* å‡½æ•°å®šä¹‰
 ************************************************************************************/
 
 dim3 blockUHyz(nz);
-dim3 gridUHyz(npml, nx - 1); //npml: blockIdx.xµÄ±ä»¯·¶Î§£¬ nx-1¾ÍÊÇ: blockIdx.yµÄ±ä»¯·¶Î§
+dim3 gridUHyz(npml, nx - 1); //npml: blockIdx.xçš„å˜åŒ–èŒƒå›´ï¼Œ nx-1å°±æ˜¯: blockIdx.yçš„å˜åŒ–èŒƒå›´
 __global__ void calcUHyz(float *UHyz, float *RBHyz, float *RAHyz, float *Ez, const float dy)
 {
 	/*
@@ -29,13 +27,14 @@ __global__ void calcUHyz(float *UHyz, float *RBHyz, float *RAHyz, float *Ez, con
 	in2 RAHyz nx-1 2*npml nz
 	in3 Ez    nx+1  ny+1  nz
 	UHyz = UHyz * RBHyz + RAHyz * (Ez - Ez) / dy
-	ÔËËã¿é´óĞ¡ nx-1 * npml * nz
-	UHyzÓÉ5¸ö¾ØÕóÏà³Ë»òÏà¼ÓµÃÀ´¡£
-	yÎ¬·ÖÎªÁËÁ½¿é
+	è¿ç®—å—å¤§å° nx-1 * npml * nz
+	UHyzç”±5ä¸ªçŸ©é˜µç›¸ä¹˜æˆ–ç›¸åŠ å¾—æ¥ã€‚
+	yç»´åˆ†ä¸ºäº†ä¸¤å—
 
 	UHyz(2:nx, [1:npml ny-npml+1:ny], :)=RBHyz .* UHyz(2:nx, [1:npml ny-npml+1:ny], :)...
 	+RAHyz ./ dy .* (Ez(2:nx, [2:npml+1 ny-npml+2:ny+1], :) - Ez(2:nx, [1:npml ny-npml+1:ny], :));
 	*/
+
 	int ix = blockIdx.y;   // ix in [0, nx - 1)
 	int iy = blockIdx.x;   // iy in [0, npml)
 	int iz = threadIdx.x;  // iz in [0, nz)
@@ -69,12 +68,13 @@ __global__ void calcUHzy(float *UHzy, float *RBHzy, float *RAHzy, float *Ey, con
 	in2 RAHzy --size--  nx-1  ny  2*npml
 	in3 Ey    --size--  nx+1  ny  nz+1
 	UHyz = UHyz * RBHyz + RAHyz * (Ez - Ez) / dy
-	ÔËËã¿é´óĞ¡ nx-1 * ny * (5 *npml)
-	UHyzÓÉ5¸ö¾ØÕóÏà³Ë»òÏà¼ÓµÃÀ´¡£
-	zÎ¬·ÖÎªÁËÁ½¿é
+	è¿ç®—å—å¤§å° nx-1 * ny * (5 *npml)
+	UHyzç”±5ä¸ªçŸ©é˜µç›¸ä¹˜æˆ–ç›¸åŠ å¾—æ¥ã€‚
+	zç»´åˆ†ä¸ºäº†ä¸¤å—
 	UHzy(2:nx, :, [1:npml nz-npml+1:nz])=RBHzy.*UHzy(2:nx, :, [1:npml nz-npml+1:nz])
 	+RAHzy./dz.*(Ey(2:nx, :, [2:npml+1 nz-npml+2:nz+1])-Ey(2:nx, :, [1:npml nz-npml+1:nz]));
 	*/
+
 	int ix = blockIdx.x;  // ix in [0, nx - 1)
 	int iy = blockIdx.y;  // iy in [0, ny)
 	int iz = threadIdx.x; // ix in [0, npml)
@@ -108,12 +108,13 @@ __global__ void calcUHzx(float *UHzx, float *RBHzx, float *RAHzx, float *Ex, con
 	in2 RAHzx --size--  nx   ny - 1  2 * npml
 	in3 Ex    --size--  nx   ny + 1  nz + 1
 	UHzx = UHzx * RBHzx + RAHzx * (Ez - Ez) / dy
-	ÔËËã¿é´óĞ¡ nx * ny - 1 * npml
-	UHzxÓÉ5¸ö¾ØÕóÏà³Ë»òÏà¼ÓµÃÀ´¡£
-	zÎ¬·ÖÎªÁËÁ½¿é  1:npml    -npml:0
+	è¿ç®—å—å¤§å° nx * ny - 1 * npml
+	UHzxç”±5ä¸ªçŸ©é˜µç›¸ä¹˜æˆ–ç›¸åŠ å¾—æ¥ã€‚
+	zç»´åˆ†ä¸ºäº†ä¸¤å—  1:npml    -npml:0
 	UHzx(:, 2:ny, [1:npml nz - npml + 1:nz])=RBHzx. * UHzx(:, 2:ny, [1:npml nz - npml + 1:nz])
 	+RAHzx./dz.*(Ex(:, 2:ny, [2:npml + 1 nz - npml + 2:nz + 1]) - Ex(:, 2:ny, [1:npml nz - npml + 1:nz]));
 	*/
+
 	int ix = blockIdx.x;  // ix in [0, nx)
 	int iy = blockIdx.y;  // iy in [0, ny - 1)
 	int iz = threadIdx.x; // iz in [0, npml)
@@ -147,9 +148,9 @@ __global__ void calcUHxz(float *UHxz, float *RBHxz, float *RAHxz, float *Ez, con
 	in2 RAHxz --size--  2*npml   ny - 1  nz
 	in3 Ez    --size--  nx + 1   ny + 1  nz
 	UHxz = UHxz * RBHxz + RAHxz * (Ez - Ez) / dx
-	ÔËËã¿é´óĞ¡ npml * ny - 1 * nz
-	UHxzÓÉ5¸ö¾ØÕóÏà³Ë»òÏà¼ÓµÃÀ´¡£
-	xÎ¬·ÖÎªÁËÁ½¿é  1:npml    -npml:0
+	è¿ç®—å—å¤§å° npml * ny - 1 * nz
+	UHxzç”±5ä¸ªçŸ©é˜µç›¸ä¹˜æˆ–ç›¸åŠ å¾—æ¥ã€‚
+	xç»´åˆ†ä¸ºäº†ä¸¤å—  1:npml    -npml:0
 	UHxz([1:npml nx-npml+1:nx], 2:ny, :)=RBHxz.*UHxz([1:npml nx-npml+1:nx], 2:ny, :)...
 	+RAHxz./dx.*(Ez([2:npml+1 nx-npml+2:nx+1], 2:ny, :)-Ez([1:npml nx-npml+1:nx], 2:ny, :));
 	*/
@@ -186,9 +187,9 @@ __global__ void calcUHxy(float *UHxy, float *RBHxy, float *RAHxy, float *Ey, con
 	in2 RAHxy --size--  2*npml   ny      nz - 1
 	in3 EY    --size--  nx + 1   ny      nz + 1
 	UHxy = UHxy * RBHxy + RAHxy * (Ez - Ez) / dx
-	ÔËËã¿é´óĞ¡ npml * ny * nz - 1
-	UHxyÓÉ5¸ö¾ØÕóÏà³Ë»òÏà¼ÓµÃÀ´¡£
-	xÎ¬·ÖÎªÁËÁ½¿é  1:npml    -npml:0
+	è¿ç®—å—å¤§å° npml * ny * nz - 1
+	UHxyç”±5ä¸ªçŸ©é˜µç›¸ä¹˜æˆ–ç›¸åŠ å¾—æ¥ã€‚
+	xç»´åˆ†ä¸ºäº†ä¸¤å—  1:npml    -npml:0
 	UHxy([1:npml nx-npml+1:nx], :, 2:nz)=RBHxy.*UHxy([1:npml nx-npml+1:nx], :, 2:nz)...
 	+RAHxy./dx.*(Ey([2:npml+1 nx-npml+2:nx+1], :, 2:nz)-Ey([1:npml nx-npml+1:nx], :, 2:nz));
 	*/
@@ -225,9 +226,9 @@ __global__ void calcUHyx(float *UHyx, float *RBHyx, float *RAHyx, float *Ex, con
 	in2 RAHyx nx   2*npml nz - 1
 	in3 Ex    nx   ny + 1 nz + 1
 	UHyx = UHyx * RBHyx + RAHyx * (Ex - Ex) / dy
-	ÔËËã¿é´óĞ¡ nx * npml * nz - 1
-	UHyxÓÉ5¸ö¾ØÕóÏà³Ë»òÏà¼ÓµÃÀ´¡£
-	yÎ¬·ÖÎªÁËÁ½¿é
+	è¿ç®—å—å¤§å° nx * npml * nz - 1
+	UHyxç”±5ä¸ªçŸ©é˜µç›¸ä¹˜æˆ–ç›¸åŠ å¾—æ¥ã€‚
+	yç»´åˆ†ä¸ºäº†ä¸¤å—
 
 	UHyx(:, [1:npml ny-npml+1:ny], 2:nz)=RBHyx.*UHyx(:, [1:npml ny-npml+1:ny], 2:nz)...
 	+RAHyx./dy.*(Ex(:, [2:npml+1 ny-npml+2:ny+1], 2:nz)-Ex(:, [1:npml ny-npml+1:ny], 2:nz));
@@ -262,7 +263,7 @@ dim3 gridHx(nx - 1, ny);
 __global__ void calcHx(float *Hx, float *CPHx, float *CQHx, float *ky_Hx, float *kz_Hx, float *Ez, float *Ey, float *UHyz, float *UHzy, const float dy, const float dz)
 {
 	//
-	// * ÔËËã¿é´óĞ¡ nx - 1 * ny * nz
+	// * è¿ç®—å—å¤§å° nx - 1 * ny * nz
 	// * Hx(2:nx,:,:)
 	//
 	int ix = blockIdx.x + 1;
@@ -289,7 +290,7 @@ dim3 gridHy(nx, ny - 1);
 __global__ void calcHy(float *Hy, float *CPHy, float *CQHy, float *kz_Hy, float *kx_Hy, float *Ex, float *Ez, float *UHzx, float *UHxz, const float dz, const float dx)
 {
 	//
-	// * ÔËËã¿é´óĞ¡ nx * ny -1 * nz
+	// * è¿ç®—å—å¤§å° nx * ny -1 * nz
 	// * Hy(:,2:ny,:)
 	//
 	int ix = blockIdx.x;
@@ -316,9 +317,9 @@ dim3 gridHz(nx, ny);
 __global__ void calcHz(float *Hz, float *CPHz, float *CQHz, float *kx_Hz, float *ky_Hz, float *Ey, float *Ex, float *UHxy, float *UHyx, const float dx, const float dy)
 {
 	//
-	// * ÔËËã¿é´óĞ¡ nx * ny * nz -1
+	// * è¿ç®—å—å¤§å° nx * ny * nz -1
 	// * Hz(:,;,2:nz)
-	// * Hz´óĞ¡Îªnx ny nz+1
+	// * Hzå¤§å°ä¸ºnx ny nz+1
 	//
 	int ix = blockIdx.x;
 	int iy = blockIdx.y;
@@ -351,7 +352,7 @@ __global__ void calcUEyz(float *UEyz, float *RBEyz, float *RAEyz, float *Hz, con
 	in2 RAEyz nx   2*(npml-1) nz - 1
 	in3 Hz    nx   ny         nz + 1
 
-	ÔËËã¿é´óĞ¡ nx * npml - 1 * nz - 1
+	è¿ç®—å—å¤§å° nx * npml - 1 * nz - 1
 
 	UEyz(:, [2:npml ny-npml+2:ny], 2:nz)=RBEyz .* UEyz(:, [2:npml ny-npml+2:ny], 2:nz)...
 	+RAEyz ./ dy .* (Hz(:, [2:npml ny-npml+2:ny], 2:nz) - Hz(:, [1:npml-1 ny-npml+1:ny-1], 2:nz));
@@ -392,7 +393,7 @@ __global__ void calcUEyx(float *UEyx, float *RBEyx, float *RAEyx, float *Hx, con
 	in2 RAEyx nx - 1 2*(npml-1) nz
 	in3 Hx    nx + 1 ny         nz
 
-	ÔËËã¿é´óĞ¡ nx * npml-1 * nz-1
+	è¿ç®—å—å¤§å° nx * npml-1 * nz-1
 
 	UEyx(2:nx, [2:npml ny-npml+2:ny], :)=RBEyx .* UEyx(2:nx, [2:npml ny-npml+2:ny], :)...
 	+RAEyx ./ dy .* (Hx(2:nx, [2:npml ny-npml+2:ny], :) - Hx(2:nx, [1:npml-1 ny-npml+1:ny-1], :));
@@ -433,7 +434,7 @@ __global__ void calcUExy(float *UExy, float *RBExy, float *RAExy, float *Hy, con
 	in2 RAExy 2*(npml-1) ny - 1 nz
 	in3 Hy    nx         ny + 1 nz
 
-	ÔËËã¿é´óĞ¡ npml-1 * ny-1 * nz
+	è¿ç®—å—å¤§å° npml-1 * ny-1 * nz
 
 	UExy([2:npml nx-npml+2:nx], 2:ny, :)=RBExy .* UExy([2:npml nx-npml+2:nx], 2:ny, :)...
 	+RAExy ./ dx .* (Hy([2:npml nx-npml+2:nx], 2:ny, :) - Hy([1:npml-1 nx-npml+1:nx-1], 2:ny, :));
@@ -474,7 +475,7 @@ __global__ void calcUExz(float *UExz, float *RBExz, float *RAExz, float *Hz, con
 	in1 RBExz 2*(npml-1) ny     nz - 1
 	in2 RAExz 2*(npml-1) ny     nz - 1
 	in3 Hz    nx         ny     nz + 1
-	ÔËËã¿é´óĞ¡ npml-1 * ny * nz-1
+	è¿ç®—å—å¤§å° npml-1 * ny * nz-1
 
 	UExz([2:npml nx-npml+2:nx], :, 2:nz)=RBExz .* UExz([2:npml nx-npml+2:nx], :, 2:nz)...
 	+RAExz ./ dx .* (Hz([2:npml nx-npml+2:nx], :, 2:nz) - Hz([1:npml-1 nx-npml+1:nx-1], :, 2:nz));
@@ -515,7 +516,7 @@ __global__ void calcUEzx(float *UEzx, float *RBEzx, float *RAEzx, float *Hx, con
 	in2 RAEzx nx - 1     ny     2*(npml-1)
 	in3 Hx    nx + 1     ny     nz
 
-	ÔËËã¿é´óĞ¡ nx-1 * ny * npml-1
+	è¿ç®—å—å¤§å° nx-1 * ny * npml-1
 
 	UEzx(2:nx, :, [2:npml nz-npml+2:nz])=RBEzx .* UEzx(2:nx, :, [2:npml nz-npml+2:nz])...
 	+RAEzx ./ dz .* (Hx(2:nx, :, [2:npml nz-npml+2:nz]) - Hx(2:nx, :, [1:npml-1 nz-npml+1:nz-1]));
@@ -556,7 +557,7 @@ __global__ void calcUEzy(float *UEzy, float *RBEzy, float *RAEzy, float *Hy, con
 	in2 RAEzy nx      ny - 1    2*(npml-1)
 	in3 Hy    nx      ny + 1    nz
 
-	ÔËËã¿é´óĞ¡ nx * ny - 1 * npml-1
+	è¿ç®—å—å¤§å° nx * ny - 1 * npml-1
 
 	UEzy(:, 2:ny, [2:npml nz-npml+2:nz])=RBEzy.*UEzy(:, 2:ny, [2:npml nz-npml+2:nz])...
 	+RAEzy./dz.*(Hy(:, 2:ny, [2:npml nz-npml+2:nz])-Hy(:, 2:ny, [1:npml-1 nz-npml+1:nz-1]));
@@ -591,7 +592,7 @@ __global__ void calcEx(float *Ex, float *CAEx, float *CBEx, float *ky_Ex, float 
 	//
 	// * dim3 blockEx(nz-1);
 	// * dim3 gridEx(nx, ny-1);
-	// * ÔËËã¿é´óĞ¡ nx * ny-1 * nz-1
+	// * è¿ç®—å—å¤§å° nx * ny-1 * nz-1
 	// * Ex(:, 2:ny, 2:nz)
 	//
 	int ix = blockIdx.x;      // ix in [0, nx)
@@ -619,7 +620,7 @@ __global__ void calcEy(float *Ey, float *CAEy, float *CBEy, float *kz_Ey, float 
 	//
 	// * dim3 blockEy(nz-1);
 	// * dim3 gridEy(nx-1, ny);
-	// * ÔËËã¿é´óĞ¡ nx-1 * ny * nz-1
+	// * è¿ç®—å—å¤§å° nx-1 * ny * nz-1
 	// * Ey(2:nx, :, 2:nz)
 	//
 	int ix = blockIdx.x + 1;  // ix in [1, nx)
@@ -647,9 +648,9 @@ __global__ void calcEz(float *Ez, float *CAEz, float *CBEz, float *kx_Ez, float 
 	//
 	// * dim3 blockEz(nz);
 	// * dim3 gridEz(nx-1, ny-1);
-	// * ÔËËã¿é´óĞ¡ nx-1 * ny-1 * nz
+	// * è¿ç®—å—å¤§å° nx-1 * ny-1 * nz
 	// * Ez(2:nx, 2:ny, :)
-	// * Ez´óĞ¡Îªnx ny nz+1
+	// * Ezå¤§å°ä¸ºnx ny nz+1
 	//
 	int ix = blockIdx.x + 1; // ix in [1, nx)
 	int iy = blockIdx.y + 1; // iy in [1, ny)
@@ -679,7 +680,7 @@ __global__ void print_dev_matrix(float *A, int i,int j,int k,int xdim,int ydim,i
 void readInteger(const char *name, int *a, int n1, int n2, int n3)
 {
 	FILE *fp = fopen(name, "r");
-	if (fp == NULL) // ÅĞ¶ÏÎÄ¼ş¶ÁÈëÊÇ·ñÕıÈ·
+	if (fp == NULL) // åˆ¤æ–­æ–‡ä»¶è¯»å…¥æ˜¯å¦æ­£ç¡®
 	{
 		printf("fopen %s error! \n", name);
 		return;
@@ -691,7 +692,7 @@ void readInteger(const char *name, int *a, int n1, int n2, int n3)
 		{
 			for (int j = 0; j < n2; j++)
 			{
-				fscanf(fp, "%d", &a[i * n2*n3 + j * n3 + k]); // ¶ÁÈëa[i][j][k]
+				fscanf(fp, "%d", &a[i * n2*n3 + j * n3 + k]); // è¯»å…¥a[i][j][k]
 
 			}
 		}
@@ -705,7 +706,7 @@ void readInteger(const char *name, int *a, int n1, int n2, int n3)
 void readFloat(const char *name, float *a, int n1, int n2, int n3)
 {
 	FILE *fp = fopen(name, "r");
-	if (fp == NULL) // ÅĞ¶ÏÎÄ¼ş¶ÁÈëÊÇ·ñÕıÈ·
+	if (fp == NULL) // åˆ¤æ–­æ–‡ä»¶è¯»å…¥æ˜¯å¦æ­£ç¡®
 	{
 		printf("fopen %s error! \n", name);
 		return;
@@ -717,7 +718,7 @@ void readFloat(const char *name, float *a, int n1, int n2, int n3)
 		{
 			for (int j = 0; j < n2; j++)
 			{
-				fscanf(fp, "%f", a + i * n2*n3 + j * n3 + k); // ¶ÁÈëa[i][j][k]			
+				fscanf(fp, "%f", a + i * n2*n3 + j * n3 + k); // è¯»å…¥a[i][j][k]			
 			}
 
 		}
@@ -796,14 +797,14 @@ void printE_obs()
 {
 	const char *name = "output/E_obs.txt";
 	FILE *fp = fopen(name, "w+");
-	if (fp == NULL) // ÅĞ¶ÏÎÄ¼ş¶ÁÈëÊÇ·ñÕıÈ·
+	if (fp == NULL) // åˆ¤æ–­æ–‡ä»¶è¯»å…¥æ˜¯å¦æ­£ç¡®
 	{
 		printf("fopen %s error! \n", name);
 	}
 	printf("print fopen %s ok! \n", name);
 
-	fprintf(fp, "Êä³öE_obs[%d][%d]\n", it, szfsw);
-	fprintf(fp, "¹²ÓĞ %d ĞĞ %d ÁĞ \n", szfsw, it);
+	fprintf(fp, "è¾“å‡ºE_obs[%d][%d]\n", it, szfsw);
+	fprintf(fp, "å…±æœ‰ %d è¡Œ %d åˆ— \n", szfsw, it);
 
 	for (int i = 0; i < szfsw; i++)
 	{
@@ -822,7 +823,7 @@ void printE_obs()
 
 void gpu_memory_malloc()
 {
-	//Ô­À´ÄÚ´æÖĞ´æÔÚµÄÊı×é£¬Êı×é´óĞ¡ÓÃÄÚ´æÊı×é´óĞ¡¾ÍĞĞ
+	//åŸæ¥å†…å­˜ä¸­å­˜åœ¨çš„æ•°ç»„ï¼Œæ•°ç»„å¤§å°ç”¨å†…å­˜æ•°ç»„å¤§å°å°±è¡Œ
 	cudaMalloc((void**)&dev_CAEx, sizeof(CAEx));
 	cudaMalloc((void**)&dev_CBEx, sizeof(CBEx));
 	cudaMalloc((void**)&dev_RAEyz, sizeof(RAEyz));
@@ -879,7 +880,7 @@ void gpu_memory_malloc()
 	cudaMalloc((void**)&dev_kz_Hx, sizeof(kz_Hx));
 	cudaMalloc((void**)&dev_kz_Hy, sizeof(kz_Hy));
 
-	//gpuÏÔ´æĞÂ´´½¨Êı×é£¬Ô­À´ÄÚ´æÖĞ²»´æÔÚ
+	//gpuæ˜¾å­˜æ–°åˆ›å»ºæ•°ç»„ï¼ŒåŸæ¥å†…å­˜ä¸­ä¸å­˜åœ¨
 	int szEx = nx * (ny + 1)*(nz + 1);
 	int szEy = (nx + 1)*ny*(nz + 1);
 	int szEz = (nx + 1)*(ny + 1)*nz;
@@ -914,9 +915,49 @@ void gpu_memory_malloc()
 	cudaMalloc((void**)&dev_E_obs, sizeof(E_obs));
 	cudaMalloc((void**)&dev_source, sizeof(source));
 
+	// ç¬¬äºŒéƒ¨åˆ†å¹¶è¡Œéœ€è¦ç”¨åˆ°çš„å˜é‡
+	cudaMalloc((void**)&dev_Ex_zheng_1, sizeof(Ex_zheng_1));
+	cudaMalloc((void**)&dev_Ex_zheng_2, sizeof(Ex_zheng_2));
+	cudaMalloc((void**)&dev_Ex_zheng_3, sizeof(Ex_zheng_3));
+
+	cudaMalloc((void**)&dev_Ey_zheng_1, sizeof(Ey_zheng_1));
+	cudaMalloc((void**)&dev_Ey_zheng_2, sizeof(Ey_zheng_2));
+	cudaMalloc((void**)&dev_Ey_zheng_3, sizeof(Ey_zheng_3));
+
+	cudaMalloc((void**)&dev_Ez_zheng_1, sizeof(Ez_zheng_1));
+	cudaMalloc((void**)&dev_Ez_zheng_2, sizeof(Ez_zheng_2));
+	cudaMalloc((void**)&dev_Ez_zheng_3, sizeof(Ez_zheng_3));
+
+	cudaMalloc((void**)&dev_Hx_zheng_1, sizeof(Hx_zheng_1));
+	cudaMalloc((void**)&dev_Hx_zheng_2, sizeof(Hx_zheng_2));
+	cudaMalloc((void**)&dev_Hx_zheng_3, sizeof(Hx_zheng_3));
+
+	cudaMalloc((void**)&dev_Hy_zheng_1, sizeof(Hy_zheng_1));
+	cudaMalloc((void**)&dev_Hy_zheng_2, sizeof(Hy_zheng_2));
+	cudaMalloc((void**)&dev_Hy_zheng_3, sizeof(Hy_zheng_3));
+
+	cudaMalloc((void**)&dev_Hz_zheng_1, sizeof(Hz_zheng_1));
+	cudaMalloc((void**)&dev_Hz_zheng_2, sizeof(Hz_zheng_2));
+	cudaMalloc((void**)&dev_Hz_zheng_3, sizeof(Hz_zheng_3));
+
+	cudaMalloc((void**)&dev_Ex_zheng_last, sizeof(Ex_zheng_last));
+	cudaMalloc((void**)&dev_Ey_zheng_last, sizeof(Ey_zheng_last));
+	cudaMalloc((void**)&dev_Ez_zheng_last, sizeof(Ez_zheng_last));
+	cudaMalloc((void**)&dev_Hx_zheng_last, sizeof(Hx_zheng_last));
+	cudaMalloc((void**)&dev_Hy_zheng_last, sizeof(Hy_zheng_last));
+	cudaMalloc((void**)&dev_Hz_zheng_last, sizeof(Hz_zheng_last));
+
+	cudaMalloc((void**)&dev_fan, sizeof(fan));
+	cudaMalloc((void**)&dev_huanyuan,sizeof(huanyuan));
+
+	cudaMalloc((void**)&dev_)
 }
 
-void gpu_memory_set_zero()
+
+// flag == 0 å°†GPUæ˜¾å­˜ä¸­çš„E*, UE**, H*, UH**, (V, E_obs)ç½®é›¶
+// flag == 1 å°†GPUæ˜¾å­˜ä¸­çš„E*, UE**, H*, UH**, (V, E*_zheng_*, H*_zheng_*, E*_zheng_last, H*_zheng_last, fan, huanyuan)ç½®é›¶
+// flag == 2 å°†GPUæ˜¾å­˜ä¸­çš„E*, UE**, H*, UH**, (V, E*1, H*1, )ç½®é›¶
+void gpu_memory_set_zero(int flag)
 {
 	int szEx = nx * (ny + 1)*(nz + 1);
 	int szEy = (nx + 1)*ny*(nz + 1);
@@ -926,7 +967,7 @@ void gpu_memory_set_zero()
 	int szHz = nx * ny*(nz + 1);
 
 
-	//gpuÏÔ´æĞÂ´´½¨Êı×é£¬Ô­À´ÄÚ´æÖĞ²»´æÔÚ
+	//gpuæ˜¾å­˜æ–°åˆ›å»ºæ•°ç»„ï¼ŒåŸæ¥å†…å­˜ä¸­ä¸å­˜åœ¨
 	cudaMemset(dev_Ex, 0, szEx * sizeof(float));
 	cudaMemset(dev_UEyz, 0, szEx * sizeof(float));
 	cudaMemset(dev_UEzy, 0, szEx * sizeof(float));
@@ -951,10 +992,65 @@ void gpu_memory_set_zero()
 	cudaMemset(dev_UHxy, 0, szHz * sizeof(float));
 	cudaMemset(dev_UHyx, 0, szHz * sizeof(float));
 
-	cudaMemset(dev_V, 0, sizeof(V));
-	cudaMemset(dev_E_obs, 0, sizeof(E_obs));
+
+
+	if (flag == 0)
+	{
+		cudaMemset(dev_V, 0, sizeof(V));
+		cudaMemset(dev_E_obs, 0, sizeof(E_obs));		
+	} 
+	else if (flag == 1)
+	{
+		cudaMemset(dev_V, 0, sizeof(V));
+
+		cudaMemSet(dev_Ex_zheng_1, 0, sizeof(Ex_zheng_1));
+		cudaMemSet(dev_Ex_zheng_2, 0, sizeof(Ex_zheng_2));
+		cudaMemSet(dev_Ex_zheng_3, 0, sizeof(Ex_zheng_3));
+
+		cudaMemSet(dev_Ey_zheng_1, 0, sizeof(Ey_zheng_1));
+		cudaMemSet(dev_Ey_zheng_2, 0, sizeof(Ey_zheng_2));
+		cudaMemSet(dev_Ey_zheng_3, 0, sizeof(Ey_zheng_3));
+
+		cudaMemSet(dev_Ez_zheng_1, 0, sizeof(Ez_zheng_1));
+		cudaMemSet(dev_Ez_zheng_2, 0, sizeof(Ez_zheng_2));
+		cudaMemSet(dev_Ez_zheng_3, 0, sizeof(Ez_zheng_3));
+
+		cudaMemSet(dev_Hx_zheng_1, 0, sizeof(Hx_zheng_1));
+		cudaMemSet(dev_Hx_zheng_2, 0, sizeof(Hx_zheng_2));
+		cudaMemSet(dev_Hx_zheng_3, 0, sizeof(Hx_zheng_3));
+
+		cudaMemSet(dev_Hy_zheng_1, 0, sizeof(Hy_zheng_1));
+		cudaMemSet(dev_Hy_zheng_2, 0, sizeof(Hy_zheng_2));
+		cudaMemSet(dev_Hy_zheng_3, 0, sizeof(Hy_zheng_3));
+
+		cudaMemSet(dev_Hz_zheng_1, 0, sizeof(Hz_zheng_1));
+		cudaMemSet(dev_Hz_zheng_2, 0, sizeof(Hz_zheng_2));
+		cudaMemSet(dev_Hz_zheng_3, 0, sizeof(Hz_zheng_3));
+
+		cudaMemSet(dev_Ex_zheng_last, 0, sizeof(Ex_zheng_last));
+		cudaMemSet(dev_Ey_zheng_last, 0, sizeof(Ey_zheng_last));
+		cudaMemSet(dev_Ez_zheng_last, 0, sizeof(Ez_zheng_last));
+		cudaMemSet(dev_Hx_zheng_last, 0, sizeof(Hx_zheng_last));
+		cudaMemSet(dev_Hy_zheng_last, 0, sizeof(Hy_zheng_last));
+		cudaMemSet(dev_Hz_zheng_last, 0, sizeof(Hz_zheng_last));
+
+		cudaMemSet(dev_fan, 0, sizeof(fan));
+		cudaMemSet(dev_huanyuan, 0, sizeof(huanyuan));
+	}
+	else
+	{
+		cudaMemset(dev_Ex1, 0, sizeof(Ex1));
+		cudaMemset(dev_Ey1, 0, sizeof(Ey1));
+		cudaMemset(dev_Ez1, 0, sizeof(Ez1));
+
+		cudaMemset(dev_Hx1, 0, sizeof(Hx1));
+		cudaMemset(dev_Hy1, 0, sizeof(Hy1));
+		cudaMemset(dev_Hz1, 0, sizeof(Hz1));
+	}
+
 }
 
+// å°†å†…å­˜ä¸­çš„CAE CBE RAE RBE CPH CQH RAH CBH k*_E* k*_H* sourceå¤åˆ¶åˆ°æ˜¾å­˜ä¸­
 void gpu_memory_copy()
 {
 	cudaError_t cudaStatus;
@@ -1062,6 +1158,7 @@ void gpu_memory_copy()
 	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!"); goto Error; }
 	cudaStatus = cudaMemcpy(dev_kz_Hy, kz_Hy, sizeof(kz_Hy), cudaMemcpyHostToDevice);
 	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!"); goto Error; }
+
 	cudaStatus = cudaMemcpy(dev_source, source, sizeof(source), cudaMemcpyHostToDevice);
 	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!"); goto Error; }
 Error:
@@ -1155,15 +1252,49 @@ void gpu_memory_free()
 	cudaFree(dev_source);
 }
 
-cudaError_t calcWithCuda()
+// è®¡ç®—UH H UE E
+cudaError_t zhengYan()
+{
+	cudaError_t cudaStatus;	
+	calcUHyz << < gridUHyz, blockUHyz >> > (dev_UHyz, dev_RBHyz, dev_RAHyz, dev_Ez, dy);
+	calcUHzy << < gridUHzy, blockUHzy >> > (dev_UHzy, dev_RBHzy, dev_RAHzy, dev_Ey, dz);
+	calcUHxy << < gridUHxy, blockUHxy >> > (dev_UHxy, dev_RBHxy, dev_RAHxy, dev_Ey, dx);
+	calcUHxz << < gridUHxz, blockUHxz >> > (dev_UHxz, dev_RBHxz, dev_RAHxz, dev_Ez, dx);
+	calcUHyx << < gridUHyx, blockUHyx >> > (dev_UHyx, dev_RBHyx, dev_RAHyx, dev_Ex, dy);
+	calcUHzx << < gridUHzx, blockUHzx >> > (dev_UHzx, dev_RBHzx, dev_RAHzx, dev_Ex, dz);
+
+	calcHx << < gridHx, blockHx >> > (dev_Hx, dev_CPHx, dev_CQHx, dev_ky_Hx, dev_kz_Hx, dev_Ez, dev_Ey, dev_UHyz, dev_UHzy, dy, dz);
+	calcHy << < gridHy, blockHy >> > (dev_Hy, dev_CPHy, dev_CQHy, dev_kz_Hy, dev_kx_Hy, dev_Ex, dev_Ez, dev_UHzx, dev_UHxz, dz, dx);
+	calcHz << < gridHz, blockHz >> > (dev_Hz, dev_CPHz, dev_CQHz, dev_kx_Hz, dev_ky_Hz, dev_Ey, dev_Ex, dev_UHxy, dev_UHyx, dx, dy);
+
+	calcUExy << < gridUExy, blockUExy >> > (dev_UExy, dev_RBExy, dev_RAExy, dev_Hy, dx);
+	calcUExz << < gridUExz, blockUExz >> > (dev_UExz, dev_RBExz, dev_RAExz, dev_Hz, dx);
+	calcUEyx << < gridUEyx, blockUEyx >> > (dev_UEyx, dev_RBEyx, dev_RAEyx, dev_Hx, dy);
+	calcUEyz << < gridUEyz, blockUEyz >> > (dev_UEyz, dev_RBEyz, dev_RAEyz, dev_Hz, dy);
+	calcUEzx << < gridUEzx, blockUEzx >> > (dev_UEzx, dev_RBEzx, dev_RAEzx, dev_Hx, dz);
+	calcUEzy << < gridUEzy, blockUEzy >> > (dev_UEzy, dev_RBEzy, dev_RAEzy, dev_Hy, dz);
+
+	calcEx << < gridEx, blockEx >> > (dev_Ex, dev_CAEx, dev_CBEx, dev_ky_Ex, dev_kz_Ex, dev_Hz, dev_Hy, dev_UEyz, dev_UEzy, dy, dz);
+	calcEy << < gridEy, blockEy >> > (dev_Ey, dev_CAEy, dev_CBEy, dev_kz_Ey, dev_kx_Ey, dev_Hx, dev_Hz, dev_UEzx, dev_UExz, dz, dx);
+	calcEz << < gridEz, blockEz >> > (dev_Ez, dev_CAEz, dev_CBEz, dev_kx_Ez, dev_ky_Ez, dev_Hy, dev_Hx, dev_UExy, dev_UEyx, dx, dy);
+
+	// è®¡ç®—è¿‡ç¨‹æ˜¯å¦å‡ºé”™?
+	cudaStatus = cudaGetLastError();
+	if (cudaStatus != cudaSuccess) { printf("Zhengyan Calc Failed: %s\n", cudaGetErrorString(cudaStatus)); return cudaStatus; }
+
+
+}
+
+cudaError_t gpu_parallel_one()
 {
 	cudaError_t cudaStatus;
 
-	// µ÷ÓÃkernelº¯Êı¼ÆËã¡£
+	// è°ƒç”¨kernelå‡½æ•°è®¡ç®—ã€‚
 	int i, j;
 	for (i = 0; i < szfsw; i++)
 	{
-		gpu_memory_set_zero();
+		// flag == 1ä»£è¡¨ååŠéƒ¨åˆ†çš„å¹¶è¡Œï¼Œå°†GPUæ˜¾å­˜ä¸­çš„E*, UE**, H*, UH**, (V, E*_zheng_*, H*_zheng_*, E*_zheng_last, H*_zheng_last, fan, huanyuan)ç½®é›¶
+		gpu_memory_set_zero(1);
 		for (j = 0; j < it; j++)
 		{
 			if (j % 200 == 0)
@@ -1171,36 +1302,49 @@ cudaError_t calcWithCuda()
 				printf("i = %3d / %d,  j = %4d / %d\n", i, szfsw, j, it);
 			}
 
-			// ÊµÏÖMATLABÖĞµÄEx[fswzx[i] - 1][fswzy[i] - 1][fswzz[i] - 1] = source[j];
+			// å®ç°MATLABä¸­çš„Ex[fswzx[i] - 1][fswzy[i] - 1][fswzz[i] - 1] = source[j];
 			int fidx = (fswzx[i] - 1)*(ny + 1)*(nz + 1) + (fswzy[i] - 1)*(nz + 1) + fswzz[i] - 1;
 			cudaStatus = cudaMemcpy(&(dev_Ex[fidx]), &(dev_source[j]), sizeof(float), cudaMemcpyDeviceToDevice);
-			calcUHyz << < gridUHyz, blockUHyz >> > (dev_UHyz, dev_RBHyz, dev_RAHyz, dev_Ez, dy);
-			calcUHzy << < gridUHzy, blockUHzy >> > (dev_UHzy, dev_RBHzy, dev_RAHzy, dev_Ey, dz);
-			calcUHxy << < gridUHxy, blockUHxy >> > (dev_UHxy, dev_RBHxy, dev_RAHxy, dev_Ey, dx);
-			calcUHxz << < gridUHxz, blockUHxz >> > (dev_UHxz, dev_RBHxz, dev_RAHxz, dev_Ez, dx);
-			calcUHyx << < gridUHyx, blockUHyx >> > (dev_UHyx, dev_RBHyx, dev_RAHyx, dev_Ex, dy);
-			calcUHzx << < gridUHzx, blockUHzx >> > (dev_UHzx, dev_RBHzx, dev_RAHzx, dev_Ex, dz);
 
-			calcHx << < gridHx, blockHx >> > (dev_Hx, dev_CPHx, dev_CQHx, dev_ky_Hx, dev_kz_Hx, dev_Ez, dev_Ey, dev_UHyz, dev_UHzy, dy, dz);
-			calcHy << < gridHy, blockHy >> > (dev_Hy, dev_CPHy, dev_CQHy, dev_kz_Hy, dev_kx_Hy, dev_Ex, dev_Ez, dev_UHzx, dev_UHxz, dz, dx);
-			calcHz << < gridHz, blockHz >> > (dev_Hz, dev_CPHz, dev_CQHz, dev_kx_Hz, dev_ky_Hz, dev_Ey, dev_Ex, dev_UHxy, dev_UHyx, dx, dy);
+			// å®ç°MATLABä¸­çš„V(j)=Ex(jswzx(i), jswzy(i), jswzz(i));
+			int jidx = (jswzx[i] - 1)*(ny + 1)*(nz + 1) + (jswzy[i] - 1)*(nz + 1) + jswzz[i] - 1;
+			cudaStatus = cudaMemcpy(&(dev_V[j]), &(dev_Ex[jidx]), sizeof(float), cudaMemcpyDeviceToDevice);
+			if (cudaStatus != cudaSuccess) { printf("V cudaMemcpy failed: %s\n", cudaGetErrorString(cudaStatus)); return cudaStatus; };
 
-			calcUExy << < gridUExy, blockUExy >> > (dev_UExy, dev_RBExy, dev_RAExy, dev_Hy, dx);
-			calcUExz << < gridUExz, blockUExz >> > (dev_UExz, dev_RBExz, dev_RAExz, dev_Hz, dx);
-			calcUEyx << < gridUEyx, blockUEyx >> > (dev_UEyx, dev_RBEyx, dev_RAEyx, dev_Hx, dy);
-			calcUEyz << < gridUEyz, blockUEyz >> > (dev_UEyz, dev_RBEyz, dev_RAEyz, dev_Hz, dy);
-			calcUEzx << < gridUEzx, blockUEzx >> > (dev_UEzx, dev_RBEzx, dev_RAEzx, dev_Hx, dz);
-			calcUEzy << < gridUEzy, blockUEzy >> > (dev_UEzy, dev_RBEzy, dev_RAEzy, dev_Hy, dz);
+			cudaStatus = cudaMemcpy(&(E_obs[j][i]), &(dev_V[j]), sizeof(float), cudaMemcpyDeviceToHost);
+			if (cudaStatus != cudaSuccess) { printf("V cudaMemcpy failed: %s\n", cudaGetErrorString(cudaStatus)); return cudaStatus; };
+		}
+	}
 
-			calcEx << < gridEx, blockEx >> > (dev_Ex, dev_CAEx, dev_CBEx, dev_ky_Ex, dev_kz_Ex, dev_Hz, dev_Hy, dev_UEyz, dev_UEzy, dy, dz);
-			calcEy << < gridEy, blockEy >> > (dev_Ey, dev_CAEy, dev_CBEy, dev_kz_Ey, dev_kx_Ey, dev_Hx, dev_Hz, dev_UEzx, dev_UExz, dz, dx);
-			calcEz << < gridEz, blockEz >> > (dev_Ez, dev_CAEz, dev_CBEz, dev_kx_Ez, dev_ky_Ez, dev_Hy, dev_Hx, dev_UExy, dev_UEyx, dx, dy);
+	printf("finish calc !\n");
 
-			// ¼ÆËã¹ı³ÌÊÇ·ñ³ö´í?
-			cudaStatus = cudaGetLastError();
-			if (cudaStatus != cudaSuccess) { printf("calc failed: %s\n", cudaGetErrorString(cudaStatus)); return cudaStatus; }
+	cudaDeviceSynchronize();
 
-			// ÊµÏÖMATLABÖĞµÄV(j)=Ex(jswzx(i), jswzy(i), jswzz(i));
+	return cudaStatus;
+}
+
+cudaError_t gpu_parallel_two()
+{
+	cudaError_t cudaStatus;
+
+	// è°ƒç”¨kernelå‡½æ•°è®¡ç®—ã€‚
+	int i, j;
+	for (i = 0; i < szfsw; i++)
+	{
+		// flag == 1ä»£è¡¨ååŠéƒ¨åˆ†çš„å¹¶è¡Œï¼Œå°†GPUæ˜¾å­˜ä¸­çš„E*, UE**, H*, UH**, (V, E*_zheng_*, H*_zheng_*, E*_zheng_last, H*_zheng_last, fan, huanyuan)ç½®é›¶
+		gpu_memory_set_zero(1);
+		for (j = 0; j < it; j++)
+		{
+			if (j % 200 == 0)
+			{
+				printf("i = %3d / %d,  j = %4d / %d\n", i, szfsw, j, it);
+			}
+
+			// å®ç°MATLABä¸­çš„Ex[fswzx[i] - 1][fswzy[i] - 1][fswzz[i] - 1] = source[j];
+			int fidx = (fswzx[i] - 1)*(ny + 1)*(nz + 1) + (fswzy[i] - 1)*(nz + 1) + fswzz[i] - 1;
+			cudaStatus = cudaMemcpy(&(dev_Ex[fidx]), &(dev_source[j]), sizeof(float), cudaMemcpyDeviceToDevice);
+
+			// å®ç°MATLABä¸­çš„V(j)=Ex(jswzx(i), jswzy(i), jswzz(i));
 			int jidx = (jswzx[i] - 1)*(ny + 1)*(nz + 1) + (jswzy[i] - 1)*(nz + 1) + jswzz[i] - 1;
 			cudaStatus = cudaMemcpy(&(dev_V[j]), &(dev_Ex[jidx]), sizeof(float), cudaMemcpyDeviceToDevice);
 			if (cudaStatus != cudaSuccess) { printf("V cudaMemcpy failed: %s\n", cudaGetErrorString(cudaStatus)); return cudaStatus; };
@@ -1218,7 +1362,7 @@ cudaError_t calcWithCuda()
 }
 
 /************************************************************************************
-* Ö÷º¯Êı
+* ä¸»å‡½æ•°
 ************************************************************************************/
 int main()
 {
@@ -1226,7 +1370,7 @@ int main()
 	readAllData();
 	printf("Read All Data OK ! \n");
 
-	// Ñ¡ÔñÔËËãÊ¹ÓÃµÄGPU
+	// é€‰æ‹©è¿ç®—ä½¿ç”¨çš„GPU
 	cudaError_t cudaStatus = cudaSetDevice(0);
 	if (cudaStatus != cudaSuccess) { printf("cudaSetDevice failed!  Do you have a CUDA-capable GPU installed?"); return 1; }
 	else { printf("cudaSetDevice success!\n"); }
@@ -1234,18 +1378,18 @@ int main()
 	gpu_memory_malloc();
 	gpu_memory_copy();
 
-	// µ÷ÓÃgpuÔËËã
+	// è°ƒç”¨gpuè¿ç®—
 	cudaStatus = calcWithCuda();
 	if (cudaStatus != cudaSuccess) { printf("calcWithCuda failed!"); return 1; }
 	else { printf("calcWithCudasuccess!\n"); }
 
 	gpu_memory_free();
 
-	// ÖØÖÃGPU
+	// é‡ç½®GPU
 	cudaStatus = cudaDeviceReset();
 	if (cudaStatus != cudaSuccess) { printf("cudaDeviceReset failed!"); return 1; }
 
-	// Êä³ö½á¹û
+	// è¾“å‡ºç»“æœ
 	printE_obs();
 
 	return 0;
