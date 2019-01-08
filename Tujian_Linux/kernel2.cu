@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <string.h>
+#include "unistd.h"
 #include "global_variables.cpp"
 
 
@@ -19,7 +20,7 @@
 
 dim3 blockUHyz(nz);
 dim3 gridUHyz(npml, nx - 1); //npml: blockIdx.x的变化范围， nx-1就是: blockIdx.y的变化范围
-__global__ void calcUHyz(float *UHyz, float *RBHyz, float *RAHyz, float *Ez, const float dy)
+__global__ void calc_UHyz(float *UHyz, float *RBHyz, float *RAHyz, float *Ez, const float dy)
 {
 	/*
 	in0 UHyz  nx+1 ny     nz
@@ -60,7 +61,7 @@ __global__ void calcUHyz(float *UHyz, float *RBHyz, float *RAHyz, float *Ez, con
 
 dim3 blockUHzy(npml);
 dim3 gridUHzy(nx - 1, ny);
-__global__ void calcUHzy(float *UHzy, float *RBHzy, float *RAHzy, float *Ey, const float dz)
+__global__ void calc_UHzy(float *UHzy, float *RBHzy, float *RAHzy, float *Ey, const float dz)
 {
 	/*
 	in0 UHzy  --size--  nx+1  ny  nz
@@ -100,7 +101,7 @@ __global__ void calcUHzy(float *UHzy, float *RBHzy, float *RAHzy, float *Ey, con
 
 dim3 blockUHzx(npml);
 dim3 gridUHzx(nx, ny - 1);
-__global__ void calcUHzx(float *UHzx, float *RBHzx, float *RAHzx, float *Ex, const float dz)
+__global__ void calc_UHzx(float *UHzx, float *RBHzx, float *RAHzx, float *Ex, const float dz)
 {
 	/*
 	in0 UHzx  --size--  nx   ny + 1  nz
@@ -140,7 +141,7 @@ __global__ void calcUHzx(float *UHzx, float *RBHzx, float *RAHzx, float *Ex, con
 
 dim3 blockUHxz(nz);
 dim3 gridUHxz(npml, ny - 1);
-__global__ void calcUHxz(float *UHxz, float *RBHxz, float *RAHxz, float *Ez, const float dx)
+__global__ void calc_UHxz(float *UHxz, float *RBHxz, float *RAHxz, float *Ez, const float dx)
 {
 	/*
 	in0 UHxz  --size--  nx       ny + 1  nz
@@ -179,7 +180,7 @@ __global__ void calcUHxz(float *UHxz, float *RBHxz, float *RAHxz, float *Ez, con
 
 dim3 blockUHxy(nz - 1);
 dim3 gridUHxy(npml, ny);
-__global__ void calcUHxy(float *UHxy, float *RBHxy, float *RAHxy, float *Ey, const float dx)
+__global__ void calc_UHxy(float *UHxy, float *RBHxy, float *RAHxy, float *Ey, const float dx)
 {
 	/*
 	in0 UHxy  --size--  nx       ny      nz + 1
@@ -218,7 +219,7 @@ __global__ void calcUHxy(float *UHxy, float *RBHxy, float *RAHxy, float *Ey, con
 
 dim3 blockUHyx(nz - 1);
 dim3 gridUHyx(npml, nx);
-__global__ void calcUHyx(float *UHyx, float *RBHyx, float *RAHyx, float *Ex, const float dy)
+__global__ void calc_UHyx(float *UHyx, float *RBHyx, float *RAHyx, float *Ex, const float dy)
 {
 	/*
 	in0 UHyx  nx   ny     nz + 1
@@ -260,7 +261,7 @@ __global__ void calcUHyx(float *UHyx, float *RBHyx, float *RAHyx, float *Ex, con
 
 dim3 blockHx(nz);
 dim3 gridHx(nx - 1, ny);
-__global__ void calcHx(float *Hx, float *CPHx, float *CQHx, float *ky_Hx, float *kz_Hx, float *Ez, float *Ey, float *UHyz, float *UHzy, const float dy, const float dz)
+__global__ void calc_Hx(float *Hx, float *CPHx, float *CQHx, float *ky_Hx, float *kz_Hx, float *Ez, float *Ey, float *UHyz, float *UHzy, const float dy, const float dz)
 {
 	//
 	// * 运算块大小 nx - 1 * ny * nz
@@ -287,7 +288,7 @@ __global__ void calcHx(float *Hx, float *CPHx, float *CQHx, float *ky_Hx, float 
 
 dim3 blockHy(nz);
 dim3 gridHy(nx, ny - 1);
-__global__ void calcHy(float *Hy, float *CPHy, float *CQHy, float *kz_Hy, float *kx_Hy, float *Ex, float *Ez, float *UHzx, float *UHxz, const float dz, const float dx)
+__global__ void calc_Hy(float *Hy, float *CPHy, float *CQHy, float *kz_Hy, float *kx_Hy, float *Ex, float *Ez, float *UHzx, float *UHxz, const float dz, const float dx)
 {
 	//
 	// * 运算块大小 nx * ny -1 * nz
@@ -314,7 +315,7 @@ __global__ void calcHy(float *Hy, float *CPHy, float *CQHy, float *kz_Hy, float 
 
 dim3 blockHz(nz - 1);
 dim3 gridHz(nx, ny);
-__global__ void calcHz(float *Hz, float *CPHz, float *CQHz, float *kx_Hz, float *ky_Hz, float *Ey, float *Ex, float *UHxy, float *UHyx, const float dx, const float dy)
+__global__ void calc_Hz(float *Hz, float *CPHz, float *CQHz, float *kx_Hz, float *ky_Hz, float *Ey, float *Ex, float *UHxy, float *UHyx, const float dx, const float dy)
 {
 	//
 	// * 运算块大小 nx * ny * nz -1
@@ -341,7 +342,7 @@ __global__ void calcHz(float *Hz, float *CPHz, float *CQHz, float *kx_Hz, float 
 
 dim3 blockUEyz(nz - 1);
 dim3 gridUEyz(npml - 1, nx);
-__global__ void calcUEyz(float *UEyz, float *RBEyz, float *RAEyz, float *Hz, const float dy)
+__global__ void calc_UEyz(float *UEyz, float *RBEyz, float *RAEyz, float *Hz, const float dy)
 {
 	/*
 	dim3 blockUEyz(nz - 1);
@@ -382,7 +383,7 @@ __global__ void calcUEyz(float *UEyz, float *RBEyz, float *RAEyz, float *Hz, con
 
 dim3 blockUEyx(nz - 1);
 dim3 gridUEyx(npml - 1, nx);
-__global__ void calcUEyx(float *UEyx, float *RBEyx, float *RAEyx, float *Hx, const float dy)
+__global__ void calc_UEyx(float *UEyx, float *RBEyx, float *RAEyx, float *Hx, const float dy)
 {
 	/*
 	dim3 blockUEyx(nz - 1);
@@ -423,7 +424,7 @@ __global__ void calcUEyx(float *UEyx, float *RBEyx, float *RAEyx, float *Hx, con
 
 dim3 blockUExy(nz);
 dim3 gridUExy(npml - 1, ny - 1);
-__global__ void calcUExy(float *UExy, float *RBExy, float *RAExy, float *Hy, const float dx)
+__global__ void calc_UExy(float *UExy, float *RBExy, float *RAExy, float *Hy, const float dx)
 {
 	/*
 	dim3 blockUExy(nz);
@@ -460,12 +461,11 @@ __global__ void calcUExy(float *UExy, float *RBExy, float *RAExy, float *Hy, con
 
 	UExy[lid0] = UExy[lid0] * RBExy[lid1] + RAExy[lid2] * (Hy[lid3] - Hy[lid4]) / dx;
 	UExy[rid0] = UExy[rid0] * RBExy[rid1] + RAExy[rid2] * (Hy[rid3] - Hy[rid4]) / dx;
-
 }
 
 dim3 blockUExz(nz - 1);
 dim3 gridUExz(npml - 1, ny);
-__global__ void calcUExz(float *UExz, float *RBExz, float *RAExz, float *Hz, const float dx)
+__global__ void calc_UExz(float *UExz, float *RBExz, float *RAExz, float *Hz, const float dx)
 {
 	/*
 	dim3 blockUExz(nz - 1);
@@ -505,7 +505,7 @@ __global__ void calcUExz(float *UExz, float *RBExz, float *RAExz, float *Hz, con
 
 dim3 blockUEzx(npml - 1);
 dim3 gridUEzx(nx - 1, ny);
-__global__ void calcUEzx(float *UEzx, float *RBEzx, float *RAEzx, float *Hx, const float dz)
+__global__ void calc_UEzx(float *UEzx, float *RBEzx, float *RAEzx, float *Hx, const float dz)
 {
 	/*
 	dim3 blockUEzx(npml - 1);
@@ -546,7 +546,7 @@ __global__ void calcUEzx(float *UEzx, float *RBEzx, float *RAEzx, float *Hx, con
 
 dim3 blockUEzy(npml - 1);
 dim3 gridUEzy(nx, ny - 1);
-__global__ void calcUEzy(float *UEzy, float *RBEzy, float *RAEzy, float *Hy, const float dz)
+__global__ void calc_UEzy(float *UEzy, float *RBEzy, float *RAEzy, float *Hy, const float dz)
 {
 	/*
 	dim3 blockUEzy(npml - 1);
@@ -587,7 +587,7 @@ __global__ void calcUEzy(float *UEzy, float *RBEzy, float *RAEzy, float *Hy, con
 
 dim3 blockEx(nz - 1);
 dim3 gridEx(nx, ny - 1);
-__global__ void calcEx(float *Ex, float *CAEx, float *CBEx, float *ky_Ex, float *kz_Ex, float *Hz, float *Hy, float *UEyz, float *UEzy, const float dy, const float dz)
+__global__ void calc_Ex(float *Ex, float *CAEx, float *CBEx, float *ky_Ex, float *kz_Ex, float *Hz, float *Hy, float *UEyz, float *UEzy, const float dy, const float dz)
 {
 	//
 	// * dim3 blockEx(nz-1);
@@ -615,7 +615,7 @@ __global__ void calcEx(float *Ex, float *CAEx, float *CBEx, float *ky_Ex, float 
 
 dim3 blockEy(nz - 1);
 dim3 gridEy(nx - 1, ny);
-__global__ void calcEy(float *Ey, float *CAEy, float *CBEy, float *kz_Ey, float *kx_Ey, float *Hx, float *Hz, float *UEzx, float *UExz, const float dz, const float dx)
+__global__ void calc_Ey(float *Ey, float *CAEy, float *CBEy, float *kz_Ey, float *kx_Ey, float *Hx, float *Hz, float *UEzx, float *UExz, const float dz, const float dx)
 {
 	//
 	// * dim3 blockEy(nz-1);
@@ -643,7 +643,7 @@ __global__ void calcEy(float *Ey, float *CAEy, float *CBEy, float *kz_Ey, float 
 
 dim3 blockEz(nz);
 dim3 gridEz(nx - 1, ny - 1);
-__global__ void calcEz(float *Ez, float *CAEz, float *CBEz, float *kx_Ez, float *ky_Ez, float *Hy, float *Hx, float *UExy, float *UEyx, const float dx, const float dy)
+__global__ void calc_Ez(float *Ez, float *CAEz, float *CBEz, float *kx_Ez, float *ky_Ez, float *Hy, float *Hx, float *UExy, float *UEyx, const float dx, const float dy)
 {
 	//
 	// * dim3 blockEz(nz);
@@ -668,7 +668,22 @@ __global__ void calcEz(float *Ez, float *CAEz, float *CBEz, float *kx_Ez, float 
 		- CBE / ky_Ez[idx] * (Hx[idxHx] - Hx[idxHx - deltaHx]) / dy
 		+ CBE * UExy[idx]
 		- CBE * UEyx[idx];
+}
 
+// 用src矩阵中x*y*z大小的块填充dst矩阵
+// 矩阵块在src矩阵中的位置为(x_offset, y_offset, z_offset)
+__global__ void gpu_copy_data_3D(float *dst, int dst_xsize, int dst_ysize, int dst_zsize, 
+								 float *src, int src_xsize, int src_ysize, int src_zsize, 
+								 int x, int y, int z, 
+								 int x_offset, int y_offset, int z_offset)
+{
+	int ix = blockIdx.x;
+	int iy = blockIdx.y;
+	int iz = threadIdx.x;    
+
+	int src_idx = ix * dst_ysize * dst_zsize + iy * dst_zsize + iz;
+	int dst_idx = (ix + y_offset) * src_ysize * src_zsize + (iy + y_offset) * src_zsize + (iz + z_offset);
+	dst[dst_idx] = src[src_idx];
 }
 
 __global__ void print_dev_matrix(float *A, int i,int j,int k,int xdim,int ydim,int zdim)
@@ -677,7 +692,7 @@ __global__ void print_dev_matrix(float *A, int i,int j,int k,int xdim,int ydim,i
 	printf("dev_Matrix[%d][%d][%d] = %8f\n", i, j, k, A[idx]);
 }
 
-void readInteger(const char *name, int *a, int n1, int n2, int n3)
+void read_int(const char *name, int *a, int n1, int n2, int n3)
 {
 	FILE *fp = fopen(name, "r");
 	if (fp == NULL) // 判断文件读入是否正确
@@ -703,7 +718,7 @@ void readInteger(const char *name, int *a, int n1, int n2, int n3)
 	return;
 }
 
-void readFloat(const char *name, float *a, int n1, int n2, int n3)
+void read_float(const char *name, float *a, int n1, int n2, int n3)
 {
 	FILE *fp = fopen(name, "r");
 	if (fp == NULL) // 判断文件读入是否正确
@@ -729,73 +744,73 @@ void readFloat(const char *name, float *a, int n1, int n2, int n3)
 	return;
 }
 
-void readAllData()
+void read_data_from_txt()
 {
 
-	readFloat("data/CAEx.txt", (float*)CAEx, nx, ny + 1, nz + 1);
-	readFloat("data/CBEx.txt", (float*)CBEx, nx, ny + 1, nz + 1);
-	readFloat("data/RAEyz.txt", (float*)RAEyz, nx, 2 * (npml - 1), nz - 1);
-	readFloat("data/RBEyz.txt", (float*)RBEyz, nx, 2 * (npml - 1), nz - 1);
-	readFloat("data/RAEzy.txt", (float*)RAEzy, nx, ny - 1, 2 * (npml - 1));
-	readFloat("data/RBEzy.txt", (float*)RBEzy, nx, ny - 1, 2 * (npml - 1));
-	readFloat("data/CAEy.txt", (float*)CAEy, nx + 1, ny, nz + 1);
-	readFloat("data/CBEy.txt", (float*)CBEy, nx + 1, ny, nz + 1);
-	readFloat("data/RAEzx.txt", (float*)RAEzx, nx - 1, ny, 2 * (npml - 1));
-	readFloat("data/RBEzx.txt", (float*)RBEzx, nx - 1, ny, 2 * (npml - 1));
-	readFloat("data/RAExz.txt", (float*)RAExz, 2 * (npml - 1), ny, nz - 1);
-	readFloat("data/RBExz.txt", (float*)RBExz, 2 * (npml - 1), ny, nz - 1);
-	readFloat("data/CAEz.txt", (float*)CAEz, nx + 1, ny + 1, nz);
-	readFloat("data/CBEz.txt", (float*)CBEz, nx + 1, ny + 1, nz);
-	readFloat("data/RAExy.txt", (float*)RAExy, 2 * (npml - 1), ny - 1, nz);
-	readFloat("data/RBExy.txt", (float*)RBExy, 2 * (npml - 1), ny - 1, nz);
-	readFloat("data/RAEyx.txt", (float*)RAEyx, nx - 1, 2 * (npml - 1), nz);
-	readFloat("data/RBEyx.txt", (float*)RBEyx, nx - 1, 2 * (npml - 1), nz);
+	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\CAEx.txt", (float*)CAEx, nx, ny + 1, nz + 1);
+	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\CBEx.txt", (float*)CBEx, nx, ny + 1, nz + 1);
+	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\RAEyz.txt", (float*)RAEyz, nx, 2 * (npml - 1), nz - 1);
+	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\RBEyz.txt", (float*)RBEyz, nx, 2 * (npml - 1), nz - 1);
+	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\RAEzy.txt", (float*)RAEzy, nx, ny - 1, 2 * (npml - 1));
+	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\RBEzy.txt", (float*)RBEzy, nx, ny - 1, 2 * (npml - 1));
+	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\CAEy.txt", (float*)CAEy, nx + 1, ny, nz + 1);
+	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\CBEy.txt", (float*)CBEy, nx + 1, ny, nz + 1);
+	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\RAEzx.txt", (float*)RAEzx, nx - 1, ny, 2 * (npml - 1));
+	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\RBEzx.txt", (float*)RBEzx, nx - 1, ny, 2 * (npml - 1));
+	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\RAExz.txt", (float*)RAExz, 2 * (npml - 1), ny, nz - 1);
+	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\RBExz.txt", (float*)RBExz, 2 * (npml - 1), ny, nz - 1);
+	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\CAEz.txt", (float*)CAEz, nx + 1, ny + 1, nz);
+	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\CBEz.txt", (float*)CBEz, nx + 1, ny + 1, nz);
+	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\RAExy.txt", (float*)RAExy, 2 * (npml - 1), ny - 1, nz);
+	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\RBExy.txt", (float*)RBExy, 2 * (npml - 1), ny - 1, nz);
+	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\RAEyx.txt", (float*)RAEyx, nx - 1, 2 * (npml - 1), nz);
+	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\RBEyx.txt", (float*)RBEyx, nx - 1, 2 * (npml - 1), nz);
 
-	readFloat("data/CPHx.txt", (float*)CPHx, nx + 1, ny, nz);
-	readFloat("data/CQHx.txt", (float*)CQHx, nx + 1, ny, nz);
-	readFloat("data/RAHyz.txt", (float*)RAHyz, nx - 1, 2 * npml, nz);
-	readFloat("data/RBHyz.txt", (float*)RBHyz, nx - 1, 2 * npml, nz);
-	readFloat("data/RAHzy.txt", (float*)RAHzy, nx - 1, ny, 2 * npml);
-	readFloat("data/RBHzy.txt", (float*)RBHzy, nx - 1, ny, 2 * npml);
-	readFloat("data/CPHy.txt", (float*)CPHy, nx, ny + 1, nz);
-	readFloat("data/CQHy.txt", (float*)CQHy, nx, ny + 1, nz);
-	readFloat("data/RAHzx.txt", (float*)RAHzx, nx, ny - 1, 2 * npml);
-	readFloat("data/RBHzx.txt", (float*)RBHzx, nx, ny - 1, 2 * npml);
-	readFloat("data/RAHxz.txt", (float*)RAHxz, 2 * npml, ny - 1, nz);
-	readFloat("data/RBHxz.txt", (float*)RBHxz, 2 * npml, ny - 1, nz);
-	readFloat("data/CPHz.txt", (float*)CPHz, nx, ny, nz + 1);
-	readFloat("data/CQHz.txt", (float*)CQHz, nx, ny, nz + 1);
-	readFloat("data/RAHxy.txt", (float*)RAHxy, 2 * npml, ny, nz - 1);
-	readFloat("data/RBHxy.txt", (float*)RBHxy, 2 * npml, ny, nz - 1);
-	readFloat("data/RAHyx.txt", (float*)RAHyx, nx, 2 * npml, nz - 1);
-	readFloat("data/RBHyx.txt", (float*)RBHyx, nx, 2 * npml, nz - 1);
+	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\CPHx.txt", (float*)CPHx, nx + 1, ny, nz);
+	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\CQHx.txt", (float*)CQHx, nx + 1, ny, nz);
+	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\RAHyz.txt", (float*)RAHyz, nx - 1, 2 * npml, nz);
+	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\RBHyz.txt", (float*)RBHyz, nx - 1, 2 * npml, nz);
+	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\RAHzy.txt", (float*)RAHzy, nx - 1, ny, 2 * npml);
+	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\RBHzy.txt", (float*)RBHzy, nx - 1, ny, 2 * npml);
+	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\CPHy.txt", (float*)CPHy, nx, ny + 1, nz);
+	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\CQHy.txt", (float*)CQHy, nx, ny + 1, nz);
+	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\RAHzx.txt", (float*)RAHzx, nx, ny - 1, 2 * npml);
+	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\RBHzx.txt", (float*)RBHzx, nx, ny - 1, 2 * npml);
+	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\RAHxz.txt", (float*)RAHxz, 2 * npml, ny - 1, nz);
+	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\RBHxz.txt", (float*)RBHxz, 2 * npml, ny - 1, nz);
+	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\CPHz.txt", (float*)CPHz, nx, ny, nz + 1);
+	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\CQHz.txt", (float*)CQHz, nx, ny, nz + 1);
+	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\RAHxy.txt", (float*)RAHxy, 2 * npml, ny, nz - 1);
+	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\RBHxy.txt", (float*)RBHxy, 2 * npml, ny, nz - 1);
+	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\RAHyx.txt", (float*)RAHyx, nx, 2 * npml, nz - 1);
+	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\RBHyx.txt", (float*)RBHyx, nx, 2 * npml, nz - 1);
 
-	readFloat("data/kx_Ey.txt", (float*)kx_Ey, nx + 1, ny, nz + 1);
-	readFloat("data/kx_Ez.txt", (float*)kx_Ez, nx + 1, ny + 1, nz);
-	readFloat("data/ky_Ex.txt", (float*)ky_Ex, nx, ny + 1, nz + 1);
-	readFloat("data/ky_Ez.txt", (float*)ky_Ez, nx + 1, ny + 1, nz);
-	readFloat("data/kz_Ex.txt", (float*)kz_Ex, nx, ny + 1, nz + 1);
-	readFloat("data/kz_Ey.txt", (float*)kz_Ey, nx + 1, ny, nz + 1);
+	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\kx_Ey.txt", (float*)kx_Ey, nx + 1, ny, nz + 1);
+	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\kx_Ez.txt", (float*)kx_Ez, nx + 1, ny + 1, nz);
+	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\ky_Ex.txt", (float*)ky_Ex, nx, ny + 1, nz + 1);
+	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\ky_Ez.txt", (float*)ky_Ez, nx + 1, ny + 1, nz);
+	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\kz_Ex.txt", (float*)kz_Ex, nx, ny + 1, nz + 1);
+	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\kz_Ey.txt", (float*)kz_Ey, nx + 1, ny, nz + 1);
 
-	readFloat("data/kx_Hy.txt", (float*)kx_Hy, nx, ny + 1, nz);
-	readFloat("data/kx_Hz.txt", (float*)kx_Hz, nx, ny, nz + 1);
-	readFloat("data/ky_Hx.txt", (float*)ky_Hx, nx + 1, ny, nz);
-	readFloat("data/ky_Hz.txt", (float*)ky_Hz, nx, ny, nz + 1);
-	readFloat("data/kz_Hx.txt", (float*)kz_Hx, nx + 1, ny, nz);
-	readFloat("data/kz_Hy.txt", (float*)kz_Hy, nx, ny + 1, nz);
+	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\kx_Hy.txt", (float*)kx_Hy, nx, ny + 1, nz);
+	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\kx_Hz.txt", (float*)kx_Hz, nx, ny, nz + 1);
+	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\ky_Hx.txt", (float*)ky_Hx, nx + 1, ny, nz);
+	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\ky_Hz.txt", (float*)ky_Hz, nx, ny, nz + 1);
+	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\kz_Hx.txt", (float*)kz_Hx, nx + 1, ny, nz);
+	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\kz_Hy.txt", (float*)kz_Hy, nx, ny + 1, nz);
 
-	readInteger("data/fswzx.txt", (int*)fswzx, 1, 1, szfsw);
-	readInteger("data/fswzy.txt", (int*)fswzy, 1, 1, szfsw);
-	readInteger("data/fswzz.txt", (int*)fswzz, 1, 1, szfsw);
-	readInteger("data/jswzx.txt", (int*)jswzx, 1, 1, szfsw);
-	readInteger("data/jswzy.txt", (int*)jswzy, 1, 1, szfsw);
-	readInteger("data/jswzz.txt", (int*)jswzz, 1, 1, szfsw);
-	readFloat("data/source.txt", (float*)source, 1, 1, it);
+	read_int("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\fswzx.txt", (int*)fswzx, 1, 1, szfsw);
+	read_int("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\fswzy.txt", (int*)fswzy, 1, 1, szfsw);
+	read_int("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\fswzz.txt", (int*)fswzz, 1, 1, szfsw);
+	read_int("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\jswzx.txt", (int*)jswzx, 1, 1, szfsw);
+	read_int("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\jswzy.txt", (int*)jswzy, 1, 1, szfsw);
+	read_int("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\jswzz.txt", (int*)jswzz, 1, 1, szfsw);
+	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\source.txt", (float*)source, 1, 1, it);
 }
 
-void printE_obs()
+void print_E_obs()
 {
-	const char *name = "output/E_obs.txt";
+	const char *name = "C:\\Users\\sky\\Desktop\\Tujian_VS\\output\\E_obs.txt";
 	FILE *fp = fopen(name, "w+");
 	if (fp == NULL) // 判断文件读入是否正确
 	{
@@ -823,62 +838,113 @@ void printE_obs()
 
 void gpu_memory_malloc()
 {
+	cudaError_t cudaStatus = cudaSuccess;
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+
 	//原来内存中存在的数组，数组大小用内存数组大小就行
-	cudaMalloc((void**)&dev_CAEx, sizeof(CAEx));
-	cudaMalloc((void**)&dev_CBEx, sizeof(CBEx));
-	cudaMalloc((void**)&dev_RAEyz, sizeof(RAEyz));
-	cudaMalloc((void**)&dev_RBEyz, sizeof(RBEyz));
-	cudaMalloc((void**)&dev_RAEzy, sizeof(RAEzy));
-	cudaMalloc((void**)&dev_RBEzy, sizeof(RBEzy));
+	cudaStatus = cudaMalloc((void**)&dev_CAEx, sizeof(CAEx));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_CBEx, sizeof(CBEx));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_RAEyz, sizeof(RAEyz));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_RBEyz, sizeof(RBEyz));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_RAEzy, sizeof(RAEzy));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_RBEzy, sizeof(RBEzy));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
 
-	cudaMalloc((void**)&dev_CAEy, sizeof(CAEy));
-	cudaMalloc((void**)&dev_CBEy, sizeof(CBEy));
-	cudaMalloc((void**)&dev_RAExz, sizeof(RAExz));
-	cudaMalloc((void**)&dev_RBExz, sizeof(RBExz));
-	cudaMalloc((void**)&dev_RAEzx, sizeof(RAEzx));
-	cudaMalloc((void**)&dev_RBEzx, sizeof(RBEzx));
+	cudaStatus = cudaMalloc((void**)&dev_CAEy, sizeof(CAEy));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_CBEy, sizeof(CBEy));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_RAExz, sizeof(RAExz));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_RBExz, sizeof(RBExz));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_RAEzx, sizeof(RAEzx));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_RBEzx, sizeof(RBEzx));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
 
-	cudaMalloc((void**)&dev_CAEz, sizeof(CAEz));
-	cudaMalloc((void**)&dev_CBEz, sizeof(CBEz));
-	cudaMalloc((void**)&dev_RAExy, sizeof(RAExy));
-	cudaMalloc((void**)&dev_RBExy, sizeof(RBExy));
-	cudaMalloc((void**)&dev_RAEyx, sizeof(RAEyx));
-	cudaMalloc((void**)&dev_RBEyx, sizeof(RBEyx));
+	cudaStatus = cudaMalloc((void**)&dev_CAEz, sizeof(CAEz));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_CBEz, sizeof(CBEz));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_RAExy, sizeof(RAExy));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_RBExy, sizeof(RBExy));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_RAEyx, sizeof(RAEyx));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_RBEyx, sizeof(RBEyx));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
 
-	cudaMalloc((void**)&dev_CPHx, sizeof(CPHx));
-	cudaMalloc((void**)&dev_CQHx, sizeof(CQHx));
-	cudaMalloc((void**)&dev_RAHyz, sizeof(RAHyz));
-	cudaMalloc((void**)&dev_RBHyz, sizeof(RBHyz));
-	cudaMalloc((void**)&dev_RAHzy, sizeof(RAHzy));
-	cudaMalloc((void**)&dev_RBHzy, sizeof(RBHzy));
+	cudaStatus = cudaMalloc((void**)&dev_CPHx, sizeof(CPHx));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_CQHx, sizeof(CQHx));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_RAHyz, sizeof(RAHyz));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_RBHyz, sizeof(RBHyz));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_RAHzy, sizeof(RAHzy));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_RBHzy, sizeof(RBHzy));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
 
-	cudaMalloc((void**)&dev_CPHy, sizeof(CPHy));
-	cudaMalloc((void**)&dev_CQHy, sizeof(CQHy));
-	cudaMalloc((void**)&dev_RAHxz, sizeof(RAHxz));
-	cudaMalloc((void**)&dev_RBHxz, sizeof(RBHxz));
-	cudaMalloc((void**)&dev_RAHzx, sizeof(RAHzx));
-	cudaMalloc((void**)&dev_RBHzx, sizeof(RBHzx));
+	cudaStatus = cudaMalloc((void**)&dev_CPHy, sizeof(CPHy));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_CQHy, sizeof(CQHy));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_RAHxz, sizeof(RAHxz));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_RBHxz, sizeof(RBHxz));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_RAHzx, sizeof(RAHzx));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_RBHzx, sizeof(RBHzx));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
 
-	cudaMalloc((void**)&dev_CPHz, sizeof(CPHz));
-	cudaMalloc((void**)&dev_CQHz, sizeof(CQHz));
-	cudaMalloc((void**)&dev_RAHxy, sizeof(RAHxy));
-	cudaMalloc((void**)&dev_RBHxy, sizeof(RBHxy));
-	cudaMalloc((void**)&dev_RAHyx, sizeof(RAHyx));
-	cudaMalloc((void**)&dev_RBHyx, sizeof(RBHyx));
+	cudaStatus = cudaMalloc((void**)&dev_CPHz, sizeof(CPHz));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_CQHz, sizeof(CQHz));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_RAHxy, sizeof(RAHxy));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_RBHxy, sizeof(RBHxy));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_RAHyx, sizeof(RAHyx));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_RBHyx, sizeof(RBHyx));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
 
-	cudaMalloc((void**)&dev_kx_Ey, sizeof(kx_Ey));
-	cudaMalloc((void**)&dev_kx_Ez, sizeof(kx_Ez));
-	cudaMalloc((void**)&dev_ky_Ex, sizeof(ky_Ex));
-	cudaMalloc((void**)&dev_ky_Ez, sizeof(ky_Ez));
-	cudaMalloc((void**)&dev_kz_Ex, sizeof(kz_Ex));
-	cudaMalloc((void**)&dev_kz_Ey, sizeof(kz_Ey));
+	cudaStatus = cudaMalloc((void**)&dev_kx_Ey, sizeof(kx_Ey));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_kx_Ez, sizeof(kx_Ez));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_ky_Ex, sizeof(ky_Ex));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_ky_Ez, sizeof(ky_Ez));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_kz_Ex, sizeof(kz_Ex));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_kz_Ey, sizeof(kz_Ey));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
 
-	cudaMalloc((void**)&dev_kx_Hy, sizeof(kx_Hy));
-	cudaMalloc((void**)&dev_kx_Hz, sizeof(kx_Hz));
-	cudaMalloc((void**)&dev_ky_Hx, sizeof(ky_Hx));
-	cudaMalloc((void**)&dev_ky_Hz, sizeof(ky_Hz));
-	cudaMalloc((void**)&dev_kz_Hx, sizeof(kz_Hx));
-	cudaMalloc((void**)&dev_kz_Hy, sizeof(kz_Hy));
+	cudaStatus = cudaMalloc((void**)&dev_kx_Hy, sizeof(kx_Hy));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_kx_Hz, sizeof(kx_Hz));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_ky_Hx, sizeof(ky_Hx));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_ky_Hz, sizeof(ky_Hz));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_kz_Hx, sizeof(kz_Hx));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_kz_Hy, sizeof(kz_Hy));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
 
 	//gpu显存新创建数组，原来内存中不存在
 	int szEx = nx * (ny + 1)*(nz + 1);
@@ -887,72 +953,137 @@ void gpu_memory_malloc()
 	int szHx = (nx + 1)*ny*nz;
 	int szHy = nx * (ny + 1)*nz;
 	int szHz = nx * ny*(nz + 1);
-	cudaMalloc((void**)&dev_Ex, szEx * sizeof(float));
-	cudaMalloc((void**)&dev_UEyz, szEx * sizeof(float));
-	cudaMalloc((void**)&dev_UEzy, szEx * sizeof(float));
 
-	cudaMalloc((void**)&dev_Ey, szEy * sizeof(float));
-	cudaMalloc((void**)&dev_UEzx, szEy * sizeof(float));
-	cudaMalloc((void**)&dev_UExz, szEy * sizeof(float));
+	cudaStatus = cudaMalloc((void**)&dev_Ex, szEx * sizeof(float));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_UEyz, szEx * sizeof(float));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_UEzy, szEx * sizeof(float));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
 
-	cudaMalloc((void**)&dev_Ez, szEz * sizeof(float));
-	cudaMalloc((void**)&dev_UExy, szEz * sizeof(float));
-	cudaMalloc((void**)&dev_UEyx, szEz * sizeof(float));
+	cudaStatus = cudaMalloc((void**)&dev_Ey, szEy * sizeof(float));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_UEzx, szEy * sizeof(float));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_UExz, szEy * sizeof(float));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
 
-	cudaMalloc((void**)&dev_Hx, szHx * sizeof(float));
-	cudaMalloc((void**)&dev_UHyz, szHx * sizeof(float));
-	cudaMalloc((void**)&dev_UHzy, szHx * sizeof(float));
+	cudaStatus = cudaMalloc((void**)&dev_Ez, szEz * sizeof(float));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_UExy, szEz * sizeof(float));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_UEyx, szEz * sizeof(float));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
 
-	cudaMalloc((void**)&dev_Hy, szHy * sizeof(float));
-	cudaMalloc((void**)&dev_UHzx, szHy * sizeof(float));
-	cudaMalloc((void**)&dev_UHxz, szHy * sizeof(float));
+	cudaStatus = cudaMalloc((void**)&dev_Hx, szHx * sizeof(float));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_UHyz, szHx * sizeof(float));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_UHzy, szHx * sizeof(float));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
 
-	cudaMalloc((void**)&dev_Hz, szHz * sizeof(float));
-	cudaMalloc((void**)&dev_UHxy, szHz * sizeof(float));
-	cudaMalloc((void**)&dev_UHyx, szHz * sizeof(float));
+	cudaStatus = cudaMalloc((void**)&dev_Hy, szHy * sizeof(float));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_UHzx, szHy * sizeof(float));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_UHxz, szHy * sizeof(float));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
 
-	cudaMalloc((void**)&dev_V, sizeof(V));
-	cudaMalloc((void**)&dev_E_obs, sizeof(E_obs));
-	cudaMalloc((void**)&dev_source, sizeof(source));
+	cudaStatus = cudaMalloc((void**)&dev_Hz, szHz * sizeof(float));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_UHxy, szHz * sizeof(float));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_UHyx, szHz * sizeof(float));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+
+	cudaStatus = cudaMalloc((void**)&dev_V, sizeof(V));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_E_obs, sizeof(E_obs));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_source, sizeof(source));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
 
 	// 第二部分并行需要用到的变量
-	cudaMalloc((void**)&dev_Ex_zheng_1, sizeof(Ex_zheng_1));
-	cudaMalloc((void**)&dev_Ex_zheng_2, sizeof(Ex_zheng_2));
-	cudaMalloc((void**)&dev_Ex_zheng_3, sizeof(Ex_zheng_3));
 
-	cudaMalloc((void**)&dev_Ey_zheng_1, sizeof(Ey_zheng_1));
-	cudaMalloc((void**)&dev_Ey_zheng_2, sizeof(Ey_zheng_2));
-	cudaMalloc((void**)&dev_Ey_zheng_3, sizeof(Ey_zheng_3));
+	cudaStatus = cudaMalloc((void**)&dev_fan, sizeof(fan));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_huanyuan, sizeof(huanyuan));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
 
-	cudaMalloc((void**)&dev_Ez_zheng_1, sizeof(Ez_zheng_1));
-	cudaMalloc((void**)&dev_Ez_zheng_2, sizeof(Ez_zheng_2));
-	cudaMalloc((void**)&dev_Ez_zheng_3, sizeof(Ez_zheng_3));
+	cudaStatus = cudaMalloc((void**)&dev_Ex1, sizeof(Ex1));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_Ey1, sizeof(Ey1));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_Ez1, sizeof(Ez1));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
 
-	cudaMalloc((void**)&dev_Hx_zheng_1, sizeof(Hx_zheng_1));
-	cudaMalloc((void**)&dev_Hx_zheng_2, sizeof(Hx_zheng_2));
-	cudaMalloc((void**)&dev_Hx_zheng_3, sizeof(Hx_zheng_3));
+	cudaStatus = cudaMalloc((void**)&dev_Hx1, sizeof(Hx1));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_Hy1, sizeof(Hy1));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_Hz1, sizeof(Hz1));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
 
-	cudaMalloc((void**)&dev_Hy_zheng_1, sizeof(Hy_zheng_1));
-	cudaMalloc((void**)&dev_Hy_zheng_2, sizeof(Hy_zheng_2));
-	cudaMalloc((void**)&dev_Hy_zheng_3, sizeof(Hy_zheng_3));
+	// 超大数组
 
-	cudaMalloc((void**)&dev_Hz_zheng_1, sizeof(Hz_zheng_1));
-	cudaMalloc((void**)&dev_Hz_zheng_2, sizeof(Hz_zheng_2));
-	cudaMalloc((void**)&dev_Hz_zheng_3, sizeof(Hz_zheng_3));
+	cudaStatus = cudaMalloc((void**)&dev_Ex_zheng_1, (it)*(2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_Ex_zheng_2, (it)*(nx - 2 * npml)*(2 * npml)*(nz - 2 * npml) * sizeof(float));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_Ex_zheng_3, (it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npml) * sizeof(float));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
 
-	cudaMalloc((void**)&dev_Ex_zheng_last, sizeof(Ex_zheng_last));
-	cudaMalloc((void**)&dev_Ey_zheng_last, sizeof(Ey_zheng_last));
-	cudaMalloc((void**)&dev_Ez_zheng_last, sizeof(Ez_zheng_last));
-	cudaMalloc((void**)&dev_Hx_zheng_last, sizeof(Hx_zheng_last));
-	cudaMalloc((void**)&dev_Hy_zheng_last, sizeof(Hy_zheng_last));
-	cudaMalloc((void**)&dev_Hz_zheng_last, sizeof(Hz_zheng_last));
+	cudaStatus = cudaMalloc((void**)&dev_Ey_zheng_1, (it)*(2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_Ey_zheng_2, (it)*(nx - 2 * npml)*(2 * npml)*(nz - 2 * npml) * sizeof(float));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_Ey_zheng_3, (it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npml) * sizeof(float));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
 
-	cudaMalloc((void**)&dev_fan, sizeof(fan));
-	cudaMalloc((void**)&dev_huanyuan,sizeof(huanyuan));
+	cudaStatus = cudaMalloc((void**)Ez_zheng_1, (it)*(2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)Ez_zheng_2, (it)*(nx - 2 * npml)*(2 * npml)*(nz - 2 * npml) * sizeof(float));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)Ez_zheng_3, (it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npml) * sizeof(float));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
 
-	cudaMalloc((void**)&dev_)
+	cudaStatus = cudaMalloc((void**)&dev_Hx_zheng_1, (it)*(2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_Hx_zheng_2, (it)*(nx - 2 * npml)*(2 * npml)*(nz - 2 * npml) * sizeof(float));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_Hx_zheng_3, (it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npml) * sizeof(float));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
+
+	cudaStatus = cudaMalloc((void**)&dev_Hy_zheng_1, (it)*(2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_Hy_zheng_2, (it)*(nx - 2 * npml)*(2 * npml)*(nz - 2 * npml) * sizeof(float));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_Hy_zheng_3, (it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npml) * sizeof(float));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
+
+	cudaStatus = cudaMalloc((void**)&dev_Hz_zheng_1, (it)*(2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_Hz_zheng_2, (it)*(nx - 2 * npml)*(2 * npml)*(nz - 2 * npml) * sizeof(float));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_Hz_zheng_3, (it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npml) * sizeof(float));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
+
+	cudaStatus = cudaMalloc((void**)&dev_Ex_zheng_last, (nx - 2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_Ey_zheng_last, (nx - 2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_Ez_zheng_last, (nx - 2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
+
+	cudaStatus = cudaMalloc((void**)&dev_Hx_zheng_last, (nx - 2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_Hy_zheng_last, (nx - 2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_Hz_zheng_last, (nx - 2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
+Error:
+	return;
 }
-
 
 // flag == 0 将GPU显存中的E*, UE**, H*, UH**, (V, E_obs)置零
 // flag == 1 将GPU显存中的E*, UE**, H*, UH**, (V, E*_zheng_*, H*_zheng_*, E*_zheng_last, H*_zheng_last, fan, huanyuan)置零
@@ -1000,40 +1131,41 @@ void gpu_memory_set_zero(int flag)
 	{
 		cudaMemset(dev_V, 0, sizeof(V));
 
-		cudaMemSet(dev_Ex_zheng_1, 0, sizeof(Ex_zheng_1));
-		cudaMemSet(dev_Ex_zheng_2, 0, sizeof(Ex_zheng_2));
-		cudaMemSet(dev_Ex_zheng_3, 0, sizeof(Ex_zheng_3));
+		cudaMemset(dev_Ex_zheng_1, 0, (it)*(2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
+		cudaMemset(dev_Ex_zheng_2, 0, (it)*(nx - 2 * npml)*(2 * npml)*(nz - 2 * npml) * sizeof(float));
+		cudaMemset(dev_Ex_zheng_3, 0, (it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npml) * sizeof(float));
 
-		cudaMemSet(dev_Ey_zheng_1, 0, sizeof(Ey_zheng_1));
-		cudaMemSet(dev_Ey_zheng_2, 0, sizeof(Ey_zheng_2));
-		cudaMemSet(dev_Ey_zheng_3, 0, sizeof(Ey_zheng_3));
+		cudaMemset(dev_Ey_zheng_1, 0, (it)*(2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
+		cudaMemset(dev_Ey_zheng_2, 0, (it)*(nx - 2 * npml)*(2 * npml)*(nz - 2 * npml) * sizeof(float));
+		cudaMemset(dev_Ey_zheng_3, 0, (it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npml) * sizeof(float));
 
-		cudaMemSet(dev_Ez_zheng_1, 0, sizeof(Ez_zheng_1));
-		cudaMemSet(dev_Ez_zheng_2, 0, sizeof(Ez_zheng_2));
-		cudaMemSet(dev_Ez_zheng_3, 0, sizeof(Ez_zheng_3));
+		cudaMemset(dev_Ez_zheng_1, 0, (it)*(2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
+		cudaMemset(dev_Ez_zheng_2, 0, (it)*(nx - 2 * npml)*(2 * npml)*(nz - 2 * npml) * sizeof(float));
+		cudaMemset(dev_Ez_zheng_3, 0, (it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npml) * sizeof(float));
 
-		cudaMemSet(dev_Hx_zheng_1, 0, sizeof(Hx_zheng_1));
-		cudaMemSet(dev_Hx_zheng_2, 0, sizeof(Hx_zheng_2));
-		cudaMemSet(dev_Hx_zheng_3, 0, sizeof(Hx_zheng_3));
+		cudaMemset(dev_Hx_zheng_1, 0, (it)*(2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
+		cudaMemset(dev_Hx_zheng_2, 0, (it)*(nx - 2 * npml)*(2 * npml)*(nz - 2 * npml) * sizeof(float));
+		cudaMemset(dev_Hx_zheng_3, 0, (it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npml) * sizeof(float));
 
-		cudaMemSet(dev_Hy_zheng_1, 0, sizeof(Hy_zheng_1));
-		cudaMemSet(dev_Hy_zheng_2, 0, sizeof(Hy_zheng_2));
-		cudaMemSet(dev_Hy_zheng_3, 0, sizeof(Hy_zheng_3));
+		cudaMemset(dev_Hy_zheng_1, 0, (it)*(2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
+		cudaMemset(dev_Hy_zheng_2, 0, (it)*(nx - 2 * npml)*(2 * npml)*(nz - 2 * npml) * sizeof(float));
+		cudaMemset(dev_Hy_zheng_3, 0, (it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npml) * sizeof(float));
 
-		cudaMemSet(dev_Hz_zheng_1, 0, sizeof(Hz_zheng_1));
-		cudaMemSet(dev_Hz_zheng_2, 0, sizeof(Hz_zheng_2));
-		cudaMemSet(dev_Hz_zheng_3, 0, sizeof(Hz_zheng_3));
+		cudaMemset(dev_Hz_zheng_1, 0, (it)*(2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
+		cudaMemset(dev_Hz_zheng_2, 0, (it)*(nx - 2 * npml)*(2 * npml)*(nz - 2 * npml) * sizeof(float));
+		cudaMemset(dev_Hz_zheng_3, 0, (it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npml) * sizeof(float));
 
-		cudaMemSet(dev_Ex_zheng_last, 0, sizeof(Ex_zheng_last));
-		cudaMemSet(dev_Ey_zheng_last, 0, sizeof(Ey_zheng_last));
-		cudaMemSet(dev_Ez_zheng_last, 0, sizeof(Ez_zheng_last));
+		size_t sz_last = (nx - 2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float);
+		cudaMemset(dev_Ex_zheng_last, 0, sz_last);
+		cudaMemset(dev_Ey_zheng_last, 0, sz_last);
+		cudaMemset(dev_Ez_zheng_last, 0, sz_last);
 
-		cudaMemSet(dev_Hx_zheng_last, 0, sizeof(Hx_zheng_last));
-		cudaMemSet(dev_Hy_zheng_last, 0, sizeof(Hy_zheng_last));
-		cudaMemSet(dev_Hz_zheng_last, 0, sizeof(Hz_zheng_last));
+		cudaMemset(dev_Hx_zheng_last, 0, sz_last);
+		cudaMemset(dev_Hy_zheng_last, 0, sz_last);
+		cudaMemset(dev_Hz_zheng_last, 0, sz_last);
 
-		cudaMemSet(dev_fan, 0, sizeof(fan));
-		cudaMemSet(dev_huanyuan, 0, sizeof(huanyuan));
+		cudaMemset(dev_fan, 0, sizeof(fan));
+		cudaMemset(dev_huanyuan, 0, sizeof(huanyuan));
 	}
 	else
 	{
@@ -1045,7 +1177,6 @@ void gpu_memory_set_zero(int flag)
 		cudaMemset(dev_Hy1, 0, sizeof(Hy1));
 		cudaMemset(dev_Hz1, 0, sizeof(Hz1));
 	}
-
 }
 
 // 将内存中的CAE CBE RAE RBE CPH CQH RAH CBH k*_E* k*_H* source复制到显存中
@@ -1159,10 +1290,12 @@ void gpu_memory_copy()
 
 	cudaStatus = cudaMemcpy(dev_source, source, sizeof(source), cudaMemcpyHostToDevice);
 	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!"); goto Error; }
-Error:
-	return;
+	
+	Error:
+		return;
 }
 
+// 释放显存空间
 void gpu_memory_free()
 {
 	cudaFree(dev_Ex);
@@ -1292,37 +1425,36 @@ void gpu_memory_free()
 	cudaFree(dev_huanyuan);
 }
 
-// 计算UH H UE E
-cudaError_t zheng_yan()
+// gpu并行计算UH H UE E
+cudaError_t gpu_zheng_yan()
 {
-	cudaError_t cudaStatus;	
-	calcUHyz << < gridUHyz, blockUHyz >> > (dev_UHyz, dev_RBHyz, dev_RAHyz, dev_Ez, dy);
-	calcUHzy << < gridUHzy, blockUHzy >> > (dev_UHzy, dev_RBHzy, dev_RAHzy, dev_Ey, dz);
-	calcUHxy << < gridUHxy, blockUHxy >> > (dev_UHxy, dev_RBHxy, dev_RAHxy, dev_Ey, dx);
-	calcUHxz << < gridUHxz, blockUHxz >> > (dev_UHxz, dev_RBHxz, dev_RAHxz, dev_Ez, dx);
-	calcUHyx << < gridUHyx, blockUHyx >> > (dev_UHyx, dev_RBHyx, dev_RAHyx, dev_Ex, dy);
-	calcUHzx << < gridUHzx, blockUHzx >> > (dev_UHzx, dev_RBHzx, dev_RAHzx, dev_Ex, dz);
+	cudaError_t cudaStatus = cudaSuccess;
 
-	calcHx << < gridHx, blockHx >> > (dev_Hx, dev_CPHx, dev_CQHx, dev_ky_Hx, dev_kz_Hx, dev_Ez, dev_Ey, dev_UHyz, dev_UHzy, dy, dz);
-	calcHy << < gridHy, blockHy >> > (dev_Hy, dev_CPHy, dev_CQHy, dev_kz_Hy, dev_kx_Hy, dev_Ex, dev_Ez, dev_UHzx, dev_UHxz, dz, dx);
-	calcHz << < gridHz, blockHz >> > (dev_Hz, dev_CPHz, dev_CQHz, dev_kx_Hz, dev_ky_Hz, dev_Ey, dev_Ex, dev_UHxy, dev_UHyx, dx, dy);
+	calc_UHyz << < gridUHyz, blockUHyz >> > (dev_UHyz, dev_RBHyz, dev_RAHyz, dev_Ez, dy);
+	calc_UHzy << < gridUHzy, blockUHzy >> > (dev_UHzy, dev_RBHzy, dev_RAHzy, dev_Ey, dz);
+	calc_UHxy << < gridUHxy, blockUHxy >> > (dev_UHxy, dev_RBHxy, dev_RAHxy, dev_Ey, dx);
+	calc_UHxz << < gridUHxz, blockUHxz >> > (dev_UHxz, dev_RBHxz, dev_RAHxz, dev_Ez, dx);
+	calc_UHyx << < gridUHyx, blockUHyx >> > (dev_UHyx, dev_RBHyx, dev_RAHyx, dev_Ex, dy);
+	calc_UHzx << < gridUHzx, blockUHzx >> > (dev_UHzx, dev_RBHzx, dev_RAHzx, dev_Ex, dz);
 
-	calcUExy << < gridUExy, blockUExy >> > (dev_UExy, dev_RBExy, dev_RAExy, dev_Hy, dx);
-	calcUExz << < gridUExz, blockUExz >> > (dev_UExz, dev_RBExz, dev_RAExz, dev_Hz, dx);
-	calcUEyx << < gridUEyx, blockUEyx >> > (dev_UEyx, dev_RBEyx, dev_RAEyx, dev_Hx, dy);
-	calcUEyz << < gridUEyz, blockUEyz >> > (dev_UEyz, dev_RBEyz, dev_RAEyz, dev_Hz, dy);
-	calcUEzx << < gridUEzx, blockUEzx >> > (dev_UEzx, dev_RBEzx, dev_RAEzx, dev_Hx, dz);
-	calcUEzy << < gridUEzy, blockUEzy >> > (dev_UEzy, dev_RBEzy, dev_RAEzy, dev_Hy, dz);
+	calc_Hx << < gridHx, blockHx >> > (dev_Hx, dev_CPHx, dev_CQHx, dev_ky_Hx, dev_kz_Hx, dev_Ez, dev_Ey, dev_UHyz, dev_UHzy, dy, dz);
+	calc_Hy << < gridHy, blockHy >> > (dev_Hy, dev_CPHy, dev_CQHy, dev_kz_Hy, dev_kx_Hy, dev_Ex, dev_Ez, dev_UHzx, dev_UHxz, dz, dx);
+	calc_Hz << < gridHz, blockHz >> > (dev_Hz, dev_CPHz, dev_CQHz, dev_kx_Hz, dev_ky_Hz, dev_Ey, dev_Ex, dev_UHxy, dev_UHyx, dx, dy);
 
-	calcEx << < gridEx, blockEx >> > (dev_Ex, dev_CAEx, dev_CBEx, dev_ky_Ex, dev_kz_Ex, dev_Hz, dev_Hy, dev_UEyz, dev_UEzy, dy, dz);
-	calcEy << < gridEy, blockEy >> > (dev_Ey, dev_CAEy, dev_CBEy, dev_kz_Ey, dev_kx_Ey, dev_Hx, dev_Hz, dev_UEzx, dev_UExz, dz, dx);
-	calcEz << < gridEz, blockEz >> > (dev_Ez, dev_CAEz, dev_CBEz, dev_kx_Ez, dev_ky_Ez, dev_Hy, dev_Hx, dev_UExy, dev_UEyx, dx, dy);
+	calc_UExy << < gridUExy, blockUExy >> > (dev_UExy, dev_RBExy, dev_RAExy, dev_Hy, dx);
+	calc_UExz << < gridUExz, blockUExz >> > (dev_UExz, dev_RBExz, dev_RAExz, dev_Hz, dx);
+	calc_UEyx << < gridUEyx, blockUEyx >> > (dev_UEyx, dev_RBEyx, dev_RAEyx, dev_Hx, dy);
+	calc_UEyz << < gridUEyz, blockUEyz >> > (dev_UEyz, dev_RBEyz, dev_RAEyz, dev_Hz, dy);
+	calc_UEzx << < gridUEzx, blockUEzx >> > (dev_UEzx, dev_RBEzx, dev_RAEzx, dev_Hx, dz);
+	calc_UEzy << < gridUEzy, blockUEzy >> > (dev_UEzy, dev_RBEzy, dev_RAEzy, dev_Hy, dz);
+
+	calc_Ex << < gridEx, blockEx >> > (dev_Ex, dev_CAEx, dev_CBEx, dev_ky_Ex, dev_kz_Ex, dev_Hz, dev_Hy, dev_UEyz, dev_UEzy, dy, dz);
+	calc_Ey << < gridEy, blockEy >> > (dev_Ey, dev_CAEy, dev_CBEy, dev_kz_Ey, dev_kx_Ey, dev_Hx, dev_Hz, dev_UEzx, dev_UExz, dz, dx);
+	calc_Ez << < gridEz, blockEz >> > (dev_Ez, dev_CAEz, dev_CBEz, dev_kx_Ez, dev_ky_Ez, dev_Hy, dev_Hx, dev_UExy, dev_UEyx, dx, dy);
 
 	// 计算过程是否出错?
 	cudaStatus = cudaGetLastError();
 	if (cudaStatus != cudaSuccess) { printf("Zhengyan Calc Failed: %s\n", cudaGetErrorString(cudaStatus)); return cudaStatus; }
-
-
 }
 
 cudaError_t gpu_parallel_one()
@@ -1336,7 +1468,7 @@ cudaError_t gpu_parallel_one()
 
 		for (j = 0; j < it; j++)
 		{
-			if (j % 200 == 0)
+			if (j % 10 == 0)
 			{
 				printf("i = %3d / %d,  j = %4d / %d\n", i, szfsw, j, it);
 			}
@@ -1346,7 +1478,7 @@ cudaError_t gpu_parallel_one()
 			cudaStatus = cudaMemcpy(&(dev_Ex[fidx]), &(dev_source[j]), sizeof(float), cudaMemcpyDeviceToDevice);
 
 			// 调用GPU运算正演
-			zheng_yan();
+			gpu_zheng_yan();
 
 			// 实现MATLAB中的V(j)=Ex(jswzx(i), jswzy(i), jswzz(i));
 			int jidx = (jswzx[i] - 1)*(ny + 1)*(nz + 1) + (jswzy[i] - 1)*(nz + 1) + jswzz[i] - 1;
@@ -1358,7 +1490,7 @@ cudaError_t gpu_parallel_one()
 		}
 	}
 
-	printf("finish calc !\n");
+	printf("finish calc 1 !\n");
 
 	cudaDeviceSynchronize();
 
@@ -1375,29 +1507,39 @@ cudaError_t gpu_parallel_two()
 		gpu_memory_set_zero(1); // flag == 1 将GPU显存中的E*, UE**, H*, UH**, (V, E*_zheng_*, H*_zheng_*, E*_zheng_last, H*_zheng_last, fan, huanyuan)置零
 		for (j = 0; j < it; j++)
 		{
-			if (j % 200 == 0) { printf("i = %3d / %d,  j = %4d / %d\n", i, szfsw, j, it); }
+			if (j % 10 == 0) { printf("i = %3d / %d,  j = %4d / %d\n", i, szfsw, j, it); }
 
 			// 实现MATLAB中的Ex[fswzx[i] - 1][fswzy[i] - 1][fswzz[i] - 1] = source[j];
 			int fidx = (fswzx[i] - 1)*(ny + 1)*(nz + 1) + (fswzy[i] - 1)*(nz + 1) + fswzz[i] - 1;
 			cudaStatus = cudaMemcpy(&(dev_Ex[fidx]), &(dev_source[j]), sizeof(float), cudaMemcpyDeviceToDevice);
 
 			// 调用GPU运算正演
-			zheng_yan();
+			gpu_zheng_yan();
 			size_t numBytes = (nz-2*npml) * sizeof(float);
 
 			// 复制的块大小 [npml,ny-2*npml,nz-2*npml]
 			// Ex_zheng_1(:,:,:,j)=Ex(npml+1:npml+npml      ,npml+1:ny-npml,npml+1:nz-npml);
 			// Ex_zheng_1(:,:,:,j)=Ex(nx-npml-npml+1:nx-npml,npml+1:ny-npml,npml+1:nz-npml);
-			 
-
+			/*
+			__global__ void gpu_copy_data_3D(float *dst, int dst_xsize, int dst_ysize, int dst_zsize, 
+											 float *src, int src_xsize, int src_ysize, int src_zsize, 
+											 int x, int y, int z, 
+											 int x_offset, int y_offset, int z_offst);
+											 */
+			dim3 blockSize(npml);
+			dim3 gridSize(ny-2*npml, nz-2*npml);
+			gpu_copy_data_3D << <gridSize, blockSize >> > (dev_Ex_zheng_1 + j * (ny - 2 * npml)*(nz - 2 * npml), 2 * npml, ny - 2 * npml, nz - 2 * npml,
+				dev_Ex, nx, ny + 1, nz + 1,
+				npml, ny - 2 * npml, nz - 2 * npml,
+				npml, npml, npml);
 
 			// 实现MATLAB中的V(j)=Ex(jswzx(i), jswzy(i), jswzz(i));
-			int jidx = (jswzx[i] - 1)*(ny + 1)*(nz + 1) + (jswzy[i] - 1)*(nz + 1) + jswzz[i] - 1;
-			cudaStatus = cudaMemcpy(&(dev_V[j]), &(dev_Ex[jidx]), sizeof(float), cudaMemcpyDeviceToDevice);
-			if (cudaStatus != cudaSuccess) { printf("V cudaMemcpy failed: %s\n", cudaGetErrorString(cudaStatus)); return cudaStatus; };
+			//int jidx = (jswzx[i] - 1)*(ny + 1)*(nz + 1) + (jswzy[i] - 1)*(nz + 1) + jswzz[i] - 1;
+			//cudaStatus = cudaMemcpy(&(dev_V[j]), &(dev_Ex[jidx]), sizeof(float), cudaMemcpyDeviceToDevice);
+			//if (cudaStatus != cudaSuccess) { printf("V cudaMemcpy failed: %s\n", cudaGetErrorString(cudaStatus)); return cudaStatus; };
 
-			cudaStatus = cudaMemcpy(&(E_obs[j][i]), &(dev_V[j]), sizeof(float), cudaMemcpyDeviceToHost);
-			if (cudaStatus != cudaSuccess) { printf("V cudaMemcpy failed: %s\n", cudaGetErrorString(cudaStatus)); return cudaStatus; };
+			//cudaStatus = cudaMemcpy(&(E_obs[j][i]), &(dev_V[j]), sizeof(float), cudaMemcpyDeviceToHost);
+			//if (cudaStatus != cudaSuccess) { printf("V cudaMemcpy failed: %s\n", cudaGetErrorString(cudaStatus)); return cudaStatus; };
 		}
 	}
 
@@ -1413,23 +1555,37 @@ cudaError_t gpu_parallel_two()
 ************************************************************************************/
 int main()
 {
-	printf("c = %e\n", dt);
-	readAllData();
-	printf("Read All Data OK ! \n");
+	// 切换工作目录
+	//chdir(path);
+	//printf("Current Dir: %s \n",getcwd(NULL，NULL));
+	if (Hz_zheng_3 == NULL)
+	{
+		printf("malloc failed! \n");
+		return 1;
+	}
+	else
+	{
+		printf("addr of Hz_zheng_3 is %p\n",Hz_zheng_3);
+	}
+	// 从matlab输出的文本文件中读取数据
+	read_data_from_txt();
+	printf("Read Data From Txt OK ! \n");
 
 	// 选择运算使用的GPU
-	cudaError_t cudaStatus = cudaSetDevice(0);
+	cudaError_t cudaStatus = cudaSetDevice(cudaDevice);
 	if (cudaStatus != cudaSuccess) { printf("cudaSetDevice failed!  Do you have a CUDA-capable GPU installed?"); return 1; }
 	else { printf("cudaSetDevice success!\n"); }
 
+	// 分配显存，把数据从内存传输到显存
 	gpu_memory_malloc();
 	gpu_memory_copy();
 
 	// 调用gpu运算
-	cudaStatus = calcWithCuda();
-	if (cudaStatus != cudaSuccess) { printf("calcWithCuda failed!"); return 1; }
-	else { printf("calcWithCudasuccess!\n"); }
+	cudaStatus = gpu_parallel_two();
+	if (cudaStatus != cudaSuccess) { printf("gpu_parallel_two failed!"); return 1; }
+	else { printf("gpu_parallel_two success!\n"); }
 
+	// 释放显存空间
 	gpu_memory_free();
 
 	// 重置GPU
@@ -1437,7 +1593,9 @@ int main()
 	if (cudaStatus != cudaSuccess) { printf("cudaDeviceReset failed!"); return 1; }
 
 	// 输出结果
-	printE_obs();
+	print_E_obs();
 
+	// 释放内存
+	freeMemory();
 	return 0;
 }

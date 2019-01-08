@@ -1,11 +1,14 @@
 #include<math.h>
+#include<stdlib.h>
 
-#define it (1000)
+#define it (200)
 #define npml (10)
 #define nx (170)
 #define ny (120)
 #define nz (120)
 #define szfsw (185)
+#define path "C:\\Users\\sky\\Desktop\\Tujian_github\\Tujian_Linux" // 程序运行的目录
+#define cudaDevice 1 // 程序使用的gpu
 /************************************************************************************
 * 内存参数表
 ************************************************************************************/
@@ -110,6 +113,7 @@ float ky_Hz[nx][ny][nz+1];
 float kz_Hx[nx+1][ny][nz];
 float kz_Hy[nx][ny+1][nz];
 
+/*
 float Ex_zheng_1[it][2*npml][ny-2*npml][nz-2*npml];
 float Ex_zheng_2[it][nx-2*npml][2*npml][nz-2*npml];
 float Ex_zheng_3[it][nx-2*npml][ny-2*npml][2*npml];
@@ -141,6 +145,39 @@ float Ez_zheng_last[nx-2*npml][ny-2*npml][nz-2*npml];
 float Hx_zheng_last[nx-2*npml][ny-2*npml][nz-2*npml];
 float Hy_zheng_last[nx-2*npml][ny-2*npml][nz-2*npml];
 float Hz_zheng_last[nx-2*npml][ny-2*npml][nz-2*npml];
+*/
+
+float *Ex_zheng_1 = (float*)malloc((it)*(2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
+float *Ex_zheng_2 = (float*)malloc((it)*(nx - 2 * npml)*(2 * npml)*(nz - 2 * npml) * sizeof(float));
+float *Ex_zheng_3 = (float*)malloc((it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npml) * sizeof(float));
+
+float *Ey_zheng_1 = (float*)malloc((it)*(2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
+float *Ey_zheng_2 = (float*)malloc((it)*(nx - 2 * npml)*(2 * npml)*(nz - 2 * npml) * sizeof(float));
+float *Ey_zheng_3 = (float*)malloc((it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npml) * sizeof(float));
+
+float *Ez_zheng_1 = (float*)malloc((it)*(2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
+float *Ez_zheng_2 = (float*)malloc((it)*(nx - 2 * npml)*(2 * npml)*(nz - 2 * npml) * sizeof(float));
+float *Ez_zheng_3 = (float*)malloc((it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npml) * sizeof(float));
+
+float *Hx_zheng_1 = (float*)malloc((it)*(2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
+float *Hx_zheng_2 = (float*)malloc((it)*(nx - 2 * npml)*(2 * npml)*(nz - 2 * npml) * sizeof(float));
+float *Hx_zheng_3 = (float*)malloc((it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npml) * sizeof(float));
+
+float *Hy_zheng_1 = (float*)malloc((it)*(2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
+float *Hy_zheng_2 = (float*)malloc((it)*(nx - 2 * npml)*(2 * npml)*(nz - 2 * npml) * sizeof(float));
+float *Hy_zheng_3 = (float*)malloc((it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npml) * sizeof(float));
+
+float *Hz_zheng_1 = (float*)malloc((it)*(2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
+float *Hz_zheng_2 = (float*)malloc((it)*(nx - 2 * npml)*(2 * npml)*(nz - 2 * npml) * sizeof(float));
+float *Hz_zheng_3 = (float*)malloc((it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npml) * sizeof(float));
+
+float *Ex_zheng_last = (float*)malloc((nx - 2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
+float *Ey_zheng_last = (float*)malloc((nx - 2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
+float *Ez_zheng_last = (float*)malloc((nx - 2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
+
+float *Hx_zheng_last = (float*)malloc((nx - 2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
+float *Hy_zheng_last = (float*)malloc((nx - 2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
+float *Hz_zheng_last = (float*)malloc((nx - 2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
 
 float fan[nx-2*npml][ny-2*npml][nz-2*npml];
 float huanyuan[nx-2*npml][ny-2*npml][nz-2*npml];
@@ -222,12 +259,12 @@ float *dev_RBHxy;
 float *dev_RBHyx;
 
 
-int *fswzx;
-int *fswzy;
-int *fswzz;
-int *jswzx;
-int *jswzy;
-int *jswzz;
+int *dev_fswzx;
+int *dev_fswzy;
+int *dev_fswzz;
+int *dev_jswzx;
+int *dev_jswzy;
+int *dev_jswzz;
 
 float *dev_E_obs;
 float *dev_V;
@@ -281,3 +318,46 @@ float *dev_Hz_zheng_last;
 
 float *dev_fan;
 float *dev_huanyuan;
+
+float *dev_Ex1;
+float *dev_Ey1;
+float *dev_Ez1;
+
+float *dev_Hx1;
+float *dev_Hy1;
+float *dev_Hz1;
+
+void freeMemory()
+{
+	free(Ex_zheng_1);
+	free(Ex_zheng_2);
+	free(Ex_zheng_3);
+
+	free(Ey_zheng_1);
+	free(Ey_zheng_2);
+	free(Ey_zheng_3);
+
+	free(Ez_zheng_1);
+	free(Ez_zheng_2);
+	free(Ez_zheng_3);
+
+	free(Hx_zheng_1);
+	free(Hx_zheng_2);
+	free(Hx_zheng_3);
+
+	free(Hy_zheng_1);
+	free(Hy_zheng_2);
+	free(Hy_zheng_3);
+
+	free(Hz_zheng_1);
+	free(Hz_zheng_2);
+	free(Hz_zheng_3);
+
+	free(Ex_zheng_last);
+	free(Ey_zheng_last);
+	free(Ez_zheng_last);
+
+	free(Hx_zheng_last);
+	free(Hy_zheng_last);
+	free(Hz_zheng_last);
+}
