@@ -1,7 +1,7 @@
 /************************************************************************************
 * Author: Tao Rui
 * 版本: V1.0 单卡，Linux版
-* 说明: 
+* 说明:
 *		计算第二部分的并行。
 ************************************************************************************/
 
@@ -13,14 +13,17 @@
 #include "unistd.h"
 #include "global_variables.cpp"
 
-
+__global__ void print_dev_matrix(float *A, int i, int j, int k, int xdim, int ydim, int zdim)
+{
+	int	idx = i * ydim*zdim + j * zdim + k;
+	printf("dev_Matrix[%d][%d][%d] = %8f\n", i, j, k, A[idx]);
+}
 /************************************************************************************
 * GPU计算单个矩阵的函数
 ************************************************************************************/
-
+dim3 gridUHyz(npml, nx - 1); 
 dim3 blockUHyz(nz);
-dim3 gridUHyz(npml, nx - 1); //npml: blockIdx.x的变化范围， nx-1就是: blockIdx.y的变化范围
-__global__ void calc_UHyz(float *UHyz, float *RBHyz, float *RAHyz, float *Ez, const float dy)
+__global__ void gpu_UHyz(float *UHyz, float *RBHyz, float *RAHyz, float *Ez)
 {
 	/*
 	in0 UHyz  nx+1 ny     nz
@@ -58,10 +61,9 @@ __global__ void calc_UHyz(float *UHyz, float *RBHyz, float *RAHyz, float *Ez, co
 	UHyz[lid0] = UHyz[lid0] * RBHyz[lid1] + RAHyz[lid2] * (Ez[lid3] - Ez[lid4]) / dy;
 	UHyz[rid0] = UHyz[rid0] * RBHyz[rid1] + RAHyz[rid2] * (Ez[rid3] - Ez[rid4]) / dy;
 }
-
-dim3 blockUHzy(npml);
 dim3 gridUHzy(nx - 1, ny);
-__global__ void calc_UHzy(float *UHzy, float *RBHzy, float *RAHzy, float *Ey, const float dz)
+dim3 blockUHzy(npml);
+__global__ void gpu_UHzy(float *UHzy, float *RBHzy, float *RAHzy, float *Ey)
 {
 	/*
 	in0 UHzy  --size--  nx+1  ny  nz
@@ -98,10 +100,9 @@ __global__ void calc_UHzy(float *UHzy, float *RBHzy, float *RAHzy, float *Ey, co
 	UHzy[lid0] = UHzy[lid0] * RBHzy[lid1] + RAHzy[lid2] * (Ey[lid3] - Ey[lid4]) / dz;
 	UHzy[rid0] = UHzy[rid0] * RBHzy[rid1] + RAHzy[rid2] * (Ey[rid3] - Ey[rid4]) / dz;
 }
-
-dim3 blockUHzx(npml);
 dim3 gridUHzx(nx, ny - 1);
-__global__ void calc_UHzx(float *UHzx, float *RBHzx, float *RAHzx, float *Ex, const float dz)
+dim3 blockUHzx(npml);
+__global__ void gpu_UHzx(float *UHzx, float *RBHzx, float *RAHzx, float *Ex)
 {
 	/*
 	in0 UHzx  --size--  nx   ny + 1  nz
@@ -138,10 +139,9 @@ __global__ void calc_UHzx(float *UHzx, float *RBHzx, float *RAHzx, float *Ex, co
 	UHzx[lid0] = UHzx[lid0] * RBHzx[lid1] + RAHzx[lid2] * (Ex[lid3] - Ex[lid4]) / dz;
 	UHzx[rid0] = UHzx[rid0] * RBHzx[rid1] + RAHzx[rid2] * (Ex[rid3] - Ex[rid4]) / dz;
 }
-
-dim3 blockUHxz(nz);
 dim3 gridUHxz(npml, ny - 1);
-__global__ void calc_UHxz(float *UHxz, float *RBHxz, float *RAHxz, float *Ez, const float dx)
+dim3 blockUHxz(nz);
+__global__ void gpu_UHxz(float *UHxz, float *RBHxz, float *RAHxz, float *Ez)
 {
 	/*
 	in0 UHxz  --size--  nx       ny + 1  nz
@@ -177,10 +177,9 @@ __global__ void calc_UHxz(float *UHxz, float *RBHxz, float *RAHxz, float *Ez, co
 	UHxz[lid0] = UHxz[lid0] * RBHxz[lid1] + RAHxz[lid2] * (Ez[lid3] - Ez[lid4]) / dx;
 	UHxz[rid0] = UHxz[rid0] * RBHxz[rid1] + RAHxz[rid2] * (Ez[rid3] - Ez[rid4]) / dx;
 }
-
-dim3 blockUHxy(nz - 1);
 dim3 gridUHxy(npml, ny);
-__global__ void calc_UHxy(float *UHxy, float *RBHxy, float *RAHxy, float *Ey, const float dx)
+dim3 blockUHxy(nz - 1);
+__global__ void gpu_UHxy(float *UHxy, float *RBHxy, float *RAHxy, float *Ey)
 {
 	/*
 	in0 UHxy  --size--  nx       ny      nz + 1
@@ -216,10 +215,9 @@ __global__ void calc_UHxy(float *UHxy, float *RBHxy, float *RAHxy, float *Ey, co
 	UHxy[lid0] = UHxy[lid0] * RBHxy[lid1] + RAHxy[lid2] * (Ey[lid3] - Ey[lid4]) / dx;
 	UHxy[rid0] = UHxy[rid0] * RBHxy[rid1] + RAHxy[rid2] * (Ey[rid3] - Ey[rid4]) / dx;
 }
-
-dim3 blockUHyx(nz - 1);
 dim3 gridUHyx(npml, nx);
-__global__ void calc_UHyx(float *UHyx, float *RBHyx, float *RAHyx, float *Ex, const float dy)
+dim3 blockUHyx(nz - 1);
+__global__ void gpu_UHyx(float *UHyx, float *RBHyx, float *RAHyx, float *Ex)
 {
 	/*
 	in0 UHyx  nx   ny     nz + 1
@@ -258,10 +256,9 @@ __global__ void calc_UHyx(float *UHyx, float *RBHyx, float *RAHyx, float *Ex, co
 	UHyx[lid0] = UHyx[lid0] * RBHyx[lid1] + RAHyx[lid2] * (Ex[lid3] - Ex[lid4]) / dy;
 	UHyx[rid0] = UHyx[rid0] * RBHyx[rid1] + RAHyx[rid2] * (Ex[rid3] - Ex[rid4]) / dy;
 }
-
-dim3 blockHx(nz);
 dim3 gridHx(nx - 1, ny);
-__global__ void calc_Hx(float *Hx, float *CPHx, float *CQHx, float *ky_Hx, float *kz_Hx, float *Ez, float *Ey, float *UHyz, float *UHzy, const float dy, const float dz)
+dim3 blockHx(nz);
+__global__ void gpu_Hx(float *Hx, float *CPHx, float *CQHx, float *ky_Hx, float *kz_Hx, float *Ez, float *Ey, float *UHyz, float *UHzy)
 {
 	//
 	// * 运算块大小 nx - 1 * ny * nz
@@ -285,10 +282,9 @@ __global__ void calc_Hx(float *Hx, float *CPHx, float *CQHx, float *ky_Hx, float
 		- CQH * UHyz[idx]
 		+ CQH * UHzy[idx];
 }
-
-dim3 blockHy(nz);
 dim3 gridHy(nx, ny - 1);
-__global__ void calc_Hy(float *Hy, float *CPHy, float *CQHy, float *kz_Hy, float *kx_Hy, float *Ex, float *Ez, float *UHzx, float *UHxz, const float dz, const float dx)
+dim3 blockHy(nz);
+__global__ void gpu_Hy(float *Hy, float *CPHy, float *CQHy, float *kz_Hy, float *kx_Hy, float *Ex, float *Ez, float *UHzx, float *UHxz)
 {
 	//
 	// * 运算块大小 nx * ny -1 * nz
@@ -312,10 +308,9 @@ __global__ void calc_Hy(float *Hy, float *CPHy, float *CQHy, float *kz_Hy, float
 		- CQH * UHzx[idx]
 		+ CQH * UHxz[idx];
 }
-
-dim3 blockHz(nz - 1);
 dim3 gridHz(nx, ny);
-__global__ void calc_Hz(float *Hz, float *CPHz, float *CQHz, float *kx_Hz, float *ky_Hz, float *Ey, float *Ex, float *UHxy, float *UHyx, const float dx, const float dy)
+dim3 blockHz(nz - 1);
+__global__ void gpu_Hz(float *Hz, float *CPHz, float *CQHz, float *kx_Hz, float *ky_Hz, float *Ey, float *Ex, float *UHxy, float *UHyx)
 {
 	//
 	// * 运算块大小 nx * ny * nz -1
@@ -339,10 +334,9 @@ __global__ void calc_Hz(float *Hz, float *CPHz, float *CQHz, float *kx_Hz, float
 		- CQH * UHxy[idx]
 		+ CQH * UHyx[idx];
 }
-
-dim3 blockUEyz(nz - 1);
 dim3 gridUEyz(npml - 1, nx);
-__global__ void calc_UEyz(float *UEyz, float *RBEyz, float *RAEyz, float *Hz, const float dy)
+dim3 blockUEyz(nz - 1);
+__global__ void gpu_UEyz(float *UEyz, float *RBEyz, float *RAEyz, float *Hz)
 {
 	/*
 	dim3 blockUEyz(nz - 1);
@@ -380,10 +374,9 @@ __global__ void calc_UEyz(float *UEyz, float *RBEyz, float *RAEyz, float *Hz, co
 	UEyz[lid0] = UEyz[lid0] * RBEyz[lid1] + RAEyz[lid2] * (Hz[lid3] - Hz[lid4]) / dy;
 	UEyz[rid0] = UEyz[rid0] * RBEyz[rid1] + RAEyz[rid2] * (Hz[rid3] - Hz[rid4]) / dy;
 }
-
-dim3 blockUEyx(nz - 1);
 dim3 gridUEyx(npml - 1, nx);
-__global__ void calc_UEyx(float *UEyx, float *RBEyx, float *RAEyx, float *Hx, const float dy)
+dim3 blockUEyx(nz - 1);
+__global__ void gpu_UEyx(float *UEyx, float *RBEyx, float *RAEyx, float *Hx)
 {
 	/*
 	dim3 blockUEyx(nz - 1);
@@ -421,10 +414,9 @@ __global__ void calc_UEyx(float *UEyx, float *RBEyx, float *RAEyx, float *Hx, co
 	UEyx[lid0] = UEyx[lid0] * RBEyx[lid1] + RAEyx[lid2] * (Hx[lid3] - Hx[lid4]) / dy;
 	UEyx[rid0] = UEyx[rid0] * RBEyx[rid1] + RAEyx[rid2] * (Hx[rid3] - Hx[rid4]) / dy;
 }
-
-dim3 blockUExy(nz);
 dim3 gridUExy(npml - 1, ny - 1);
-__global__ void calc_UExy(float *UExy, float *RBExy, float *RAExy, float *Hy, const float dx)
+dim3 blockUExy(nz);
+__global__ void gpu_UExy(float *UExy, float *RBExy, float *RAExy, float *Hy)
 {
 	/*
 	dim3 blockUExy(nz);
@@ -462,10 +454,9 @@ __global__ void calc_UExy(float *UExy, float *RBExy, float *RAExy, float *Hy, co
 	UExy[lid0] = UExy[lid0] * RBExy[lid1] + RAExy[lid2] * (Hy[lid3] - Hy[lid4]) / dx;
 	UExy[rid0] = UExy[rid0] * RBExy[rid1] + RAExy[rid2] * (Hy[rid3] - Hy[rid4]) / dx;
 }
-
-dim3 blockUExz(nz - 1);
 dim3 gridUExz(npml - 1, ny);
-__global__ void calc_UExz(float *UExz, float *RBExz, float *RAExz, float *Hz, const float dx)
+dim3 blockUExz(nz - 1);
+__global__ void gpu_UExz(float *UExz, float *RBExz, float *RAExz, float *Hz)
 {
 	/*
 	dim3 blockUExz(nz - 1);
@@ -502,10 +493,9 @@ __global__ void calc_UExz(float *UExz, float *RBExz, float *RAExz, float *Hz, co
 	UExz[lid0] = UExz[lid0] * RBExz[lid1] + RAExz[lid2] * (Hz[lid3] - Hz[lid4]) / dx;
 	UExz[rid0] = UExz[rid0] * RBExz[rid1] + RAExz[rid2] * (Hz[rid3] - Hz[rid4]) / dx;
 }
-
-dim3 blockUEzx(npml - 1);
 dim3 gridUEzx(nx - 1, ny);
-__global__ void calc_UEzx(float *UEzx, float *RBEzx, float *RAEzx, float *Hx, const float dz)
+dim3 blockUEzx(npml - 1);
+__global__ void gpu_UEzx(float *UEzx, float *RBEzx, float *RAEzx, float *Hx)
 {
 	/*
 	dim3 blockUEzx(npml - 1);
@@ -543,10 +533,9 @@ __global__ void calc_UEzx(float *UEzx, float *RBEzx, float *RAEzx, float *Hx, co
 	UEzx[lid0] = UEzx[lid0] * RBEzx[lid1] + RAEzx[lid2] * (Hx[lid3] - Hx[lid4]) / dz;
 	UEzx[rid0] = UEzx[rid0] * RBEzx[rid1] + RAEzx[rid2] * (Hx[rid3] - Hx[rid4]) / dz;
 }
-
-dim3 blockUEzy(npml - 1);
 dim3 gridUEzy(nx, ny - 1);
-__global__ void calc_UEzy(float *UEzy, float *RBEzy, float *RAEzy, float *Hy, const float dz)
+dim3 blockUEzy(npml - 1);
+__global__ void gpu_UEzy(float *UEzy, float *RBEzy, float *RAEzy, float *Hy)
 {
 	/*
 	dim3 blockUEzy(npml - 1);
@@ -584,10 +573,9 @@ __global__ void calc_UEzy(float *UEzy, float *RBEzy, float *RAEzy, float *Hy, co
 	UEzy[lid0] = UEzy[lid0] * RBEzy[lid1] + RAEzy[lid2] * (Hy[lid3] - Hy[lid4]) / dz;
 	UEzy[rid0] = UEzy[rid0] * RBEzy[rid1] + RAEzy[rid2] * (Hy[rid3] - Hy[rid4]) / dz;
 }
-
-dim3 blockEx(nz - 1);
 dim3 gridEx(nx, ny - 1);
-__global__ void calc_Ex(float *Ex, float *CAEx, float *CBEx, float *ky_Ex, float *kz_Ex, float *Hz, float *Hy, float *UEyz, float *UEzy, const float dy, const float dz)
+dim3 blockEx(nz - 1);
+__global__ void gpu_Ex(float *Ex, float *CAEx, float *CBEx, float *ky_Ex, float *kz_Ex, float *Hz, float *Hy, float *UEyz, float *UEzy)
 {
 	//
 	// * dim3 blockEx(nz-1);
@@ -612,10 +600,9 @@ __global__ void calc_Ex(float *Ex, float *CAEx, float *CBEx, float *ky_Ex, float
 		+ CBE * UEyz[idx]
 		- CBE * UEzy[idx];
 }
-
-dim3 blockEy(nz - 1);
 dim3 gridEy(nx - 1, ny);
-__global__ void calc_Ey(float *Ey, float *CAEy, float *CBEy, float *kz_Ey, float *kx_Ey, float *Hx, float *Hz, float *UEzx, float *UExz, const float dz, const float dx)
+dim3 blockEy(nz - 1);
+__global__ void gpu_Ey(float *Ey, float *CAEy, float *CBEy, float *kz_Ey, float *kx_Ey, float *Hx, float *Hz, float *UEzx, float *UExz)
 {
 	//
 	// * dim3 blockEy(nz-1);
@@ -640,10 +627,9 @@ __global__ void calc_Ey(float *Ey, float *CAEy, float *CBEy, float *kz_Ey, float
 		+ CBE * UEzx[idx]
 		- CBE * UExz[idx];
 }
-
-dim3 blockEz(nz);
 dim3 gridEz(nx - 1, ny - 1);
-__global__ void calc_Ez(float *Ez, float *CAEz, float *CBEz, float *kx_Ez, float *ky_Ez, float *Hy, float *Hx, float *UExy, float *UEyx, const float dx, const float dy)
+dim3 blockEz(nz);
+__global__ void gpu_Ez(float *Ez, float *CAEz, float *CBEz, float *kx_Ez, float *ky_Ez, float *Hy, float *Hx, float *UExy, float *UEyx)
 {
 	//
 	// * dim3 blockEz(nz);
@@ -670,26 +656,644 @@ __global__ void calc_Ez(float *Ez, float *CAEz, float *CBEz, float *kx_Ez, float
 		- CBE * UEyx[idx];
 }
 
-// 用src矩阵中x*y*z大小的块填充dst矩阵
-// 矩阵块在src矩阵中的位置为(x_offset, y_offset, z_offset)
-__global__ void gpu_copy_data_3D(float *dst, int dst_xsize, int dst_ysize, int dst_zsize, 
-								 float *src, int src_xsize, int src_ysize, int src_zsize, 
-								 int x, int y, int z, 
-								 int x_offset, int y_offset, int z_offset)
+dim3 grid_zheng_1(npmlc, ny - 2 * npml);
+dim3 grid_zheng_2(nx - 2 * npml, npmlc);
+dim3 grid_zheng_3(nx - 2 * npml, ny - 2 * npml);
+dim3 grid_zheng_last(nx - 2 * npml, ny - 2 * npml);
+dim3 block_zheng_1(nz - 2 * npml);
+dim3 block_zheng_2(nz - 2 * npml);
+dim3 block_zheng_3(npmlc);
+dim3 block_zheng_last(nz - 2 * npml);
+__global__ void gpu_zheng_1(
+	float *dev_Ex_zheng, float *dev_Ey_zheng, float *dev_Ez_zheng,
+	float *dev_Hx_zheng, float *dev_Hy_zheng, float *dev_Hz_zheng,
+	float *dev_Ex, float *dev_Ey, float *dev_Ez,
+	float *dev_Hx, float *dev_Hy, float *dev_Hz,
+	int j)
 {
 	int ix = blockIdx.x;
 	int iy = blockIdx.y;
-	int iz = threadIdx.x;    
+	int iz = threadIdx.x;
 
-	int src_idx = ix * dst_ysize * dst_zsize + iy * dst_zsize + iz;
-	int dst_idx = (ix + y_offset) * src_ysize * src_zsize + (iy + y_offset) * src_zsize + (iz + z_offset);
-	dst[dst_idx] = src[src_idx];
+	int lidzheng; //**_zheng_* 前半部分的位置
+	int ridzheng; //**_zheng_* 后半部分的位置
+	int lidEx, lidEy, lidEz, lidHx, lidHy, lidHz;
+	int ridEx, ridEy, ridEz, ridHx, ridHy, ridHz;
+
+	lidzheng =
+		j * (2 * npmlc) * (ny - 2 * npml) * (nz - 2 * npml) +
+		ix * (ny - 2 * npml) * (nz - 2 * npml) +
+		iy * (nz - 2 * npml) +
+		iz;
+	lidEx =
+		(ix + npml) * (ny + 1) * (nz + 1) +
+		(iy + npml) * (nz + 1) +
+		(iz + npml);
+	lidEy =
+		(ix + npml) * (ny + 0) * (nz + 1) +
+		(iy + npml) * (nz + 1) +
+		(iz + npml);
+	lidEz =
+		(ix + npml) * (ny + 1) * (nz + 0) +
+		(iy + npml) * (nz + 0) +
+		(iz + npml);
+	lidHx =
+		(ix + npml) * (ny + 0) * (nz + 0) +
+		(iy + npml) * (nz + 0) +
+		(iz + npml);
+	lidHy =
+		(ix + npml) * (ny + 1) * (nz + 0) +
+		(iy + npml) * (nz + 0) +
+		(iz + npml);
+	lidHz =
+		(ix + npml) * (ny + 0) * (nz + 1) +
+		(iy + npml) * (nz + 1) +
+		(iz + npml);
+
+	ridzheng = lidzheng + (ny - 2 * npml) * (nz - 2 * npml) * (npmlc);
+	ridEx = lidEx + (ny + 1) * (nz + 1) * (nx - 2 * npml - npmlc);
+	ridEy = lidEy + (ny + 0) * (nz + 1) * (nx - 2 * npml - npmlc);
+	ridEz = lidEz + (ny + 1) * (nz + 0) * (nx - 2 * npml - npmlc);
+	ridHx = lidHx + (ny + 0) * (nz + 0) * (nx - 2 * npml - npmlc);
+	ridHy = lidHy + (ny + 1) * (nz + 0) * (nx - 2 * npml - npmlc);
+	ridHz = lidHz + (ny + 0) * (nz + 1) * (nx - 2 * npml - npmlc);
+
+	dev_Ex_zheng[lidzheng] = dev_Ex[lidEx];
+	dev_Ey_zheng[lidzheng] = dev_Ey[lidEy];
+	dev_Ez_zheng[lidzheng] = dev_Ez[lidEz];
+	dev_Hx_zheng[lidzheng] = dev_Hx[lidHx];
+	dev_Hy_zheng[lidzheng] = dev_Hy[lidHy];
+	dev_Hz_zheng[lidzheng] = dev_Hz[lidHz];
+	dev_Ex_zheng[ridzheng] = dev_Ex[ridEx];
+	dev_Ey_zheng[ridzheng] = dev_Ey[ridEy];
+	dev_Ez_zheng[ridzheng] = dev_Ez[ridEz];
+	dev_Hx_zheng[ridzheng] = dev_Hx[ridHx];
+	dev_Hy_zheng[ridzheng] = dev_Hy[ridHy];
+	dev_Hz_zheng[ridzheng] = dev_Hz[ridHz];
 }
 
-__global__ void print_dev_matrix(float *A, int i,int j,int k,int xdim,int ydim,int zdim)
+__global__ void gpu_zheng_2(
+	float *dev_Ex_zheng, float *dev_Ey_zheng, float *dev_Ez_zheng,
+	float *dev_Hx_zheng, float *dev_Hy_zheng, float *dev_Hz_zheng,
+	float *dev_Ex, float *dev_Ey, float *dev_Ez,
+	float *dev_Hx, float *dev_Hy, float *dev_Hz,
+	int j)
 {
-	int	idx = i * ydim*zdim + j * zdim + k;
-	printf("dev_Matrix[%d][%d][%d] = %8f\n", i, j, k, A[idx]);
+	int ix = blockIdx.x;
+	int iy = blockIdx.y;
+	int iz = threadIdx.x;
+
+	int lidzheng; //**_zheng_* 前半部分的位置
+	int ridzheng; //**_zheng_* 后半部分的位置
+	int lidEx, lidEy, lidEz, lidHx, lidHy, lidHz;
+	int ridEx, ridEy, ridEz, ridHx, ridHy, ridHz;
+
+	lidzheng =
+		j * (nx - 2 * npml) * (2 * npmlc) * (nz - 2 * npml) +
+		ix * (2 * npmlc) * (nz - 2 * npml) +
+		iy * (nz - 2 * npml) +
+		iz;
+	lidEx =
+		(ix + npml) * (ny + 1) * (nz + 1) +
+		(iy + npml) * (nz + 1) +
+		(iz + npml);
+	lidEy =
+		(ix + npml) * (ny + 0) * (nz + 1) +
+		(iy + npml) * (nz + 1) +
+		(iz + npml);
+	lidEz =
+		(ix + npml) * (ny + 1) * (nz + 0) +
+		(iy + npml) * (nz + 0) +
+		(iz + npml);
+	lidHx =
+		(ix + npml) * (ny + 0) * (nz + 0) +
+		(iy + npml) * (nz + 0) +
+		(iz + npml);
+	lidHy =
+		(ix + npml) * (ny + 1) * (nz + 0) +
+		(iy + npml) * (nz + 0) +
+		(iz + npml);
+	lidHz =
+		(ix + npml) * (ny + 0) * (nz + 1) +
+		(iy + npml) * (nz + 1) +
+		(iz + npml);
+
+
+	ridzheng = lidzheng + (nz - 2 * npml) * (npmlc);
+	ridEx = lidEx + (nz + 1) * (ny - 2 * npml - npmlc);
+	ridEy = lidEy + (nz + 1) * (ny - 2 * npml - npmlc);
+	ridEz = lidEz + (nz + 0) * (ny - 2 * npml - npmlc);
+	ridHx = lidHx + (nz + 0) * (ny - 2 * npml - npmlc);
+	ridHy = lidHy + (nz + 0) * (ny - 2 * npml - npmlc);
+	ridHz = lidHz + (nz + 1) * (ny - 2 * npml - npmlc);
+
+	dev_Ex_zheng[lidzheng] = dev_Ex[lidEx];
+	dev_Ey_zheng[lidzheng] = dev_Ey[lidEy];
+	dev_Ez_zheng[lidzheng] = dev_Ez[lidEz];
+	dev_Hx_zheng[lidzheng] = dev_Hx[lidHx];
+	dev_Hy_zheng[lidzheng] = dev_Hy[lidHy];
+	dev_Hz_zheng[lidzheng] = dev_Hz[lidHz];
+	dev_Ex_zheng[ridzheng] = dev_Ex[ridEx];
+	dev_Ey_zheng[ridzheng] = dev_Ey[ridEy];
+	dev_Ez_zheng[ridzheng] = dev_Ez[ridEz];
+	dev_Hx_zheng[ridzheng] = dev_Hx[ridHx];
+	dev_Hy_zheng[ridzheng] = dev_Hy[ridHy];
+	dev_Hz_zheng[ridzheng] = dev_Hz[ridHz];
+}
+
+__global__ void gpu_zheng_3(
+	float *dev_Ex_zheng, float *dev_Ey_zheng, float *dev_Ez_zheng,
+	float *dev_Hx_zheng, float *dev_Hy_zheng, float *dev_Hz_zheng,
+	float *dev_Ex, float *dev_Ey, float *dev_Ez,
+	float *dev_Hx, float *dev_Hy, float *dev_Hz,
+	int j)
+{
+	int ix = blockIdx.x;
+	int iy = blockIdx.y;
+	int iz = threadIdx.x;
+
+	int lidzheng; //**_zheng_* 前半部分的位置
+	int ridzheng; //**_zheng_* 后半部分的位置
+	int lidEx, lidEy, lidEz, lidHx, lidHy, lidHz;
+	int ridEx, ridEy, ridEz, ridHx, ridHy, ridHz;
+
+	lidzheng =
+		j * (nx - 2 * npml) * (ny - 2 * npml) * (2 * npmlc) +
+		ix * (ny - 2 * npml) * (2 * npmlc) +
+		iy * (2 * npmlc) +
+		iz;
+	lidEx =
+		(ix + npml) * (ny + 1) * (nz + 1) +
+		(iy + npml) * (nz + 1) +
+		(iz + npml);
+	lidEy =
+		(ix + npml) * (ny + 0) * (nz + 1) +
+		(iy + npml) * (nz + 1) +
+		(iz + npml);
+	lidEz =
+		(ix + npml) * (ny + 1) * (nz + 0) +
+		(iy + npml) * (nz + 0) +
+		(iz + npml);
+	lidHx =
+		(ix + npml) * (ny + 0) * (nz + 0) +
+		(iy + npml) * (nz + 0) +
+		(iz + npml);
+	lidHy =
+		(ix + npml) * (ny + 1) * (nz + 0) +
+		(iy + npml) * (nz + 0) +
+		(iz + npml);
+	lidHz =
+		(ix + npml) * (ny + 0) * (nz + 1) +
+		(iy + npml) * (nz + 1) +
+		(iz + npml);
+
+
+	ridzheng = lidzheng + (npmlc);
+	ridEx = lidEx + (nz - 2 * npml - npmlc);
+	ridEy = lidEy + (nz - 2 * npml - npmlc);
+	ridEz = lidEz + (nz - 2 * npml - npmlc);
+	ridHx = lidHx + (nz - 2 * npml - npmlc);
+	ridHy = lidHy + (nz - 2 * npml - npmlc);
+	ridHz = lidHz + (nz - 2 * npml - npmlc);
+
+	dev_Ex_zheng[lidzheng] = dev_Ex[lidEx];
+	dev_Ey_zheng[lidzheng] = dev_Ey[lidEy];
+	dev_Ez_zheng[lidzheng] = dev_Ez[lidEz];
+	dev_Hx_zheng[lidzheng] = dev_Hx[lidHx];
+	dev_Hy_zheng[lidzheng] = dev_Hy[lidHy];
+	dev_Hz_zheng[lidzheng] = dev_Hz[lidHz];
+	dev_Ex_zheng[ridzheng] = dev_Ex[ridEx];
+	dev_Ey_zheng[ridzheng] = dev_Ey[ridEy];
+	dev_Ez_zheng[ridzheng] = dev_Ez[ridEz];
+	dev_Hx_zheng[ridzheng] = dev_Hx[ridHx];
+	dev_Hy_zheng[ridzheng] = dev_Hy[ridHy];
+	dev_Hz_zheng[ridzheng] = dev_Hz[ridHz];
+}
+
+__global__ void gpu_zheng_last(
+	float *dev_Ex_zheng, float *dev_Ey_zheng, float *dev_Ez_zheng,
+	float *dev_Hx_zheng, float *dev_Hy_zheng, float *dev_Hz_zheng,
+	float *dev_Ex, float *dev_Ey, float *dev_Ez,
+	float *dev_Hx, float *dev_Hy, float *dev_Hz)
+{
+	int ix = blockIdx.x;
+	int iy = blockIdx.y;
+	int iz = threadIdx.x;
+
+	int lidzheng; //**_zheng_* 前半部分的位置
+	int lidEx, lidEy, lidEz, lidHx, lidHy, lidHz;
+
+	lidzheng =
+		ix * (ny - 2 * npml) * (nz - 2 * npml) +
+		iy * (nz - 2 * npml) +
+		iz;
+	lidEx =
+		(ix + npml) * (ny + 1) * (nz + 1) +
+		(iy + npml) * (nz + 1) +
+		(iz + npml);
+	lidEy =
+		(ix + npml) * (ny + 0) * (nz + 1) +
+		(iy + npml) * (nz + 1) +
+		(iz + npml);
+	lidEz =
+		(ix + npml) * (ny + 1) * (nz + 0) +
+		(iy + npml) * (nz + 0) +
+		(iz + npml);
+	lidHx =
+		(ix + npml) * (ny + 0) * (nz + 0) +
+		(iy + npml) * (nz + 0) +
+		(iz + npml);
+	lidHy =
+		(ix + npml) * (ny + 1) * (nz + 0) +
+		(iy + npml) * (nz + 0) +
+		(iz + npml);
+	lidHz =
+		(ix + npml) * (ny + 0) * (nz + 1) +
+		(iy + npml) * (nz + 1) +
+		(iz + npml);
+
+	dev_Ex_zheng[lidzheng] = dev_Ex[lidEx];
+	dev_Ey_zheng[lidzheng] = dev_Ey[lidEy];
+	dev_Ez_zheng[lidzheng] = dev_Ez[lidEz];
+	dev_Hx_zheng[lidzheng] = dev_Hx[lidHx];
+	dev_Hy_zheng[lidzheng] = dev_Hy[lidHy];
+	dev_Hz_zheng[lidzheng] = dev_Hz[lidHz];
+}
+
+
+__global__ void gpu_back_zheng_1(
+	float *dev_Ex_zheng, float *dev_Ey_zheng, float *dev_Ez_zheng,
+	float *dev_Hx_zheng, float *dev_Hy_zheng, float *dev_Hz_zheng,
+	float *dev_Ex, float *dev_Ey, float *dev_Ez,
+	float *dev_Hx, float *dev_Hy, float *dev_Hz,
+	int j)
+{
+	int ix = blockIdx.x;
+	int iy = blockIdx.y;
+	int iz = threadIdx.x;
+
+	int lidzheng; //**_zheng_* 前半部分的位置
+	int ridzheng; //**_zheng_* 后半部分的位置
+	int lidEx, lidEy, lidEz, lidHx, lidHy, lidHz;
+	int ridEx, ridEy, ridEz, ridHx, ridHy, ridHz;
+
+	lidzheng =
+		j * (2 * npmlc) * (ny - 2 * npml) * (nz - 2 * npml) +
+		ix * (ny - 2 * npml) * (nz - 2 * npml) +
+		iy * (nz - 2 * npml) +
+		iz;
+	lidEx =
+		(ix + npml) * (ny + 1) * (nz + 1) +
+		(iy + npml) * (nz + 1) +
+		(iz + npml);
+	lidEy =
+		(ix + npml) * (ny + 0) * (nz + 1) +
+		(iy + npml) * (nz + 1) +
+		(iz + npml);
+	lidEz =
+		(ix + npml) * (ny + 1) * (nz + 0) +
+		(iy + npml) * (nz + 0) +
+		(iz + npml);
+	lidHx =
+		(ix + npml) * (ny + 0) * (nz + 0) +
+		(iy + npml) * (nz + 0) +
+		(iz + npml);
+	lidHy =
+		(ix + npml) * (ny + 1) * (nz + 0) +
+		(iy + npml) * (nz + 0) +
+		(iz + npml);
+	lidHz =
+		(ix + npml) * (ny + 0) * (nz + 1) +
+		(iy + npml) * (nz + 1) +
+		(iz + npml);
+
+	ridzheng = lidzheng + (ny - 2 * npml) * (nz - 2 * npml) * (npmlc);
+	ridEx = lidEx + (ny + 1) * (nz + 1) * (nx - 2 * npml - npmlc);
+	ridEy = lidEy + (ny + 0) * (nz + 1) * (nx - 2 * npml - npmlc);
+	ridEz = lidEz + (ny + 1) * (nz + 0) * (nx - 2 * npml - npmlc);
+	ridHx = lidHx + (ny + 0) * (nz + 0) * (nx - 2 * npml - npmlc);
+	ridHy = lidHy + (ny + 1) * (nz + 0) * (nx - 2 * npml - npmlc);
+	ridHz = lidHz + (ny + 0) * (nz + 1) * (nx - 2 * npml - npmlc);
+
+	dev_Ex[lidEx] = dev_Ex_zheng[lidzheng];
+	dev_Ey[lidEy] = dev_Ey_zheng[lidzheng];
+	dev_Ez[lidEz] = dev_Ez_zheng[lidzheng];
+	dev_Hx[lidHx] = dev_Hx_zheng[lidzheng];
+	dev_Hy[lidHy] = dev_Hy_zheng[lidzheng];
+	dev_Hz[lidHz] = dev_Hz_zheng[lidzheng];
+	dev_Ex[ridEx] = dev_Ex_zheng[ridzheng];
+	dev_Ey[ridEy] = dev_Ey_zheng[ridzheng];
+	dev_Ez[ridEz] = dev_Ez_zheng[ridzheng];
+	dev_Hx[ridHx] = dev_Hx_zheng[ridzheng];
+	dev_Hy[ridHy] = dev_Hy_zheng[ridzheng];
+	dev_Hz[ridHz] = dev_Hz_zheng[ridzheng];
+}
+
+__global__ void gpu_back_zheng_2(
+	float *dev_Ex_zheng, float *dev_Ey_zheng, float *dev_Ez_zheng,
+	float *dev_Hx_zheng, float *dev_Hy_zheng, float *dev_Hz_zheng,
+	float *dev_Ex, float *dev_Ey, float *dev_Ez,
+	float *dev_Hx, float *dev_Hy, float *dev_Hz,
+	int j)
+{
+	int ix = blockIdx.x;
+	int iy = blockIdx.y;
+	int iz = threadIdx.x;
+
+	int lidzheng; //**_zheng_* 前半部分的位置
+	int ridzheng; //**_zheng_* 后半部分的位置
+	int lidEx, lidEy, lidEz, lidHx, lidHy, lidHz;
+	int ridEx, ridEy, ridEz, ridHx, ridHy, ridHz;
+
+	lidzheng =
+		j * (nx - 2 * npml) * (2 * npmlc) * (nz - 2 * npml) +
+		ix * (2 * npmlc) * (nz - 2 * npml) +
+		iy * (nz - 2 * npml) +
+		iz;
+	lidEx =
+		(ix + npml) * (ny + 1) * (nz + 1) +
+		(iy + npml) * (nz + 1) +
+		(iz + npml);
+	lidEy =
+		(ix + npml) * (ny + 0) * (nz + 1) +
+		(iy + npml) * (nz + 1) +
+		(iz + npml);
+	lidEz =
+		(ix + npml) * (ny + 1) * (nz + 0) +
+		(iy + npml) * (nz + 0) +
+		(iz + npml);
+	lidHx =
+		(ix + npml) * (ny + 0) * (nz + 0) +
+		(iy + npml) * (nz + 0) +
+		(iz + npml);
+	lidHy =
+		(ix + npml) * (ny + 1) * (nz + 0) +
+		(iy + npml) * (nz + 0) +
+		(iz + npml);
+	lidHz =
+		(ix + npml) * (ny + 0) * (nz + 1) +
+		(iy + npml) * (nz + 1) +
+		(iz + npml);
+
+
+	ridzheng = lidzheng + (nz - 2 * npml) * (npmlc);
+	ridEx = lidEx + (nz + 1) * (ny - 2 * npml - npmlc);
+	ridEy = lidEy + (nz + 1) * (ny - 2 * npml - npmlc);
+	ridEz = lidEz + (nz + 0) * (ny - 2 * npml - npmlc);
+	ridHx = lidHx + (nz + 0) * (ny - 2 * npml - npmlc);
+	ridHy = lidHy + (nz + 0) * (ny - 2 * npml - npmlc);
+	ridHz = lidHz + (nz + 1) * (ny - 2 * npml - npmlc);
+
+	dev_Ex[lidEx] = dev_Ex_zheng[lidzheng];
+	dev_Ey[lidEy] = dev_Ey_zheng[lidzheng];
+	dev_Ez[lidEz] = dev_Ez_zheng[lidzheng];
+	dev_Hx[lidHx] = dev_Hx_zheng[lidzheng];
+	dev_Hy[lidHy] = dev_Hy_zheng[lidzheng];
+	dev_Hz[lidHz] = dev_Hz_zheng[lidzheng];
+	dev_Ex[ridEx] = dev_Ex_zheng[ridzheng];
+	dev_Ey[ridEy] = dev_Ey_zheng[ridzheng];
+	dev_Ez[ridEz] = dev_Ez_zheng[ridzheng];
+	dev_Hx[ridHx] = dev_Hx_zheng[ridzheng];
+	dev_Hy[ridHy] = dev_Hy_zheng[ridzheng];
+	dev_Hz[ridHz] = dev_Hz_zheng[ridzheng];
+}
+
+__global__ void gpu_back_zheng_3(
+	float *dev_Ex_zheng, float *dev_Ey_zheng, float *dev_Ez_zheng,
+	float *dev_Hx_zheng, float *dev_Hy_zheng, float *dev_Hz_zheng,
+	float *dev_Ex, float *dev_Ey, float *dev_Ez,
+	float *dev_Hx, float *dev_Hy, float *dev_Hz,
+	int j)
+{
+	int ix = blockIdx.x;
+	int iy = blockIdx.y;
+	int iz = threadIdx.x;
+
+	int lidzheng; //**_zheng_* 前半部分的位置
+	int ridzheng; //**_zheng_* 后半部分的位置
+	int lidEx, lidEy, lidEz, lidHx, lidHy, lidHz;
+	int ridEx, ridEy, ridEz, ridHx, ridHy, ridHz;
+
+	lidzheng =
+		j * (nx - 2 * npml) * (ny - 2 * npml) * (2 * npmlc) +
+		ix * (ny - 2 * npml) * (2 * npmlc) +
+		iy * (2 * npmlc) +
+		iz;
+	lidEx =
+		(ix + npml) * (ny + 1) * (nz + 1) +
+		(iy + npml) * (nz + 1) +
+		(iz + npml);
+	lidEy =
+		(ix + npml) * (ny + 0) * (nz + 1) +
+		(iy + npml) * (nz + 1) +
+		(iz + npml);
+	lidEz =
+		(ix + npml) * (ny + 1) * (nz + 0) +
+		(iy + npml) * (nz + 0) +
+		(iz + npml);
+	lidHx =
+		(ix + npml) * (ny + 0) * (nz + 0) +
+		(iy + npml) * (nz + 0) +
+		(iz + npml);
+	lidHy =
+		(ix + npml) * (ny + 1) * (nz + 0) +
+		(iy + npml) * (nz + 0) +
+		(iz + npml);
+	lidHz =
+		(ix + npml) * (ny + 0) * (nz + 1) +
+		(iy + npml) * (nz + 1) +
+		(iz + npml);
+
+
+	ridzheng = lidzheng + (npmlc);
+	ridEx = lidEx + (nz - 2 * npml - npmlc);
+	ridEy = lidEy + (nz - 2 * npml - npmlc);
+	ridEz = lidEz + (nz - 2 * npml - npmlc);
+	ridHx = lidHx + (nz - 2 * npml - npmlc);
+	ridHy = lidHy + (nz - 2 * npml - npmlc);
+	ridHz = lidHz + (nz - 2 * npml - npmlc);
+
+	dev_Ex[lidEx] = dev_Ex_zheng[lidzheng];
+	dev_Ey[lidEy] = dev_Ey_zheng[lidzheng];
+	dev_Ez[lidEz] = dev_Ez_zheng[lidzheng];
+	dev_Hx[lidHx] = dev_Hx_zheng[lidzheng];
+	dev_Hy[lidHy] = dev_Hy_zheng[lidzheng];
+	dev_Hz[lidHz] = dev_Hz_zheng[lidzheng];
+	dev_Ex[ridEx] = dev_Ex_zheng[ridzheng];
+	dev_Ey[ridEy] = dev_Ey_zheng[ridzheng];
+	dev_Ez[ridEz] = dev_Ez_zheng[ridzheng];
+	dev_Hx[ridHx] = dev_Hx_zheng[ridzheng];
+	dev_Hy[ridHy] = dev_Hy_zheng[ridzheng];
+	dev_Hz[ridHz] = dev_Hz_zheng[ridzheng];
+}
+
+__global__ void gpu_back_zheng_last(
+	float *dev_Ex_zheng, float *dev_Ey_zheng, float *dev_Ez_zheng,
+	float *dev_Hx_zheng, float *dev_Hy_zheng, float *dev_Hz_zheng,
+	float *dev_Ex, float *dev_Ey, float *dev_Ez,
+	float *dev_Hx, float *dev_Hy, float *dev_Hz)
+{
+	int ix = blockIdx.x;
+	int iy = blockIdx.y;
+	int iz = threadIdx.x;
+
+	int lidzheng; //**_zheng_* 前半部分的位置
+	int lidEx, lidEy, lidEz, lidHx, lidHy, lidHz;
+
+	lidzheng =
+		ix * (ny - 2 * npml) * (nz - 2 * npml) +
+		iy * (nz - 2 * npml) +
+		iz;
+	lidEx =
+		(ix + npml) * (ny + 1) * (nz + 1) +
+		(iy + npml) * (nz + 1) +
+		(iz + npml);
+	lidEy =
+		(ix + npml) * (ny + 0) * (nz + 1) +
+		(iy + npml) * (nz + 1) +
+		(iz + npml);
+	lidEz =
+		(ix + npml) * (ny + 1) * (nz + 0) +
+		(iy + npml) * (nz + 0) +
+		(iz + npml);
+	lidHx =
+		(ix + npml) * (ny + 0) * (nz + 0) +
+		(iy + npml) * (nz + 0) +
+		(iz + npml);
+	lidHy =
+		(ix + npml) * (ny + 1) * (nz + 0) +
+		(iy + npml) * (nz + 0) +
+		(iz + npml);
+	lidHz =
+		(ix + npml) * (ny + 0) * (nz + 1) +
+		(iy + npml) * (nz + 1) +
+		(iz + npml);
+
+	dev_Ex[lidEx] = dev_Ex_zheng[lidzheng];
+	dev_Ey[lidEy] = dev_Ey_zheng[lidzheng];
+	dev_Ez[lidEz] = dev_Ez_zheng[lidzheng];
+	dev_Hx[lidHx] = dev_Hx_zheng[lidzheng];
+	dev_Hy[lidHy] = dev_Hy_zheng[lidzheng];
+	dev_Hz[lidHz] = dev_Hz_zheng[lidzheng];
+}
+
+dim3 grid_fan_huanyuan(nx - 2 * npml, ny - 2 * npml);
+dim3 block_fan_huanyuan(nz - 2 * npml);
+__global__ void gpu_fan_huanyuan(float *dev_dst, float *dev_Ex)
+{
+	int ix = blockIdx.x;
+	int iy = blockIdx.y;
+	int iz = threadIdx.x;
+
+	int lidfan, lidEx; //**_zheng_* 前半部分的位置
+
+	lidfan =
+		ix * (ny - 2 * npml) * (nz - 2 * npml) +
+		iy * (nz - 2 * npml) +
+		iz;
+	lidEx =
+		(ix + npml) * (ny + 1) * (nz + 1) +
+		(iy + npml) * (nz + 1) +
+		(iz + npml);
+	dev_dst[lidfan] = dev_Ex[lidEx];
+}
+
+
+dim3 grid_HE1(nx - np - np, ny - np - np);
+dim3 block_HE1(nz - np - np);
+__global__ void gpu_H1(
+	float *dev_Hx1, float *dev_Hy1, float *dev_Hz1, 
+	float *dev_Ex1, float *dev_Ey1, float *dev_Ez1, 
+	float *dev_CPHx, float *dev_CPHy, float *dev_CPHz,
+	float *dev_CQHx, float *dev_CQHy, float *dev_CQHz)
+{
+	int ix = blockIdx.x;
+	int iy = blockIdx.y;
+	int iz = blockIdx.z;
+	int idxHx1 = (ix + np)*(ny + 0)*(nz + 0) + (iy + np)*(nz + 0) + (iz + np);
+	int idxHy1 = (ix + np)*(ny + 1)*(nz + 0) + (iy + np)*(nz + 0) + (iz + np);
+	int idxHz1 = (ix + np)*(ny + 0)*(nz + 1) + (iy + np)*(nz + 1) + (iz + np);
+	int idxEx1 = (ix + np)*(ny + 1)*(nz + 1) + (iy + np)*(nz + 1) + (iz + np);
+	int idxEy1 = (ix + np)*(ny + 0)*(nz + 1) + (iy + np)*(nz + 1) + (iz + np);
+	int idxEz1 = (ix + np)*(ny + 1)*(nz + 0) + (iy + np)*(nz + 0) + (iz + np);
+	int delEz1_Hx1 = nz;
+	int delEy1_Hx1 = 1;
+	int delEx1_Hy1 = 1;
+	int delEz1_Hy1 = (ny + 1) * nz;
+	int delEy1_Hz1 = ny * (nz + 1);
+	int delEx1_Hz1 = nz + 1;
+
+	const float rfCPHx = 1 / dev_CPHx[idxHx1];// 倒数reciprocal of fCPHx
+	const float fCQHx = dev_CQHx[idxHx1]; 
+	dev_Hx1[idxHx1] = rfCPHx * dev_Hx1[idxHx1]
+		+ rfCPHx * fCQHx / dy * (dev_Ez1[idxEz1 + delEz1_Hx1] - dev_Ez1[idxEz1])
+		- rfCPHx * fCQHx / dz * (dev_Ey1[idxEy1 + delEy1_Hx1] - dev_Ey1[idxEy1]);
+
+	const float rfCPHy = 1 / dev_CPHy[idxHy1];// 倒数reciprocal of fCPHy
+	const float fCQHy = dev_CQHy[idxHy1];
+	dev_Hy1[idxHy1] = rfCPHy * dev_Hy1[idxHy1]
+		+ rfCPHy * fCQHy / dz * (dev_Ex1[idxEx1 + delEx1_Hy1] - dev_Ex1[idxEx1])
+		- rfCPHy * fCQHy / dx * (dev_Ez1[idxEz1 + delEz1_Hy1] - dev_Ez1[idxEz1]);
+
+	const float rfCPHz = 1 / dev_CPHz[idxHz1];// 倒数reciprocal of fCPHz
+	const float fCQHz = dev_CQHz[idxHz1];
+	dev_Hz1[idxHz1] = rfCPHz * dev_Hz1[idxHz1]
+		+ rfCPHz * fCQHz / dx * (dev_Ey1[idxEy1 + delEy1_Hz1] - dev_Ey1[idxEy1])
+		- rfCPHz * fCQHz / dy * (dev_Ex1[idxEx1 + delEx1_Hz1] - dev_Ex1[idxEx1]);
+
+}
+
+__global__ void gpu_E1(
+	float *dev_Hx1, float *dev_Hy1, float *dev_Hz1,
+	float *dev_Ex1, float *dev_Ey1, float *dev_Ez1,
+	float *dev_CAEx, float *dev_CAEy, float *dev_CAEz,
+	float *dev_CBEx, float *dev_CBEy, float *dev_CBEz)
+{
+	int ix = blockIdx.x;
+	int iy = blockIdx.y;
+	int iz = blockIdx.z;
+	int idxHx1 = (ix + np)*(ny + 0)*(nz + 0) + (iy + np)*(nz + 0) + (iz + np);
+	int idxHy1 = (ix + np)*(ny + 1)*(nz + 0) + (iy + np)*(nz + 0) + (iz + np);
+	int idxHz1 = (ix + np)*(ny + 0)*(nz + 1) + (iy + np)*(nz + 1) + (iz + np);
+	int idxEx1 = (ix + np)*(ny + 1)*(nz + 1) + (iy + np)*(nz + 1) + (iz + np);
+	int idxEy1 = (ix + np)*(ny + 0)*(nz + 1) + (iy + np)*(nz + 1) + (iz + np);
+	int idxEz1 = (ix + np)*(ny + 1)*(nz + 0) + (iy + np)*(nz + 0) + (iz + np);
+	int delHz1_Ex1 = nz + 1;
+	int delHy1_Ex1 = 1;
+	int delHx1_Ey1 = 1;
+	int delHz1_Ey1 = ny * (nz + 1);
+	int delHy1_Ez1 = (ny + 1) * nz;
+	int delHx1_Ez1 = nz;
+
+	const float rfCAEx = 1 / dev_CAEx[idxEx1];// 倒数reciprocal of fCAEx
+	const float fCBEx = dev_CBEx[idxEx1];
+	dev_Ex1[idxEx1] = rfCAEx * dev_Ex1[idxEx1]
+		+ rfCAEx * fCBEx / dy * (dev_Hz1[idxHz1] - dev_Hz1[idxHz1 - delHz1_Ex1])
+		- rfCAEx * fCBEx / dz * (dev_Hy1[idxHy1] - dev_Hy1[idxHy1 - delHy1_Ex1]);
+
+	const float rfCAEy = 1 / dev_CAEy[idxEy1];// 倒数reciprocal of fCAEy
+	const float fCBEy = dev_CBEy[idxEy1];
+	dev_Ey1[idxEy1] = rfCAEy * dev_Ey1[idxEy1]
+		+ rfCAEy * fCBEy / dz * (dev_Hx1[idxHx1] - dev_Hx1[idxHx1 - delHx1_Ey1])
+		- rfCAEy * fCBEy / dx * (dev_Hz1[idxHz1] - dev_Hz1[idxHz1 - delHz1_Ey1]);
+
+	const float rfCAEz = 1 / dev_CAEz[idxEz1];// 倒数reciprocal of fCAEz
+	const float fCBEz = dev_CBEz[idxEz1];
+	dev_Ez1[idxEz1] = rfCAEz * dev_Ez1[idxEz1]
+		+ rfCAEz * fCBEz / dx * (dev_Hy1[idxHy1] - dev_Hy1[idxHy1 - delHy1_Ez1])
+		- rfCAEz * fCBEz / dy * (dev_Hx1[idxHx1] - dev_Hx1[idxHx1 - delHx1_Ez1]);
+
+}
+
+dim3 grid_nzf(nx - 2 * npml, ny - 2 * npml);
+dim3 block_nzf(nz - 2 * npml);
+__global__ void gpu_nzf(float *dev_dst, float *dev_src1, float *dev_src2)
+{
+	int idx =
+		blockIdx.x * (ny - 2 * npml) * (nz - 2 * npml) +
+		blockIdx.y * (nz - 2 * npml) +
+		threadIdx.x;
+	dev_dst[idx] = dev_src1[idx] * dev_src2[idx];
 }
 
 void read_int(const char *name, int *a, int n1, int n2, int n3)
@@ -1009,6 +1613,12 @@ void gpu_memory_malloc()
 	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
 	cudaStatus = cudaMalloc((void**)&dev_huanyuan, sizeof(huanyuan));
 	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_ns, sizeof(ns));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_zv, sizeof(zv));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_fv, sizeof(fv));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
 
 	cudaStatus = cudaMalloc((void**)&dev_Ex1, sizeof(Ex1));
 	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
@@ -1026,46 +1636,46 @@ void gpu_memory_malloc()
 
 	// 超大数组
 
-	cudaStatus = cudaMalloc((void**)&dev_Ex_zheng_1, (it)*(2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
+	cudaStatus = cudaMalloc((void**)&dev_Ex_zheng_1, (it)*(2 * npmlc)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
 	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
-	cudaStatus = cudaMalloc((void**)&dev_Ex_zheng_2, (it)*(nx - 2 * npml)*(2 * npml)*(nz - 2 * npml) * sizeof(float));
+	cudaStatus = cudaMalloc((void**)&dev_Ex_zheng_2, (it)*(nx - 2 * npml)*(2 * npmlc)*(nz - 2 * npml) * sizeof(float));
 	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
-	cudaStatus = cudaMalloc((void**)&dev_Ex_zheng_3, (it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npml) * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
-
-	cudaStatus = cudaMalloc((void**)&dev_Ey_zheng_1, (it)*(2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
-	cudaStatus = cudaMalloc((void**)&dev_Ey_zheng_2, (it)*(nx - 2 * npml)*(2 * npml)*(nz - 2 * npml) * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
-	cudaStatus = cudaMalloc((void**)&dev_Ey_zheng_3, (it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npml) * sizeof(float));
+	cudaStatus = cudaMalloc((void**)&dev_Ex_zheng_3, (it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npmlc) * sizeof(float));
 	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
 
-	cudaStatus = cudaMalloc((void**)&dev_Ez_zheng_1, (it)*(2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
+	cudaStatus = cudaMalloc((void**)&dev_Ey_zheng_1, (it)*(2 * npmlc)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
 	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
-	cudaStatus = cudaMalloc((void**)&dev_Ez_zheng_2, (it)*(nx - 2 * npml)*(2 * npml)*(nz - 2 * npml) * sizeof(float));
+	cudaStatus = cudaMalloc((void**)&dev_Ey_zheng_2, (it)*(nx - 2 * npml)*(2 * npmlc)*(nz - 2 * npml) * sizeof(float));
 	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
-	cudaStatus = cudaMalloc((void**)&dev_Ez_zheng_3, (it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npml) * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
-
-	cudaStatus = cudaMalloc((void**)&dev_Hx_zheng_1, (it)*(2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
-	cudaStatus = cudaMalloc((void**)&dev_Hx_zheng_2, (it)*(nx - 2 * npml)*(2 * npml)*(nz - 2 * npml) * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
-	cudaStatus = cudaMalloc((void**)&dev_Hx_zheng_3, (it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npml) * sizeof(float));
+	cudaStatus = cudaMalloc((void**)&dev_Ey_zheng_3, (it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npmlc) * sizeof(float));
 	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
 
-	cudaStatus = cudaMalloc((void**)&dev_Hy_zheng_1, (it)*(2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
+	cudaStatus = cudaMalloc((void**)&dev_Ez_zheng_1, (it)*(2 * npmlc)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
 	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
-	cudaStatus = cudaMalloc((void**)&dev_Hy_zheng_2, (it)*(nx - 2 * npml)*(2 * npml)*(nz - 2 * npml) * sizeof(float));
+	cudaStatus = cudaMalloc((void**)&dev_Ez_zheng_2, (it)*(nx - 2 * npml)*(2 * npmlc)*(nz - 2 * npml) * sizeof(float));
 	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
-	cudaStatus = cudaMalloc((void**)&dev_Hy_zheng_3, (it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npml) * sizeof(float));
+	cudaStatus = cudaMalloc((void**)&dev_Ez_zheng_3, (it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npmlc) * sizeof(float));
 	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
 
-	cudaStatus = cudaMalloc((void**)&dev_Hz_zheng_1, (it)*(2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
+	cudaStatus = cudaMalloc((void**)&dev_Hx_zheng_1, (it)*(2 * npmlc)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
 	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
-	cudaStatus = cudaMalloc((void**)&dev_Hz_zheng_2, (it)*(nx - 2 * npml)*(2 * npml)*(nz - 2 * npml) * sizeof(float));
+	cudaStatus = cudaMalloc((void**)&dev_Hx_zheng_2, (it)*(nx - 2 * npml)*(2 * npmlc)*(nz - 2 * npml) * sizeof(float));
 	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
-	cudaStatus = cudaMalloc((void**)&dev_Hz_zheng_3, (it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npml) * sizeof(float));
+	cudaStatus = cudaMalloc((void**)&dev_Hx_zheng_3, (it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npmlc) * sizeof(float));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
+
+	cudaStatus = cudaMalloc((void**)&dev_Hy_zheng_1, (it)*(2 * npmlc)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_Hy_zheng_2, (it)*(nx - 2 * npml)*(2 * npmlc)*(nz - 2 * npml) * sizeof(float));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_Hy_zheng_3, (it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npmlc) * sizeof(float));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
+
+	cudaStatus = cudaMalloc((void**)&dev_Hz_zheng_1, (it)*(2 * npmlc)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_Hz_zheng_2, (it)*(nx - 2 * npml)*(2 * npmlc)*(nz - 2 * npml) * sizeof(float));
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
+	cudaStatus = cudaMalloc((void**)&dev_Hz_zheng_3, (it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npmlc) * sizeof(float));
 	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
 
 	cudaStatus = cudaMalloc((void**)&dev_Ex_zheng_last, (nx - 2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
@@ -1087,7 +1697,7 @@ Error:
 
 // flag == 0 将GPU显存中的E*, UE**, H*, UH**, (V, E_obs)置零
 // flag == 1 将GPU显存中的E*, UE**, H*, UH**, (V, E*_zheng_*, H*_zheng_*, E*_zheng_last, H*_zheng_last, fan, huanyuan)置零
-// flag == 2 将GPU显存中的E*, UE**, H*, UH**, (V, E*1, H*1, )置零
+// flag == 2 将GPU显存中的E*, UE**, H*, UH**, (V, E*1, H*1)置零
 void gpu_memory_set_zero(int flag)
 {
 	int szEx = nx * (ny + 1)*(nz + 1);
@@ -1097,7 +1707,6 @@ void gpu_memory_set_zero(int flag)
 	int szHy = nx * (ny + 1)*nz;
 	int szHz = nx * ny*(nz + 1);
 
-	//gpu显存新创建数组，原来内存中不存在
 	cudaMemset(dev_Ex, 0, szEx * sizeof(float));
 	cudaMemset(dev_UEyz, 0, szEx * sizeof(float));
 	cudaMemset(dev_UEzy, 0, szEx * sizeof(float));
@@ -1125,36 +1734,36 @@ void gpu_memory_set_zero(int flag)
 	if (flag == 0)
 	{
 		cudaMemset(dev_V, 0, sizeof(V));
-		cudaMemset(dev_E_obs, 0, sizeof(E_obs));		
-	} 
+		cudaMemset(dev_E_obs, 0, sizeof(E_obs));
+	}
 	else if (flag == 1)
 	{
 		cudaMemset(dev_V, 0, sizeof(V));
-		
-		cudaMemset(dev_Ex_zheng_1, 0, (it)*(2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
-		cudaMemset(dev_Ex_zheng_2, 0, (it)*(nx - 2 * npml)*(2 * npml)*(nz - 2 * npml) * sizeof(float));
-		cudaMemset(dev_Ex_zheng_3, 0, (it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npml) * sizeof(float));
 
-		cudaMemset(dev_Ey_zheng_1, 0, (it)*(2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
-		cudaMemset(dev_Ey_zheng_2, 0, (it)*(nx - 2 * npml)*(2 * npml)*(nz - 2 * npml) * sizeof(float));
-		cudaMemset(dev_Ey_zheng_3, 0, (it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npml) * sizeof(float));
+		cudaMemset(dev_Ex_zheng_1, 0, (it)*(2 * npmlc)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
+		cudaMemset(dev_Ex_zheng_2, 0, (it)*(nx - 2 * npml)*(2 * npmlc)*(nz - 2 * npml) * sizeof(float));
+		cudaMemset(dev_Ex_zheng_3, 0, (it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npmlc) * sizeof(float));
 
-		cudaMemset(dev_Ez_zheng_1, 0, (it)*(2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
-		cudaMemset(dev_Ez_zheng_2, 0, (it)*(nx - 2 * npml)*(2 * npml)*(nz - 2 * npml) * sizeof(float));
-		cudaMemset(dev_Ez_zheng_3, 0, (it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npml) * sizeof(float));
+		cudaMemset(dev_Ey_zheng_1, 0, (it)*(2 * npmlc)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
+		cudaMemset(dev_Ey_zheng_2, 0, (it)*(nx - 2 * npml)*(2 * npmlc)*(nz - 2 * npml) * sizeof(float));
+		cudaMemset(dev_Ey_zheng_3, 0, (it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npmlc) * sizeof(float));
 
-		cudaMemset(dev_Hx_zheng_1, 0, (it)*(2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
-		cudaMemset(dev_Hx_zheng_2, 0, (it)*(nx - 2 * npml)*(2 * npml)*(nz - 2 * npml) * sizeof(float));
-		cudaMemset(dev_Hx_zheng_3, 0, (it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npml) * sizeof(float));
+		cudaMemset(dev_Ez_zheng_1, 0, (it)*(2 * npmlc)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
+		cudaMemset(dev_Ez_zheng_2, 0, (it)*(nx - 2 * npml)*(2 * npmlc)*(nz - 2 * npml) * sizeof(float));
+		cudaMemset(dev_Ez_zheng_3, 0, (it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npmlc) * sizeof(float));
 
-		cudaMemset(dev_Hy_zheng_1, 0, (it)*(2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
-		cudaMemset(dev_Hy_zheng_2, 0, (it)*(nx - 2 * npml)*(2 * npml)*(nz - 2 * npml) * sizeof(float));
-		cudaMemset(dev_Hy_zheng_3, 0, (it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npml) * sizeof(float));
+		cudaMemset(dev_Hx_zheng_1, 0, (it)*(2 * npmlc)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
+		cudaMemset(dev_Hx_zheng_2, 0, (it)*(nx - 2 * npml)*(2 * npmlc)*(nz - 2 * npml) * sizeof(float));
+		cudaMemset(dev_Hx_zheng_3, 0, (it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npmlc) * sizeof(float));
 
-		cudaMemset(dev_Hz_zheng_1, 0, (it)*(2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
-		cudaMemset(dev_Hz_zheng_2, 0, (it)*(nx - 2 * npml)*(2 * npml)*(nz - 2 * npml) * sizeof(float));
-		cudaMemset(dev_Hz_zheng_3, 0, (it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npml) * sizeof(float));
-		
+		cudaMemset(dev_Hy_zheng_1, 0, (it)*(2 * npmlc)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
+		cudaMemset(dev_Hy_zheng_2, 0, (it)*(nx - 2 * npml)*(2 * npmlc)*(nz - 2 * npml) * sizeof(float));
+		cudaMemset(dev_Hy_zheng_3, 0, (it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npmlc) * sizeof(float));
+
+		cudaMemset(dev_Hz_zheng_1, 0, (it)*(2 * npmlc)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
+		cudaMemset(dev_Hz_zheng_2, 0, (it)*(nx - 2 * npml)*(2 * npmlc)*(nz - 2 * npml) * sizeof(float));
+		cudaMemset(dev_Hz_zheng_3, 0, (it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npmlc) * sizeof(float));
+
 		size_t sz_last = (nx - 2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float);
 		cudaMemset(dev_Ex_zheng_last, 0, sz_last);
 		cudaMemset(dev_Ey_zheng_last, 0, sz_last);
@@ -1290,9 +1899,9 @@ void gpu_memory_copy()
 
 	cudaStatus = cudaMemcpy(dev_source, source, sizeof(source), cudaMemcpyHostToDevice);
 	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!"); goto Error; }
-	
-	Error:
-		return;
+
+Error:
+	return;
 }
 
 // 释放显存空间
@@ -1423,40 +2032,46 @@ void gpu_memory_free()
 
 	cudaFree(dev_fan);
 	cudaFree(dev_huanyuan);
+	cudaFree(dev_ns);
+	cudaFree(dev_zv);
+	cudaFree(dev_fv);
 }
 
 // gpu并行计算UH H UE E
-cudaError_t gpu_zheng_yan()
+void zheng_yan()
 {
 	cudaError_t cudaStatus = cudaSuccess;
 
-	calc_UHyz << < gridUHyz, blockUHyz >> > (dev_UHyz, dev_RBHyz, dev_RAHyz, dev_Ez, dy);
-	calc_UHzy << < gridUHzy, blockUHzy >> > (dev_UHzy, dev_RBHzy, dev_RAHzy, dev_Ey, dz);
-	calc_UHxy << < gridUHxy, blockUHxy >> > (dev_UHxy, dev_RBHxy, dev_RAHxy, dev_Ey, dx);
-	calc_UHxz << < gridUHxz, blockUHxz >> > (dev_UHxz, dev_RBHxz, dev_RAHxz, dev_Ez, dx);
-	calc_UHyx << < gridUHyx, blockUHyx >> > (dev_UHyx, dev_RBHyx, dev_RAHyx, dev_Ex, dy);
-	calc_UHzx << < gridUHzx, blockUHzx >> > (dev_UHzx, dev_RBHzx, dev_RAHzx, dev_Ex, dz);
+	gpu_UHyz << < gridUHyz, blockUHyz >> > (dev_UHyz, dev_RBHyz, dev_RAHyz, dev_Ez);
+	gpu_UHzy << < gridUHzy, blockUHzy >> > (dev_UHzy, dev_RBHzy, dev_RAHzy, dev_Ey);
+	gpu_UHxy << < gridUHxy, blockUHxy >> > (dev_UHxy, dev_RBHxy, dev_RAHxy, dev_Ey);
+	gpu_UHxz << < gridUHxz, blockUHxz >> > (dev_UHxz, dev_RBHxz, dev_RAHxz, dev_Ez);
+	gpu_UHyx << < gridUHyx, blockUHyx >> > (dev_UHyx, dev_RBHyx, dev_RAHyx, dev_Ex);
+	gpu_UHzx << < gridUHzx, blockUHzx >> > (dev_UHzx, dev_RBHzx, dev_RAHzx, dev_Ex);
 
-	calc_Hx << < gridHx, blockHx >> > (dev_Hx, dev_CPHx, dev_CQHx, dev_ky_Hx, dev_kz_Hx, dev_Ez, dev_Ey, dev_UHyz, dev_UHzy, dy, dz);
-	calc_Hy << < gridHy, blockHy >> > (dev_Hy, dev_CPHy, dev_CQHy, dev_kz_Hy, dev_kx_Hy, dev_Ex, dev_Ez, dev_UHzx, dev_UHxz, dz, dx);
-	calc_Hz << < gridHz, blockHz >> > (dev_Hz, dev_CPHz, dev_CQHz, dev_kx_Hz, dev_ky_Hz, dev_Ey, dev_Ex, dev_UHxy, dev_UHyx, dx, dy);
+	gpu_Hx << < gridHx, blockHx >> > (dev_Hx, dev_CPHx, dev_CQHx, dev_ky_Hx, dev_kz_Hx, dev_Ez, dev_Ey, dev_UHyz, dev_UHzy);
+	gpu_Hy << < gridHy, blockHy >> > (dev_Hy, dev_CPHy, dev_CQHy, dev_kz_Hy, dev_kx_Hy, dev_Ex, dev_Ez, dev_UHzx, dev_UHxz);
+	gpu_Hz << < gridHz, blockHz >> > (dev_Hz, dev_CPHz, dev_CQHz, dev_kx_Hz, dev_ky_Hz, dev_Ey, dev_Ex, dev_UHxy, dev_UHyx);
 
-	calc_UExy << < gridUExy, blockUExy >> > (dev_UExy, dev_RBExy, dev_RAExy, dev_Hy, dx);
-	calc_UExz << < gridUExz, blockUExz >> > (dev_UExz, dev_RBExz, dev_RAExz, dev_Hz, dx);
-	calc_UEyx << < gridUEyx, blockUEyx >> > (dev_UEyx, dev_RBEyx, dev_RAEyx, dev_Hx, dy);
-	calc_UEyz << < gridUEyz, blockUEyz >> > (dev_UEyz, dev_RBEyz, dev_RAEyz, dev_Hz, dy);
-	calc_UEzx << < gridUEzx, blockUEzx >> > (dev_UEzx, dev_RBEzx, dev_RAEzx, dev_Hx, dz);
-	calc_UEzy << < gridUEzy, blockUEzy >> > (dev_UEzy, dev_RBEzy, dev_RAEzy, dev_Hy, dz);
+	gpu_UExy << < gridUExy, blockUExy >> > (dev_UExy, dev_RBExy, dev_RAExy, dev_Hy);
+	gpu_UExz << < gridUExz, blockUExz >> > (dev_UExz, dev_RBExz, dev_RAExz, dev_Hz);
+	gpu_UEyx << < gridUEyx, blockUEyx >> > (dev_UEyx, dev_RBEyx, dev_RAEyx, dev_Hx);
+	gpu_UEyz << < gridUEyz, blockUEyz >> > (dev_UEyz, dev_RBEyz, dev_RAEyz, dev_Hz);
+	gpu_UEzx << < gridUEzx, blockUEzx >> > (dev_UEzx, dev_RBEzx, dev_RAEzx, dev_Hx);
+	gpu_UEzy << < gridUEzy, blockUEzy >> > (dev_UEzy, dev_RBEzy, dev_RAEzy, dev_Hy);
 
-	calc_Ex << < gridEx, blockEx >> > (dev_Ex, dev_CAEx, dev_CBEx, dev_ky_Ex, dev_kz_Ex, dev_Hz, dev_Hy, dev_UEyz, dev_UEzy, dy, dz);
-	calc_Ey << < gridEy, blockEy >> > (dev_Ey, dev_CAEy, dev_CBEy, dev_kz_Ey, dev_kx_Ey, dev_Hx, dev_Hz, dev_UEzx, dev_UExz, dz, dx);
-	calc_Ez << < gridEz, blockEz >> > (dev_Ez, dev_CAEz, dev_CBEz, dev_kx_Ez, dev_ky_Ez, dev_Hy, dev_Hx, dev_UExy, dev_UEyx, dx, dy);
+	gpu_Ex << < gridEx, blockEx >> > (dev_Ex, dev_CAEx, dev_CBEx, dev_ky_Ex, dev_kz_Ex, dev_Hz, dev_Hy, dev_UEyz, dev_UEzy);
+	gpu_Ey << < gridEy, blockEy >> > (dev_Ey, dev_CAEy, dev_CBEy, dev_kz_Ey, dev_kx_Ey, dev_Hx, dev_Hz, dev_UEzx, dev_UExz);
+	gpu_Ez << < gridEz, blockEz >> > (dev_Ez, dev_CAEz, dev_CBEz, dev_kx_Ez, dev_ky_Ez, dev_Hy, dev_Hx, dev_UExy, dev_UEyx);
 
 	// 计算过程是否出错?
 	cudaStatus = cudaGetLastError();
-	if (cudaStatus != cudaSuccess) { printf("Zhengyan Calc Failed: %s\n", cudaGetErrorString(cudaStatus)); return cudaStatus; }
-	return cudaStatus;
+	if (cudaStatus != cudaSuccess)
+	{
+		printf("Zhengyan Calc Failed: %s\n", cudaGetErrorString(cudaStatus));
+	}
 }
+
 
 cudaError_t gpu_parallel_one()
 {
@@ -1474,20 +2089,22 @@ cudaError_t gpu_parallel_one()
 				printf("i = %3d / %d,  j = %4d / %d\n", i, szfsw, j, it);
 			}
 
-			// 实现MATLAB中的Ex[fswzx[i] - 1][fswzy[i] - 1][fswzz[i] - 1] = source[j];
-			int fidx = (fswzx[i] - 1)*(ny + 1)*(nz + 1) + (fswzy[i] - 1)*(nz + 1) + fswzz[i] - 1;
-			cudaStatus = cudaMemcpy(&(dev_Ex[fidx]), &(dev_source[j]), sizeof(float), cudaMemcpyDeviceToDevice);
+			// matlab: Ex(fswzx(i),fswzy(i),fswzz(i))=source(j); 显存到显存
+			int idxEx = (fswzx[i] - 1) * (ny + 1) * (nz + 1) + (fswzy[i] - 1) * (nz + 1) + (fswzz[i] - 1);
+			cudaStatus = cudaMemcpy(&(dev_Ex[idxEx]), &(dev_source[j]), sizeof(float), cudaMemcpyDeviceToDevice);
+			if (cudaStatus != cudaSuccess) { printf("source --> Ex cudaMemcpy failed: %s\n", cudaGetErrorString(cudaStatus)); return cudaStatus; };
 
 			// 调用GPU运算正演
-			gpu_zheng_yan();
+			zheng_yan();
 
-			// 实现MATLAB中的V(j)=Ex(jswzx(i), jswzy(i), jswzz(i));
-			int jidx = (jswzx[i] - 1)*(ny + 1)*(nz + 1) + (jswzy[i] - 1)*(nz + 1) + jswzz[i] - 1;
-			cudaStatus = cudaMemcpy(&(dev_V[j]), &(dev_Ex[jidx]), sizeof(float), cudaMemcpyDeviceToDevice);
-			if (cudaStatus != cudaSuccess) { printf("V cudaMemcpy failed: %s\n", cudaGetErrorString(cudaStatus)); return cudaStatus; };
+			// matlab: V(j)=Ex(jswzx(i), jswzy(i), jswzz(i)); 显存到显存
+			idxEx = (jswzx[i] - 1) * (ny + 1) * (nz + 1) + (jswzy[i] - 1) * (nz + 1) + (jswzz[i] - 1);
+			cudaStatus = cudaMemcpy(&(dev_V[j]), &(dev_Ex[idxEx]), sizeof(float), cudaMemcpyDeviceToDevice);
+			if (cudaStatus != cudaSuccess) { printf("Ex --> V cudaMemcpy failed: %s\n", cudaGetErrorString(cudaStatus)); return cudaStatus; };
 
+			// matlab: E_obs(j,i) = V(j) 显存到内存
 			cudaStatus = cudaMemcpy(&(E_obs[j][i]), &(dev_V[j]), sizeof(float), cudaMemcpyDeviceToHost);
-			if (cudaStatus != cudaSuccess) { printf("V cudaMemcpy failed: %s\n", cudaGetErrorString(cudaStatus)); return cudaStatus; };
+			if (cudaStatus != cudaSuccess) { printf("V --> E_obs cudaMemcpy failed: %s\n", cudaGetErrorString(cudaStatus)); return cudaStatus; };
 		}
 	}
 
@@ -1500,48 +2117,136 @@ cudaError_t gpu_parallel_one()
 
 cudaError_t gpu_parallel_two()
 {
-	cudaError_t cudaStatus=cudaSuccess;
+	cudaError_t cudaStatus = cudaSuccess;
+	cudaMemset(dev_ns, 0, sizeof(ns));
+	cudaMemset(dev_zv, 0, sizeof(zv));
+	cudaMemset(dev_fv, 0, sizeof(fv));
+	cudaStatus = cudaGetLastError();
+	if (cudaStatus != cudaSuccess)
+	{
+		printf("ns&zv&fv cudaMemset Failed: %s\n", cudaGetErrorString(cudaStatus));
+		return cudaStatus;
+	}
 
 	int i, j;
 	for (i = 0; i < szfsw; i++)
 	{
+		// 111111
 		gpu_memory_set_zero(1); // flag == 1 将GPU显存中的E*, UE**, H*, UH**, (V, E*_zheng_*, H*_zheng_*, E*_zheng_last, H*_zheng_last, fan, huanyuan)置零
 		for (j = 0; j < it; j++)
 		{
-			if (j % 10 == 0) { printf("i = %3d / %d,  j = %4d / %d\n", i, szfsw, j, it); }
-
-			// 实现MATLAB中的Ex[fswzx[i] - 1][fswzy[i] - 1][fswzz[i] - 1] = source[j];
-			int fidx = (fswzx[i] - 1)*(ny + 1)*(nz + 1) + (fswzy[i] - 1)*(nz + 1) + fswzz[i] - 1;
-			cudaStatus = cudaMemcpy(&(dev_Ex[fidx]), &(dev_source[j]), sizeof(float), cudaMemcpyDeviceToDevice);
+			if (j % 50 == 0) { printf("i = %3d / %d,  j = %4d / %d\n", i, szfsw, j, it); }
 
 			// 调用GPU运算正演
-			gpu_zheng_yan();
-			size_t numBytes = (nz-2*npml) * sizeof(float);
+			zheng_yan();
 
-			// 复制的块大小 [npml,ny-2*npml,nz-2*npml]
-			// Ex_zheng_1(:,:,:,j)=Ex(npml+1:npml+npml      ,npml+1:ny-npml,npml+1:nz-npml);
-			// Ex_zheng_1(:,:,:,j)=Ex(nx-npml-npml+1:nx-npml,npml+1:ny-npml,npml+1:nz-npml);
-			/*
-			__global__ void gpu_copy_data_3D(float *dst, int dst_xsize, int dst_ysize, int dst_zsize, 
-											 float *src, int src_xsize, int src_ysize, int src_zsize, 
-											 int x, int y, int z, 
-											 int x_offset, int y_offset, int z_offst);
-											 */
-			
-			dim3 blockSize(npml);
-			dim3 gridSize(ny-2*npml, nz-2*npml);
-			gpu_copy_data_3D << <gridSize, blockSize >> > (dev_Ex_zheng_1 + j * (ny - 2 * npml)*(nz - 2 * npml), 2 * npml, ny - 2 * npml, nz - 2 * npml,
-				dev_Ex, nx, ny + 1, nz + 1,
-				npml, ny - 2 * npml, nz - 2 * npml,
-				npml, npml, npml);
-				
-			// 实现MATLAB中的V(j)=Ex(jswzx(i), jswzy(i), jswzz(i));
-			//int jidx = (jswzx[i] - 1)*(ny + 1)*(nz + 1) + (jswzy[i] - 1)*(nz + 1) + jswzz[i] - 1;
-			//cudaStatus = cudaMemcpy(&(dev_V[j]), &(dev_Ex[jidx]), sizeof(float), cudaMemcpyDeviceToDevice);
-			//if (cudaStatus != cudaSuccess) { printf("V cudaMemcpy failed: %s\n", cudaGetErrorString(cudaStatus)); return cudaStatus; };
+			gpu_zheng_1 << <grid_zheng_1, block_zheng_1 >> > (
+				dev_Ex_zheng_1, dev_Ey_zheng_1, dev_Ez_zheng_1,
+				dev_Hx_zheng_1, dev_Hy_zheng_1, dev_Hz_zheng_1,
+				dev_Ex, dev_Ey, dev_Ez,
+				dev_Hx, dev_Hy, dev_Hz,
+				j);
 
-			//cudaStatus = cudaMemcpy(&(E_obs[j][i]), &(dev_V[j]), sizeof(float), cudaMemcpyDeviceToHost);
-			//if (cudaStatus != cudaSuccess) { printf("V cudaMemcpy failed: %s\n", cudaGetErrorString(cudaStatus)); return cudaStatus; };
+			gpu_zheng_2 << <grid_zheng_2, block_zheng_2 >> > (
+				dev_Ex_zheng_2, dev_Ey_zheng_2, dev_Ez_zheng_2,
+				dev_Hx_zheng_2, dev_Hy_zheng_2, dev_Hz_zheng_2,
+				dev_Ex, dev_Ey, dev_Ez,
+				dev_Hx, dev_Hy, dev_Hz,
+				j);
+
+			gpu_zheng_3 << <grid_zheng_3, block_zheng_3 >> > (
+				dev_Ex_zheng_3, dev_Ey_zheng_3, dev_Ez_zheng_3,
+				dev_Hx_zheng_3, dev_Hy_zheng_3, dev_Hz_zheng_3,
+				dev_Ex, dev_Ey, dev_Ez,
+				dev_Hx, dev_Hy, dev_Hz,
+				j);
+
+			gpu_zheng_last << <grid_zheng_last, block_zheng_last >> > (
+				dev_Ex_zheng_last, dev_Ey_zheng_last, dev_Ez_zheng_last,
+				dev_Hx_zheng_last, dev_Hy_zheng_last, dev_Hz_zheng_last,
+				dev_Ex, dev_Ey, dev_Ez,
+				dev_Hx, dev_Hy, dev_Hz);
+		}
+
+		// 222222
+		gpu_memory_set_zero(2);
+		for (j = it - 1; j >= 0; j--)
+		{
+			//if (j % 50 == 0) { printf("i = %3d / %d,  j = %4d / %d\n", i, szfsw, j, it); }
+
+			//Ex(fswzx(i), fswzy(i), fswzz(i)) = E_obs(j, i);
+			int idxEx = (fswzx[i] - 1) * (ny + 1) * (nz + 1) + (fswzy[i] - 1) * (nz + 1) + (fswzz[i] - 1);
+			int idxE_obs = j * szfsw + i;
+			cudaStatus = cudaMemcpy(&(dev_Ex[idxEx]), &(dev_E_obs[idxE_obs]), sizeof(float), cudaMemcpyDeviceToDevice);
+			if (cudaStatus != cudaSuccess) 
+			{ 
+				printf("E_obs --> Ex cudaMemcpy failed: %s\n", cudaGetErrorString(cudaStatus));
+				return cudaStatus; 
+			}
+
+			// 调用GPU运算正演
+			zheng_yan();
+
+			// matlab: fan=Ex(npml+1:nx-npml,npml+1:ny-npml,npml+1:nz-npml);
+			gpu_fan_huanyuan << <grid_fan_huanyuan, block_fan_huanyuan >> > (dev_fan, dev_Ex);
+
+			if (j == it - 1)
+			{
+				gpu_back_zheng_last << <grid_zheng_last, block_zheng_last >> > (
+					dev_Ex_zheng_last, dev_Ey_zheng_last, dev_Ez_zheng_last,
+					dev_Hx_zheng_last, dev_Hy_zheng_last, dev_Hz_zheng_last,
+					dev_Ex1, dev_Ey1, dev_Ez1,
+					dev_Hx1, dev_Hy1, dev_Hz1);
+			}
+			else //j < it - 1
+			{
+				gpu_back_zheng_1 << <grid_zheng_1, block_zheng_1 >> > (
+					dev_Ex_zheng_1, dev_Ey_zheng_1, dev_Ez_zheng_1,
+					dev_Hx_zheng_1, dev_Hy_zheng_1, dev_Hz_zheng_1,
+					dev_Ex1, dev_Ey1, dev_Ez1,
+					dev_Hx1, dev_Hy1, dev_Hz1,
+					j);
+
+				gpu_back_zheng_2 << <grid_zheng_2, block_zheng_2 >> > (
+					dev_Ex_zheng_2, dev_Ey_zheng_2, dev_Ez_zheng_2,
+					dev_Hx_zheng_2, dev_Hy_zheng_2, dev_Hz_zheng_2,
+					dev_Ex1, dev_Ey1, dev_Ez1,
+					dev_Hx1, dev_Hy1, dev_Hz1,
+					j);
+
+				gpu_back_zheng_3 << <grid_zheng_3, block_zheng_3 >> > (
+					dev_Ex_zheng_3, dev_Ey_zheng_3, dev_Ez_zheng_3,
+					dev_Hx_zheng_3, dev_Hy_zheng_3, dev_Hz_zheng_3,
+					dev_Ex1, dev_Ey1, dev_Ez1,
+					dev_Hx1, dev_Hy1, dev_Hz1,
+					j);
+
+				// matlab: Ex1(fswzx(i), fswzy(i), fswzz(i)) = source(j);
+				int idxEx1 = (fswzx[i] - 1) * (ny + 1) * (nz + 1) + (fswzy[i] - 1) * (nz + 1) + (fswzz[i] - 1);
+				cudaStatus = cudaMemcpy(&(dev_Ex1[idxEx1]), &(dev_source[j]), sizeof(float), cudaMemcpyDeviceToDevice);
+				if (cudaStatus != cudaSuccess) 
+				{ 
+					printf("source --> Ex1 cudaMemcpy failed: %s\n", cudaGetErrorString(cudaStatus)); 
+					return cudaStatus; 
+				}
+
+				gpu_H1 << <grid_HE1, block_HE1 >> > (
+					dev_Hx1, dev_Hy1, dev_Hz1,
+					dev_Ex1, dev_Ey1, dev_Ez1,
+					dev_CPHx, dev_CPHy, dev_CPHz,
+					dev_CQHx, dev_CQHy, dev_CQHz);
+				gpu_E1 << <grid_HE1, block_HE1 >> > (
+					dev_Hx1, dev_Hy1, dev_Hz1,
+					dev_Ex1, dev_Ey1, dev_Ez1,
+					dev_CAEx, dev_CAEy, dev_CAEz,
+					dev_CBEx, dev_CBEy, dev_CBEz);
+			}
+
+			// matlab: huanyuan=Ex1(npml+1:nx-npml,npml+1:ny-npml,npml+1:nz-npml);
+			gpu_fan_huanyuan << <grid_fan_huanyuan, block_fan_huanyuan >> > (dev_huanyuan, dev_Ex);
+			gpu_nzf << <grid_nzf, block_nzf >> > (dev_ns, dev_huanyuan, dev_fan);
+			gpu_nzf << <grid_nzf, block_nzf >> > (dev_zv, dev_huanyuan, dev_huanyuan);
+			gpu_nzf << <grid_nzf, block_nzf >> > (dev_fv, dev_fan, dev_fan);
 		}
 	}
 
@@ -1567,7 +2272,7 @@ int main()
 	}
 	else
 	{
-		printf("addr of Hz_zheng_3 is %p\n",Hz_zheng_3);
+		printf("addr of Hz_zheng_3 is %p\n", Hz_zheng_3);
 	}
 	// 从matlab输出的文本文件中读取数据
 	read_data_from_txt();

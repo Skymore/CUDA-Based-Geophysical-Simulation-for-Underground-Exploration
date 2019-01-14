@@ -1,24 +1,27 @@
 #include<math.h>
 #include<stdlib.h>
 
-#define it (200)
+#define it (800)
 #define npml (10)
+#define npmlc (4)
+#define np (14) // np = npml + npmlc;
 #define nx (170)
 #define ny (120)
 #define nz (120)
 #define szfsw (185)
+#define dx (0.01)
+#define dy (0.01)
+#define dz (0.01)
+#define pi (3.141592653589)
 #define path "C:\\Users\\sky\\Desktop\\Tujian_github\\Tujian_Linux" // 程序运行的目录
 #define cudaDevice 1 // 程序使用的gpu
 /************************************************************************************
 * 内存参数表
 ************************************************************************************/
-const float pi = 3.14159265358979323846;
 const float c = 2.99792458e8;
 const float mu_0 = 4.0*pi*1.0e-7;
 const float eps_0 = 1.0 / (c*c*mu_0);
-const float dx = 0.01;
-const float dy = 0.01;
-const float dz = 0.01;
+
 const float dt = 1 / (sqrt(1 / (dx*dx)+1 / (dy*dy)+1 / (dz*dz))*c);
 const float freq = 500*1.0e6;
 
@@ -147,29 +150,29 @@ float Hy_zheng_last[nx-2*npml][ny-2*npml][nz-2*npml];
 float Hz_zheng_last[nx-2*npml][ny-2*npml][nz-2*npml];
 */
 
-float *Ex_zheng_1 = (float*)malloc((it)*(2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
-float *Ex_zheng_2 = (float*)malloc((it)*(nx - 2 * npml)*(2 * npml)*(nz - 2 * npml) * sizeof(float));
-float *Ex_zheng_3 = (float*)malloc((it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npml) * sizeof(float));
+float *Ex_zheng_1 = (float*)malloc((it)*(2 * npmlc)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
+float *Ex_zheng_2 = (float*)malloc((it)*(nx - 2 * npml)*(2 * npmlc)*(nz - 2 * npml) * sizeof(float));
+float *Ex_zheng_3 = (float*)malloc((it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npmlc) * sizeof(float));
 
-float *Ey_zheng_1 = (float*)malloc((it)*(2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
-float *Ey_zheng_2 = (float*)malloc((it)*(nx - 2 * npml)*(2 * npml)*(nz - 2 * npml) * sizeof(float));
-float *Ey_zheng_3 = (float*)malloc((it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npml) * sizeof(float));
+float *Ey_zheng_1 = (float*)malloc((it)*(2 * npmlc)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
+float *Ey_zheng_2 = (float*)malloc((it)*(nx - 2 * npml)*(2 * npmlc)*(nz - 2 * npml) * sizeof(float));
+float *Ey_zheng_3 = (float*)malloc((it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npmlc) * sizeof(float));
 
-float *Ez_zheng_1 = (float*)malloc((it)*(2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
-float *Ez_zheng_2 = (float*)malloc((it)*(nx - 2 * npml)*(2 * npml)*(nz - 2 * npml) * sizeof(float));
-float *Ez_zheng_3 = (float*)malloc((it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npml) * sizeof(float));
+float *Ez_zheng_1 = (float*)malloc((it)*(2 * npmlc)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
+float *Ez_zheng_2 = (float*)malloc((it)*(nx - 2 * npml)*(2 * npmlc)*(nz - 2 * npml) * sizeof(float));
+float *Ez_zheng_3 = (float*)malloc((it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npmlc) * sizeof(float));
 
-float *Hx_zheng_1 = (float*)malloc((it)*(2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
-float *Hx_zheng_2 = (float*)malloc((it)*(nx - 2 * npml)*(2 * npml)*(nz - 2 * npml) * sizeof(float));
-float *Hx_zheng_3 = (float*)malloc((it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npml) * sizeof(float));
+float *Hx_zheng_1 = (float*)malloc((it)*(2 * npmlc)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
+float *Hx_zheng_2 = (float*)malloc((it)*(nx - 2 * npml)*(2 * npmlc)*(nz - 2 * npml) * sizeof(float));
+float *Hx_zheng_3 = (float*)malloc((it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npmlc) * sizeof(float));
 
-float *Hy_zheng_1 = (float*)malloc((it)*(2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
-float *Hy_zheng_2 = (float*)malloc((it)*(nx - 2 * npml)*(2 * npml)*(nz - 2 * npml) * sizeof(float));
-float *Hy_zheng_3 = (float*)malloc((it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npml) * sizeof(float));
+float *Hy_zheng_1 = (float*)malloc((it)*(2 * npmlc)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
+float *Hy_zheng_2 = (float*)malloc((it)*(nx - 2 * npml)*(2 * npmlc)*(nz - 2 * npml) * sizeof(float));
+float *Hy_zheng_3 = (float*)malloc((it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npmlc) * sizeof(float));
 
-float *Hz_zheng_1 = (float*)malloc((it)*(2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
-float *Hz_zheng_2 = (float*)malloc((it)*(nx - 2 * npml)*(2 * npml)*(nz - 2 * npml) * sizeof(float));
-float *Hz_zheng_3 = (float*)malloc((it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npml) * sizeof(float));
+float *Hz_zheng_1 = (float*)malloc((it)*(2 * npmlc)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
+float *Hz_zheng_2 = (float*)malloc((it)*(nx - 2 * npml)*(2 * npmlc)*(nz - 2 * npml) * sizeof(float));
+float *Hz_zheng_3 = (float*)malloc((it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npmlc) * sizeof(float));
 
 float *Ex_zheng_last = (float*)malloc((nx - 2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
 float *Ey_zheng_last = (float*)malloc((nx - 2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
@@ -190,6 +193,9 @@ float Hx1[nx+1][ny][nz];
 float Hy1[nx][ny+1][nz];
 float Hz1[nx][ny][nz+1];
 
+float ns[nx - 2 * npml][ny - 2 * npml][nz - 2 * npml];
+float zv[nx - 2 * npml][ny - 2 * npml][nz - 2 * npml];
+float fv[nx - 2 * npml][ny - 2 * npml][nz - 2 * npml];
 /************************************************************************************
 * 显存数组
 ************************************************************************************/
@@ -326,6 +332,10 @@ float *dev_Ez1;
 float *dev_Hx1;
 float *dev_Hy1;
 float *dev_Hz1;
+
+float *dev_ns;
+float *dev_zv;
+float *dev_fv;
 
 void freeMemory()
 {
