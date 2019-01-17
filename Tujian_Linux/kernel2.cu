@@ -12,6 +12,8 @@
 #include <string.h>
 #include "unistd.h"
 #include "global_variables.cpp"
+#include <direct.h>
+
 
 __global__ void print_dev_matrix(float *A, int i, int j, int k, int xdim, int ydim, int zdim)
 {
@@ -1293,7 +1295,7 @@ __global__ void gpu_nzf(float *dev_dst, float *dev_src1, float *dev_src2)
 		blockIdx.x * (ny - 2 * npml) * (nz - 2 * npml) +
 		blockIdx.y * (nz - 2 * npml) +
 		threadIdx.x;
-	dev_dst[idx] = dev_src1[idx] * dev_src2[idx];
+	dev_dst[idx] += dev_src1[idx] * dev_src2[idx];
 }
 
 void read_int(const char *name, int *a, int n1, int n2, int n3)
@@ -1350,66 +1352,129 @@ void read_float(const char *name, float *a, int n1, int n2, int n3)
 
 void read_data_from_txt()
 {
+	read_float("data_zhengyan\\CAEx.txt", (float*)CAEx, nx, ny + 1, nz + 1);
+	read_float("data_zhengyan\\CBEx.txt", (float*)CBEx, nx, ny + 1, nz + 1);
+	read_float("data_zhengyan\\RAEyz.txt", (float*)RAEyz, nx, 2 * (npml - 1), nz - 1);
+	read_float("data_zhengyan\\RBEyz.txt", (float*)RBEyz, nx, 2 * (npml - 1), nz - 1);
+	read_float("data_zhengyan\\RAEzy.txt", (float*)RAEzy, nx, ny - 1, 2 * (npml - 1));
+	read_float("data_zhengyan\\RBEzy.txt", (float*)RBEzy, nx, ny - 1, 2 * (npml - 1));
+	read_float("data_zhengyan\\CAEy.txt", (float*)CAEy, nx + 1, ny, nz + 1);
+	read_float("data_zhengyan\\CBEy.txt", (float*)CBEy, nx + 1, ny, nz + 1);
+	read_float("data_zhengyan\\RAEzx.txt", (float*)RAEzx, nx - 1, ny, 2 * (npml - 1));
+	read_float("data_zhengyan\\RBEzx.txt", (float*)RBEzx, nx - 1, ny, 2 * (npml - 1));
+	read_float("data_zhengyan\\RAExz.txt", (float*)RAExz, 2 * (npml - 1), ny, nz - 1);
+	read_float("data_zhengyan\\RBExz.txt", (float*)RBExz, 2 * (npml - 1), ny, nz - 1);
+	read_float("data_zhengyan\\CAEz.txt", (float*)CAEz, nx + 1, ny + 1, nz);
+	read_float("data_zhengyan\\CBEz.txt", (float*)CBEz, nx + 1, ny + 1, nz);
+	read_float("data_zhengyan\\RAExy.txt", (float*)RAExy, 2 * (npml - 1), ny - 1, nz);
+	read_float("data_zhengyan\\RBExy.txt", (float*)RBExy, 2 * (npml - 1), ny - 1, nz);
+	read_float("data_zhengyan\\RAEyx.txt", (float*)RAEyx, nx - 1, 2 * (npml - 1), nz);
+	read_float("data_zhengyan\\RBEyx.txt", (float*)RBEyx, nx - 1, 2 * (npml - 1), nz);
 
-	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\CAEx.txt", (float*)CAEx, nx, ny + 1, nz + 1);
-	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\CBEx.txt", (float*)CBEx, nx, ny + 1, nz + 1);
-	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\RAEyz.txt", (float*)RAEyz, nx, 2 * (npml - 1), nz - 1);
-	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\RBEyz.txt", (float*)RBEyz, nx, 2 * (npml - 1), nz - 1);
-	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\RAEzy.txt", (float*)RAEzy, nx, ny - 1, 2 * (npml - 1));
-	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\RBEzy.txt", (float*)RBEzy, nx, ny - 1, 2 * (npml - 1));
-	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\CAEy.txt", (float*)CAEy, nx + 1, ny, nz + 1);
-	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\CBEy.txt", (float*)CBEy, nx + 1, ny, nz + 1);
-	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\RAEzx.txt", (float*)RAEzx, nx - 1, ny, 2 * (npml - 1));
-	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\RBEzx.txt", (float*)RBEzx, nx - 1, ny, 2 * (npml - 1));
-	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\RAExz.txt", (float*)RAExz, 2 * (npml - 1), ny, nz - 1);
-	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\RBExz.txt", (float*)RBExz, 2 * (npml - 1), ny, nz - 1);
-	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\CAEz.txt", (float*)CAEz, nx + 1, ny + 1, nz);
-	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\CBEz.txt", (float*)CBEz, nx + 1, ny + 1, nz);
-	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\RAExy.txt", (float*)RAExy, 2 * (npml - 1), ny - 1, nz);
-	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\RBExy.txt", (float*)RBExy, 2 * (npml - 1), ny - 1, nz);
-	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\RAEyx.txt", (float*)RAEyx, nx - 1, 2 * (npml - 1), nz);
-	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\RBEyx.txt", (float*)RBEyx, nx - 1, 2 * (npml - 1), nz);
+	read_float("data_zhengyan\\CPHx.txt", (float*)CPHx, nx + 1, ny, nz);
+	read_float("data_zhengyan\\CQHx.txt", (float*)CQHx, nx + 1, ny, nz);
+	read_float("data_zhengyan\\RAHyz.txt", (float*)RAHyz, nx - 1, 2 * npml, nz);
+	read_float("data_zhengyan\\RBHyz.txt", (float*)RBHyz, nx - 1, 2 * npml, nz);
+	read_float("data_zhengyan\\RAHzy.txt", (float*)RAHzy, nx - 1, ny, 2 * npml);
+	read_float("data_zhengyan\\RBHzy.txt", (float*)RBHzy, nx - 1, ny, 2 * npml);
+	read_float("data_zhengyan\\CPHy.txt", (float*)CPHy, nx, ny + 1, nz);
+	read_float("data_zhengyan\\CQHy.txt", (float*)CQHy, nx, ny + 1, nz);
+	read_float("data_zhengyan\\RAHzx.txt", (float*)RAHzx, nx, ny - 1, 2 * npml);
+	read_float("data_zhengyan\\RBHzx.txt", (float*)RBHzx, nx, ny - 1, 2 * npml);
+	read_float("data_zhengyan\\RAHxz.txt", (float*)RAHxz, 2 * npml, ny - 1, nz);
+	read_float("data_zhengyan\\RBHxz.txt", (float*)RBHxz, 2 * npml, ny - 1, nz);
+	read_float("data_zhengyan\\CPHz.txt", (float*)CPHz, nx, ny, nz + 1);
+	read_float("data_zhengyan\\CQHz.txt", (float*)CQHz, nx, ny, nz + 1);
+	read_float("data_zhengyan\\RAHxy.txt", (float*)RAHxy, 2 * npml, ny, nz - 1);
+	read_float("data_zhengyan\\RBHxy.txt", (float*)RBHxy, 2 * npml, ny, nz - 1);
+	read_float("data_zhengyan\\RAHyx.txt", (float*)RAHyx, nx, 2 * npml, nz - 1);
+	read_float("data_zhengyan\\RBHyx.txt", (float*)RBHyx, nx, 2 * npml, nz - 1);
 
-	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\CPHx.txt", (float*)CPHx, nx + 1, ny, nz);
-	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\CQHx.txt", (float*)CQHx, nx + 1, ny, nz);
-	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\RAHyz.txt", (float*)RAHyz, nx - 1, 2 * npml, nz);
-	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\RBHyz.txt", (float*)RBHyz, nx - 1, 2 * npml, nz);
-	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\RAHzy.txt", (float*)RAHzy, nx - 1, ny, 2 * npml);
-	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\RBHzy.txt", (float*)RBHzy, nx - 1, ny, 2 * npml);
-	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\CPHy.txt", (float*)CPHy, nx, ny + 1, nz);
-	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\CQHy.txt", (float*)CQHy, nx, ny + 1, nz);
-	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\RAHzx.txt", (float*)RAHzx, nx, ny - 1, 2 * npml);
-	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\RBHzx.txt", (float*)RBHzx, nx, ny - 1, 2 * npml);
-	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\RAHxz.txt", (float*)RAHxz, 2 * npml, ny - 1, nz);
-	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\RBHxz.txt", (float*)RBHxz, 2 * npml, ny - 1, nz);
-	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\CPHz.txt", (float*)CPHz, nx, ny, nz + 1);
-	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\CQHz.txt", (float*)CQHz, nx, ny, nz + 1);
-	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\RAHxy.txt", (float*)RAHxy, 2 * npml, ny, nz - 1);
-	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\RBHxy.txt", (float*)RBHxy, 2 * npml, ny, nz - 1);
-	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\RAHyx.txt", (float*)RAHyx, nx, 2 * npml, nz - 1);
-	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\RBHyx.txt", (float*)RBHyx, nx, 2 * npml, nz - 1);
+	read_float("data_zhengyan\\kx_Ey.txt", (float*)kx_Ey, nx + 1, ny, nz + 1);
+	read_float("data_zhengyan\\kx_Ez.txt", (float*)kx_Ez, nx + 1, ny + 1, nz);
+	read_float("data_zhengyan\\ky_Ex.txt", (float*)ky_Ex, nx, ny + 1, nz + 1);
+	read_float("data_zhengyan\\ky_Ez.txt", (float*)ky_Ez, nx + 1, ny + 1, nz);
+	read_float("data_zhengyan\\kz_Ex.txt", (float*)kz_Ex, nx, ny + 1, nz + 1);
+	read_float("data_zhengyan\\kz_Ey.txt", (float*)kz_Ey, nx + 1, ny, nz + 1);
 
-	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\kx_Ey.txt", (float*)kx_Ey, nx + 1, ny, nz + 1);
-	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\kx_Ez.txt", (float*)kx_Ez, nx + 1, ny + 1, nz);
-	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\ky_Ex.txt", (float*)ky_Ex, nx, ny + 1, nz + 1);
-	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\ky_Ez.txt", (float*)ky_Ez, nx + 1, ny + 1, nz);
-	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\kz_Ex.txt", (float*)kz_Ex, nx, ny + 1, nz + 1);
-	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\kz_Ey.txt", (float*)kz_Ey, nx + 1, ny, nz + 1);
+	read_float("data_zhengyan\\kx_Hy.txt", (float*)kx_Hy, nx, ny + 1, nz);
+	read_float("data_zhengyan\\kx_Hz.txt", (float*)kx_Hz, nx, ny, nz + 1);
+	read_float("data_zhengyan\\ky_Hx.txt", (float*)ky_Hx, nx + 1, ny, nz);
+	read_float("data_zhengyan\\ky_Hz.txt", (float*)ky_Hz, nx, ny, nz + 1);
+	read_float("data_zhengyan\\kz_Hx.txt", (float*)kz_Hx, nx + 1, ny, nz);
+	read_float("data_zhengyan\\kz_Hy.txt", (float*)kz_Hy, nx, ny + 1, nz);
 
-	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\kx_Hy.txt", (float*)kx_Hy, nx, ny + 1, nz);
-	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\kx_Hz.txt", (float*)kx_Hz, nx, ny, nz + 1);
-	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\ky_Hx.txt", (float*)ky_Hx, nx + 1, ny, nz);
-	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\ky_Hz.txt", (float*)ky_Hz, nx, ny, nz + 1);
-	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\kz_Hx.txt", (float*)kz_Hx, nx + 1, ny, nz);
-	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\kz_Hy.txt", (float*)kz_Hy, nx, ny + 1, nz);
+	read_int("data_zhengyan\\fswzx.txt", (int*)fswzx, 1, 1, szfsw);
+	read_int("data_zhengyan\\fswzy.txt", (int*)fswzy, 1, 1, szfsw);
+	read_int("data_zhengyan\\fswzz.txt", (int*)fswzz, 1, 1, szfsw);
+	read_int("data_zhengyan\\jswzx.txt", (int*)jswzx, 1, 1, szfsw);
+	read_int("data_zhengyan\\jswzy.txt", (int*)jswzy, 1, 1, szfsw);
+	read_int("data_zhengyan\\jswzz.txt", (int*)jswzz, 1, 1, szfsw);
+	read_float("data_zhengyan\\source.txt", (float*)source, 1, 1, it);
+	if (isPianYi)
+	{
+		read_float("data_pianyi\\CAEx.txt", (float*)CAEx, nx, ny + 1, nz + 1);
+		read_float("data_pianyi\\CBEx.txt", (float*)CBEx, nx, ny + 1, nz + 1);
+		read_float("data_pianyi\\RAEyz.txt", (float*)RAEyz, nx, 2 * (npml - 1), nz - 1);
+		read_float("data_pianyi\\RBEyz.txt", (float*)RBEyz, nx, 2 * (npml - 1), nz - 1);
+		read_float("data_pianyi\\RAEzy.txt", (float*)RAEzy, nx, ny - 1, 2 * (npml - 1));
+		read_float("data_pianyi\\RBEzy.txt", (float*)RBEzy, nx, ny - 1, 2 * (npml - 1));
+		read_float("data_pianyi\\CAEy.txt", (float*)CAEy, nx + 1, ny, nz + 1);
+		read_float("data_pianyi\\CBEy.txt", (float*)CBEy, nx + 1, ny, nz + 1);
+		read_float("data_pianyi\\RAEzx.txt", (float*)RAEzx, nx - 1, ny, 2 * (npml - 1));
+		read_float("data_pianyi\\RBEzx.txt", (float*)RBEzx, nx - 1, ny, 2 * (npml - 1));
+		read_float("data_pianyi\\RAExz.txt", (float*)RAExz, 2 * (npml - 1), ny, nz - 1);
+		read_float("data_pianyi\\RBExz.txt", (float*)RBExz, 2 * (npml - 1), ny, nz - 1);
+		read_float("data_pianyi\\CAEz.txt", (float*)CAEz, nx + 1, ny + 1, nz);
+		read_float("data_pianyi\\CBEz.txt", (float*)CBEz, nx + 1, ny + 1, nz);
+		read_float("data_pianyi\\RAExy.txt", (float*)RAExy, 2 * (npml - 1), ny - 1, nz);
+		read_float("data_pianyi\\RBExy.txt", (float*)RBExy, 2 * (npml - 1), ny - 1, nz);
+		read_float("data_pianyi\\RAEyx.txt", (float*)RAEyx, nx - 1, 2 * (npml - 1), nz);
+		read_float("data_pianyi\\RBEyx.txt", (float*)RBEyx, nx - 1, 2 * (npml - 1), nz);
 
-	read_int("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\fswzx.txt", (int*)fswzx, 1, 1, szfsw);
-	read_int("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\fswzy.txt", (int*)fswzy, 1, 1, szfsw);
-	read_int("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\fswzz.txt", (int*)fswzz, 1, 1, szfsw);
-	read_int("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\jswzx.txt", (int*)jswzx, 1, 1, szfsw);
-	read_int("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\jswzy.txt", (int*)jswzy, 1, 1, szfsw);
-	read_int("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\jswzz.txt", (int*)jswzz, 1, 1, szfsw);
-	read_float("C:\\Users\\sky\\Desktop\\Tujian_VS\\data\\source.txt", (float*)source, 1, 1, it);
+		read_float("data_pianyi\\CPHx.txt", (float*)CPHx, nx + 1, ny, nz);
+		read_float("data_pianyi\\CQHx.txt", (float*)CQHx, nx + 1, ny, nz);
+		read_float("data_pianyi\\RAHyz.txt", (float*)RAHyz, nx - 1, 2 * npml, nz);
+		read_float("data_pianyi\\RBHyz.txt", (float*)RBHyz, nx - 1, 2 * npml, nz);
+		read_float("data_pianyi\\RAHzy.txt", (float*)RAHzy, nx - 1, ny, 2 * npml);
+		read_float("data_pianyi\\RBHzy.txt", (float*)RBHzy, nx - 1, ny, 2 * npml);
+		read_float("data_pianyi\\CPHy.txt", (float*)CPHy, nx, ny + 1, nz);
+		read_float("data_pianyi\\CQHy.txt", (float*)CQHy, nx, ny + 1, nz);
+		read_float("data_pianyi\\RAHzx.txt", (float*)RAHzx, nx, ny - 1, 2 * npml);
+		read_float("data_pianyi\\RBHzx.txt", (float*)RBHzx, nx, ny - 1, 2 * npml);
+		read_float("data_pianyi\\RAHxz.txt", (float*)RAHxz, 2 * npml, ny - 1, nz);
+		read_float("data_pianyi\\RBHxz.txt", (float*)RBHxz, 2 * npml, ny - 1, nz);
+		read_float("data_pianyi\\CPHz.txt", (float*)CPHz, nx, ny, nz + 1);
+		read_float("data_pianyi\\CQHz.txt", (float*)CQHz, nx, ny, nz + 1);
+		read_float("data_pianyi\\RAHxy.txt", (float*)RAHxy, 2 * npml, ny, nz - 1);
+		read_float("data_pianyi\\RBHxy.txt", (float*)RBHxy, 2 * npml, ny, nz - 1);
+		read_float("data_pianyi\\RAHyx.txt", (float*)RAHyx, nx, 2 * npml, nz - 1);
+		read_float("data_pianyi\\RBHyx.txt", (float*)RBHyx, nx, 2 * npml, nz - 1);
+
+		read_float("data_pianyi\\kx_Ey.txt", (float*)kx_Ey, nx + 1, ny, nz + 1);
+		read_float("data_pianyi\\kx_Ez.txt", (float*)kx_Ez, nx + 1, ny + 1, nz);
+		read_float("data_pianyi\\ky_Ex.txt", (float*)ky_Ex, nx, ny + 1, nz + 1);
+		read_float("data_pianyi\\ky_Ez.txt", (float*)ky_Ez, nx + 1, ny + 1, nz);
+		read_float("data_pianyi\\kz_Ex.txt", (float*)kz_Ex, nx, ny + 1, nz + 1);
+		read_float("data_pianyi\\kz_Ey.txt", (float*)kz_Ey, nx + 1, ny, nz + 1);
+
+		read_float("data_pianyi\\kx_Hy.txt", (float*)kx_Hy, nx, ny + 1, nz);
+		read_float("data_pianyi\\kx_Hz.txt", (float*)kx_Hz, nx, ny, nz + 1);
+		read_float("data_pianyi\\ky_Hx.txt", (float*)ky_Hx, nx + 1, ny, nz);
+		read_float("data_pianyi\\ky_Hz.txt", (float*)ky_Hz, nx, ny, nz + 1);
+		read_float("data_pianyi\\kz_Hx.txt", (float*)kz_Hx, nx + 1, ny, nz);
+		read_float("data_pianyi\\kz_Hy.txt", (float*)kz_Hy, nx, ny + 1, nz);
+
+		read_int("data_pianyi\\fswzx.txt", (int*)fswzx, 1, 1, szfsw);
+		read_int("data_pianyi\\fswzy.txt", (int*)fswzy, 1, 1, szfsw);
+		read_int("data_pianyi\\fswzz.txt", (int*)fswzz, 1, 1, szfsw);
+		read_int("data_pianyi\\jswzx.txt", (int*)jswzx, 1, 1, szfsw);
+		read_int("data_pianyi\\jswzy.txt", (int*)jswzy, 1, 1, szfsw);
+		read_int("data_pianyi\\jswzz.txt", (int*)jswzz, 1, 1, szfsw);
+		read_float("data_pianyi\\source.txt", (float*)source, 1, 1, it);
+		read_float("data_pianyi\\E_obs.txt", (float*)source, 1, it, szfsw);
+	}
+
 }
 
 void print_E_obs()
@@ -1788,7 +1853,9 @@ void gpu_memory_set_zero(int flag)
 	}
 }
 
-// 将内存中的CAE CBE RAE RBE CPH CQH RAH CBH k*_E* k*_H* source复制到显存中
+// 将内存中的变量复制到显存中
+// flag == 0 CAE CBE RAE RBE CPH CQH RAH RBH k*_E* k*_H* source
+// flag == 1 CAE CBE RAE RBE CPH CQH RAH RBH k*_E* k*_H* source
 void gpu_memory_copy()
 {
 	cudaError_t cudaStatus;
@@ -2129,7 +2196,7 @@ cudaError_t gpu_parallel_two()
 	}
 
 	int i, j;
-	for (i = 0; i < szfsw; i++)
+	for (i = 0; i < 10; i++)
 	{
 		// 111111
 		gpu_memory_set_zero(1); // flag == 1 将GPU显存中的E*, UE**, H*, UH**, (V, E*_zheng_*, H*_zheng_*, E*_zheng_last, H*_zheng_last, fan, huanyuan)置零
@@ -2250,7 +2317,7 @@ cudaError_t gpu_parallel_two()
 		}
 	}
 
-	printf("finish calc !\n");
+	printf("finish calc 2!\n");
 
 	cudaDeviceSynchronize();
 
@@ -2263,8 +2330,9 @@ cudaError_t gpu_parallel_two()
 int main()
 {
 	// 切换工作目录
-	//chdir(path);
-	//printf("Current Dir: %s \n",getcwd(NULL，NULL));
+	_chdir(path);
+	char str[80];
+	printf("Current Dir: %s \n",_getcwd(str, 80));
 	if (Hz_zheng_3 == NULL)
 	{
 		printf("malloc failed! \n");

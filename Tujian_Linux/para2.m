@@ -1,5 +1,44 @@
+
+%=======================================================
+ns=single(zeros(nx-2*npml,ny-2*npml,nz-2*npml));
+zv=single(zeros(nx-2*npml,ny-2*npml,nz-2*npml));
+fv=single(zeros(nx-2*npml,ny-2*npml,nz-2*npml));
+
 parfor i=single(1):single(length(fswzx))
-    %11111-------------------------------------------------------------11111--------------------------------
+    Ex_zheng_1=single(zeros(2*npmlc,ny-2*npml,nz-2*npml,it));
+    Ex_zheng_2=single(zeros(nx-2*npml,2*npmlc,nz-2*npml,it));
+    Ex_zheng_3=single(zeros(nx-2*npml,ny-2*npml,2*npmlc,it));
+    
+    Ey_zheng_1=single(zeros(2*npmlc,ny-2*npml,nz-2*npml,it));
+    Ey_zheng_2=single(zeros(nx-2*npml,2*npmlc,nz-2*npml,it));
+    Ey_zheng_3=single(zeros(nx-2*npml,ny-2*npml,2*npmlc,it));
+    
+    Ez_zheng_1=single(zeros(2*npmlc,ny-2*npml,nz-2*npml,it));
+    Ez_zheng_2=single(zeros(nx-2*npml,2*npmlc,nz-2*npml,it));
+    Ez_zheng_3=single(zeros(nx-2*npml,ny-2*npml,2*npmlc,it));
+    
+    Hx_zheng_1=single(zeros(2*npmlc,ny-2*npml,nz-2*npml,it));
+    Hx_zheng_2=single(zeros(nx-2*npml,2*npmlc,nz-2*npml,it)); 
+    Hx_zheng_3=single(zeros(nx-2*npml,ny-2*npml,2*npmlc,it));
+    
+    Hy_zheng_1=single(zeros(2*npmlc,ny-2*npml,nz-2*npml,it));
+    Hy_zheng_2=single(zeros(nx-2*npml,2*npmlc,nz-2*npml,it));
+    Hy_zheng_3=single(zeros(nx-2*npml,ny-2*npml,2*npmlc,it));
+    
+    Hz_zheng_1=single(zeros(2*npmlc,ny-2*npml,nz-2*npml,it));
+    Hz_zheng_2=single(zeros(nx-2*npml,2*npmlc,nz-2*npml,it));
+    Hz_zheng_3=single(zeros(nx-2*npml,ny-2*npml,2*npmlc,it));
+
+    Ex_zheng_last=single(zeros(nx-2*npml,ny-2*npml,nz-2*npml));
+    Ey_zheng_last=single(zeros(nx-2*npml,ny-2*npml,nz-2*npml));
+    Ez_zheng_last=single(zeros(nx-2*npml,ny-2*npml,nz-2*npml));
+    Hx_zheng_last=single(zeros(nx-2*npml,ny-2*npml,nz-2*npml));
+    Hy_zheng_last=single(zeros(nx-2*npml,ny-2*npml,nz-2*npml));
+    Hz_zheng_last=single(zeros(nx-2*npml,ny-2*npml,nz-2*npml));
+    
+    fan=single(zeros(nx-2*npml,ny-2*npml,nz-2*npml));
+    huanyuan=single(zeros(nx-2*npml,ny-2*npml,nz-2*npml));
+
     Ex=zeros(nx,ny+1,nz+1);
     UEyz=zeros(nx,ny+1,nz+1);
     UEzy=zeros(nx,ny+1,nz+1);
@@ -18,42 +57,8 @@ parfor i=single(1):single(length(fswzx))
     Hz=zeros(nx,ny,nz+1);
     UHxy=zeros(nx,ny,nz+1);
     UHyx=zeros(nx,ny,nz+1);
-
-    Ex_zheng_1=single(zeros(2*npml,ny-2*npml,nz-2*npml,it));
-    Ex_zheng_2=single(zeros(nx-2*npml,2*npml,nz-2*npml,it));
-    Ex_zheng_3=single(zeros(nx-2*npml,ny-2*npml,2*npml,it));
-    
-    Ey_zheng_1=single(zeros(2*npml,ny-2*npml,nz-2*npml,it));
-    Ey_zheng_2=single(zeros(nx-2*npml,2*npml,nz-2*npml,it));
-    Ey_zheng_3=single(zeros(nx-2*npml,ny-2*npml,2*npml,it));
-    
-    Ez_zheng_1=single(zeros(2*npml,ny-2*npml,nz-2*npml,it));
-    Ez_zheng_2=single(zeros(nx-2*npml,2*npml,nz-2*npml,it));
-    Ez_zheng_3=single(zeros(nx-2*npml,ny-2*npml,2*npml,it));
-    
-    Hx_zheng_1=single(zeros(2*npml,ny-2*npml,nz-2*npml,it));
-    Hx_zheng_2=single(zeros(nx-2*npml,2*npml,nz-2*npml,it)); 
-    Hx_zheng_3=single(zeros(nx-2*npml,ny-2*npml,2*npml,it));
-    
-    Hy_zheng_1=single(zeros(2*npml,ny-2*npml,nz-2*npml,it));
-    Hy_zheng_2=single(zeros(nx-2*npml,2*npml,nz-2*npml,it));
-    Hy_zheng_3=single(zeros(nx-2*npml,ny-2*npml,2*npml,it));
-    
-    Hz_zheng_1=single(zeros(2*npml,ny-2*npml,nz-2*npml,it));
-    Hz_zheng_2=single(zeros(nx-2*npml,2*npml,nz-2*npml,it));
-    Hz_zheng_3=single(zeros(nx-2*npml,ny-2*npml,2*npml,it));
-
-    Ex_zheng_last=single(zeros(nx-2*npml,ny-2*npml,nz-2*npml));
-    Ey_zheng_last=single(zeros(nx-2*npml,ny-2*npml,nz-2*npml));
-    Ez_zheng_last=single(zeros(nx-2*npml,ny-2*npml,nz-2*npml));
-    Hx_zheng_last=single(zeros(nx-2*npml,ny-2*npml,nz-2*npml));
-    Hy_zheng_last=single(zeros(nx-2*npml,ny-2*npml,nz-2*npml));
-    Hz_zheng_last=single(zeros(nx-2*npml,ny-2*npml,nz-2*npml));
-
-    fan=single(zeros(nx-2*npml,ny-2*npml,nz-2*npml));
-    huanyuan=single(zeros(nx-2*npml,ny-2*npml,nz-2*npml));
-
     V=zeros(it,1);
+
 
     for j=single(1):single(it)
         
@@ -112,42 +117,36 @@ parfor i=single(1):single(length(fswzx))
             -CBEz(2:nx,2:ny,:)./kx_Ez(2:nx,2:ny,:)./dy.*(Hx(2:nx,2:ny,:)-Hx(2:nx,1:ny-1,:))...
              +CBEz(2:nx,2:ny,:).*UExy(2:nx,2:ny,:)-CBEz(2:nx,2:ny,:).*UEyx(2:nx,2:ny,:);  
 
-        % Ex中10 * ny-20 * nz-20的大小赋值给Ex_zheng_1
-        % 因为在GPU中是行优先存储，j放在最后一维对读取速度影响较大，改为j放在第一维较好
-        Ex_zheng_1(:,:,:,j)=Ex([npml+1:npml+npml nx-npml-npml+1:nx-npml],npml+1:ny-npml,npml+1:nz-npml);
+        Ex_zheng_1(:,:,:,j)=Ex([npml+1:npml+npmlc nx-npml-npmlc+1:nx-npml],npml+1:ny-npml,npml+1:nz-npml);
+        Ey_zheng_1(:,:,:,j)=Ey([npml+1:npml+npmlc nx-npml-npmlc+1:nx-npml],npml+1:ny-npml,npml+1:nz-npml);
+        Ez_zheng_1(:,:,:,j)=Ez([npml+1:npml+npmlc nx-npml-npmlc+1:nx-npml],npml+1:ny-npml,npml+1:nz-npml);
+        Hx_zheng_1(:,:,:,j)=Hx([npml+1:npml+npmlc nx-npml-npmlc+1:nx-npml],npml+1:ny-npml,npml+1:nz-npml);
+        Hy_zheng_1(:,:,:,j)=Hy([npml+1:npml+npmlc nx-npml-npmlc+1:nx-npml],npml+1:ny-npml,npml+1:nz-npml);
+        Hz_zheng_1(:,:,:,j)=Hz([npml+1:npml+npmlc nx-npml-npmlc+1:nx-npml],npml+1:ny-npml,npml+1:nz-npml);
 
-        Ex_zheng_2(:,:,:,j)=Ex(npml+1:nx-npml,[npml+1:npml+npml ny-npml-npml+1:ny-npml],npml+1:nz-npml);
-        Ex_zheng_3(:,:,:,j)=Ex(npml+1:nx-npml,npml+1:ny-npml,[npml+1:npml+npml nz-npml-npml+1:nz-npml]);    
-        
-        Ey_zheng_1(:,:,:,j)=Ey([npml+1:npml+npml nx-npml-npml+1:nx-npml],npml+1:ny-npml,npml+1:nz-npml);
-        Ey_zheng_2(:,:,:,j)=Ey(npml+1:nx-npml,[npml+1:npml+npml ny-npml-npml+1:ny-npml],npml+1:nz-npml);
-        Ey_zheng_3(:,:,:,j)=Ey(npml+1:nx-npml,npml+1:ny-npml,[npml+1:npml+npml nz-npml-npml+1:nz-npml]);    
-        
-        Ez_zheng_1(:,:,:,j)=Ez([npml+1:npml+npml nx-npml-npml+1:nx-npml],npml+1:ny-npml,npml+1:nz-npml);
-        Ez_zheng_2(:,:,:,j)=Ez(npml+1:nx-npml,[npml+1:npml+npml ny-npml-npml+1:ny-npml],npml+1:nz-npml);
-        Ez_zheng_3(:,:,:,j)=Ez(npml+1:nx-npml,npml+1:ny-npml,[npml+1:npml+npml nz-npml-npml+1:nz-npml]);    
-                
-        Hx_zheng_1(:,:,:,j)=Hx([npml+1:npml+npml nx-npml-npml+1:nx-npml],npml+1:ny-npml,npml+1:nz-npml);
-        Hx_zheng_2(:,:,:,j)=Hx(npml+1:nx-npml,[npml+1:npml+npml ny-npml-npml+1:ny-npml],npml+1:nz-npml);
-        Hx_zheng_3(:,:,:,j)=Hx(npml+1:nx-npml,npml+1:ny-npml,[npml+1:npml+npml nz-npml-npml+1:nz-npml]);    
-        
-        Hy_zheng_1(:,:,:,j)=Hy([npml+1:npml+npml nx-npml-npml+1:nx-npml],npml+1:ny-npml,npml+1:nz-npml);
-        Hy_zheng_2(:,:,:,j)=Hy(npml+1:nx-npml,[npml+1:npml+npml ny-npml-npml+1:ny-npml],npml+1:nz-npml);
-        Hy_zheng_3(:,:,:,j)=Hy(npml+1:nx-npml,npml+1:ny-npml,[npml+1:npml+npml nz-npml-npml+1:nz-npml]);    
-                        
-        Hz_zheng_1(:,:,:,j)=Hz([npml+1:npml+npml nx-npml-npml+1:nx-npml],npml+1:ny-npml,npml+1:nz-npml);
-        Hz_zheng_2(:,:,:,j)=Hz(npml+1:nx-npml,[npml+1:npml+npml ny-npml-npml+1:ny-npml],npml+1:nz-npml);
-        Hz_zheng_3(:,:,:,j)=Hz(npml+1:nx-npml,npml+1:ny-npml,[npml+1:npml+npml nz-npml-npml+1:nz-npml]);    
+        Ex_zheng_2(:,:,:,j)=Ex(npml+1:nx-npml,[npml+1:npml+npmlc ny-npml-npmlc+1:ny-npml],npml+1:nz-npml);
+        Ey_zheng_2(:,:,:,j)=Ey(npml+1:nx-npml,[npml+1:npml+npmlc ny-npml-npmlc+1:ny-npml],npml+1:nz-npml);
+        Ez_zheng_2(:,:,:,j)=Ez(npml+1:nx-npml,[npml+1:npml+npmlc ny-npml-npmlc+1:ny-npml],npml+1:nz-npml);
+        Hx_zheng_2(:,:,:,j)=Hx(npml+1:nx-npml,[npml+1:npml+npmlc ny-npml-npmlc+1:ny-npml],npml+1:nz-npml);
+        Hz_zheng_2(:,:,:,j)=Hz(npml+1:nx-npml,[npml+1:npml+npmlc ny-npml-npmlc+1:ny-npml],npml+1:nz-npml);
+        Hy_zheng_2(:,:,:,j)=Hy(npml+1:nx-npml,[npml+1:npml+npmlc ny-npml-npmlc+1:ny-npml],npml+1:nz-npml);
+
+        Ex_zheng_3(:,:,:,j)=Ex(npml+1:nx-npml,npml+1:ny-npml,[npml+1:npml+npmlc nz-npml-npmlc+1:nz-npml]);    
+        Ey_zheng_3(:,:,:,j)=Ey(npml+1:nx-npml,npml+1:ny-npml,[npml+1:npml+npmlc nz-npml-npmlc+1:nz-npml]);  
+        Ez_zheng_3(:,:,:,j)=Ez(npml+1:nx-npml,npml+1:ny-npml,[npml+1:npml+npmlc nz-npml-npmlc+1:nz-npml]);
+        Hx_zheng_3(:,:,:,j)=Hx(npml+1:nx-npml,npml+1:ny-npml,[npml+1:npml+npmlc nz-npml-npmlc+1:nz-npml]);    
+        Hy_zheng_3(:,:,:,j)=Hy(npml+1:nx-npml,npml+1:ny-npml,[npml+1:npml+npmlc nz-npml-npmlc+1:nz-npml]);    
+        Hz_zheng_3(:,:,:,j)=Hz(npml+1:nx-npml,npml+1:ny-npml,[npml+1:npml+npmlc nz-npml-npmlc+1:nz-npml]);    
         
         Ex_zheng_last=Ex(npml+1:nx-npml,npml+1:ny-npml,npml+1:nz-npml);
         Ey_zheng_last=Ey(npml+1:nx-npml,npml+1:ny-npml,npml+1:nz-npml);
         Ez_zheng_last=Ez(npml+1:nx-npml,npml+1:ny-npml,npml+1:nz-npml);
         Hx_zheng_last=Hx(npml+1:nx-npml,npml+1:ny-npml,npml+1:nz-npml);
         Hy_zheng_last=Hy(npml+1:nx-npml,npml+1:ny-npml,npml+1:nz-npml);
-        Hz_zheng_last=Hz(npml+1:nx-npml,npml+1:ny-npml,npml+1:nz-npml);    
+        Hz_zheng_last=Hz(npml+1:nx-npml,npml+1:ny-npml,npml+1:nz-npml);
+        
     end
-
-     %22222-------------------------------------------------------------22222--------------------------------
+    
     Ex=zeros(nx,ny+1,nz+1);
     UEyz=zeros(nx,ny+1,nz+1);
     UEzy=zeros(nx,ny+1,nz+1);
@@ -166,7 +165,6 @@ parfor i=single(1):single(length(fswzx))
     Hz=zeros(nx,ny,nz+1);
     UHxy=zeros(nx,ny,nz+1);
     UHyx=zeros(nx,ny,nz+1);
-
     Ex1=zeros(nx,ny+1,nz+1);
     Ey1=zeros(nx+1,ny,nz+1);
     Ez1=zeros(nx+1,ny+1,nz);
@@ -177,7 +175,7 @@ parfor i=single(1):single(length(fswzx))
     for j=single(it):-1:single(1)
         
         if mod(j,100)==0
-            disp([num2str(i+length(fswzx)) '/' num2str(length(fswzx)*2) '    ' num2str(j) '/' num2str(it)]);
+            disp([num2str(i+2*length(fswzx)) '/' num2str(length(fswzx)*3) '    ' num2str(j) '/' num2str(it)]);
         end
         
         Ex(fswzx(i),fswzy(i),fswzz(i))=E_obs(j,i);
@@ -240,64 +238,221 @@ parfor i=single(1):single(length(fswzx))
             Hy1(npml+1:nx-npml,npml+1:ny-npml,npml+1:nz-npml)=Hy_zheng_last;
             Hz1(npml+1:nx-npml,npml+1:ny-npml,npml+1:nz-npml)=Hz_zheng_last;
         else
-            Hx1([npml+1:npml+npml nx-npml-npml+1:nx-npml],npml+1:ny-npml,npml+1:nz-npml)=Hx_zheng_1(:,:,:,j);
-            Hx1(npml+1:nx-npml,[npml+1:npml+npml ny-npml-npml+1:ny-npml],npml+1:nz-npml)=Hx_zheng_2(:,:,:,j);
-            Hx1(npml+1:nx-npml,npml+1:ny-npml,[npml+1:npml+npml nz-npml-npml+1:nz-npml])=Hx_zheng_3(:,:,:,j);
+        
+            Hx1([npml+1:npml+npmlc nx-npml-npmlc+1:nx-npml],npml+1:ny-npml,npml+1:nz-npml)=Hx_zheng_1(:,:,:,j);
+            Hx1(npml+1:nx-npml,[npml+1:npml+npmlc ny-npml-npmlc+1:ny-npml],npml+1:nz-npml)=Hx_zheng_2(:,:,:,j);
+            Hx1(npml+1:nx-npml,npml+1:ny-npml,[npml+1:npml+npmlc nz-npml-npmlc+1:nz-npml])=Hx_zheng_3(:,:,:,j);
             
-            Hy1([npml+1:npml+npml nx-npml-npml+1:nx-npml],npml+1:ny-npml,npml+1:nz-npml)=Hy_zheng_1(:,:,:,j);
-            Hy1(npml+1:nx-npml,[npml+1:npml+npml ny-npml-npml+1:ny-npml],npml+1:nz-npml)=Hy_zheng_2(:,:,:,j);
-            Hy1(npml+1:nx-npml,npml+1:ny-npml,[npml+1:npml+npml nz-npml-npml+1:nz-npml])=Hy_zheng_3(:,:,:,j);
+            Hy1([npml+1:npml+npmlc nx-npml-npmlc+1:nx-npml],npml+1:ny-npml,npml+1:nz-npml)=Hy_zheng_1(:,:,:,j);
+            Hy1(npml+1:nx-npml,[npml+1:npml+npmlc ny-npml-npmlc+1:ny-npml],npml+1:nz-npml)=Hy_zheng_2(:,:,:,j);
+            Hy1(npml+1:nx-npml,npml+1:ny-npml,[npml+1:npml+npmlc nz-npml-npmlc+1:nz-npml])=Hy_zheng_3(:,:,:,j);
 
-            Hz1([npml+1:npml+npml nx-npml-npml+1:nx-npml],npml+1:ny-npml,npml+1:nz-npml)=Hz_zheng_1(:,:,:,j);
-            Hz1(npml+1:nx-npml,[npml+1:npml+npml ny-npml-npml+1:ny-npml],npml+1:nz-npml)=Hz_zheng_2(:,:,:,j);
-            Hz1(npml+1:nx-npml,npml+1:ny-npml,[npml+1:npml+npml nz-npml-npml+1:nz-npml])=Hz_zheng_3(:,:,:,j);
+            Hz1([npml+1:npml+npmlc nx-npml-npmlc+1:nx-npml],npml+1:ny-npml,npml+1:nz-npml)=Hz_zheng_1(:,:,:,j);
+            Hz1(npml+1:nx-npml,[npml+1:npml+npmlc ny-npml-npmlc+1:ny-npml],npml+1:nz-npml)=Hz_zheng_2(:,:,:,j);
+            Hz1(npml+1:nx-npml,npml+1:ny-npml,[npml+1:npml+npmlc nz-npml-npmlc+1:nz-npml])=Hz_zheng_3(:,:,:,j);
             
-            Ex1([npml+1:npml+npml nx-npml-npml+1:nx-npml],npml+1:ny-npml,npml+1:nz-npml)=Ex_zheng_1(:,:,:,j);
-            Ex1(npml+1:nx-npml,[npml+1:npml+npml ny-npml-npml+1:ny-npml],npml+1:nz-npml)=Ex_zheng_2(:,:,:,j);
-            Ex1(npml+1:nx-npml,npml+1:ny-npml,[npml+1:npml+npml nz-npml-npml+1:nz-npml])=Ex_zheng_3(:,:,:,j);
+            Ex1([npml+1:npml+npmlc nx-npml-npmlc+1:nx-npml],npml+1:ny-npml,npml+1:nz-npml)=Ex_zheng_1(:,:,:,j);
+            Ex1(npml+1:nx-npml,[npml+1:npml+npmlc ny-npml-npmlc+1:ny-npml],npml+1:nz-npml)=Ex_zheng_2(:,:,:,j);
+            Ex1(npml+1:nx-npml,npml+1:ny-npml,[npml+1:npml+npmlc nz-npml-npmlc+1:nz-npml])=Ex_zheng_3(:,:,:,j);
             
-            Ey1([npml+1:npml+npml nx-npml-npml+1:nx-npml],npml+1:ny-npml,npml+1:nz-npml)=Ey_zheng_1(:,:,:,j);
-            Ey1(npml+1:nx-npml,[npml+1:npml+npml ny-npml-npml+1:ny-npml],npml+1:nz-npml)=Ey_zheng_2(:,:,:,j);
-            Ey1(npml+1:nx-npml,npml+1:ny-npml,[npml+1:npml+npml nz-npml-npml+1:nz-npml])=Ey_zheng_3(:,:,:,j);
+            Ey1([npml+1:npml+npmlc nx-npml-npmlc+1:nx-npml],npml+1:ny-npml,npml+1:nz-npml)=Ey_zheng_1(:,:,:,j);
+            Ey1(npml+1:nx-npml,[npml+1:npml+npmlc ny-npml-npmlc+1:ny-npml],npml+1:nz-npml)=Ey_zheng_2(:,:,:,j);
+            Ey1(npml+1:nx-npml,npml+1:ny-npml,[npml+1:npml+npmlc nz-npml-npmlc+1:nz-npml])=Ey_zheng_3(:,:,:,j);
             
-            Ez1([npml+1:npml+npml nx-npml-npml+1:nx-npml],npml+1:ny-npml,npml+1:nz-npml)=Ez_zheng_1(:,:,:,j);
-            Ez1(npml+1:nx-npml,[npml+1:npml+npml ny-npml-npml+1:ny-npml],npml+1:nz-npml)=Ez_zheng_2(:,:,:,j);
-            Ez1(npml+1:nx-npml,npml+1:ny-npml,[npml+1:npml+npml nz-npml-npml+1:nz-npml])=Ez_zheng_3(:,:,:,j);
+            Ez1([npml+1:npml+npmlc nx-npml-npmlc+1:nx-npml],npml+1:ny-npml,npml+1:nz-npml)=Ez_zheng_1(:,:,:,j);
+            Ez1(npml+1:nx-npml,[npml+1:npml+npmlc ny-npml-npmlc+1:ny-npml],npml+1:nz-npml)=Ez_zheng_2(:,:,:,j);
+            Ez1(npml+1:nx-npml,npml+1:ny-npml,[npml+1:npml+npmlc nz-npml-npmlc+1:nz-npml])=Ez_zheng_3(:,:,:,j);
             
             Ex1(fswzx(i),fswzy(i),fswzz(i))=source(j);
+            %Hx1--------------------------------------------------------------------------
+            %Hx1 = 1 ./ CPHx .* Hx1 + 1 ./ CPHx .* CQHx ./ dy .* (Ez1 - Ez1) - 1 ./ CPHx .* CQHx ./ dz .* (Ey1 - Ey1)
+            Hx1(npml+npmlc+1:nx-npml-npmlc,
+                npml+npmlc+1:ny-npml-npmlc,
+                npml+npmlc+1:nz-npml-npmlc)=
+            1./
+            CPHx(npml+npmlc+1:nx-npml-npmlc,
+                npml+npmlc+1:ny-npml-npmlc,
+                npml+npmlc+1:nz-npml-npmlc)
+            .*
+            Hx1(npml+npmlc+1:nx-npml-npmlc,
+                npml+npmlc+1:ny-npml-npmlc,
+                npml+npmlc+1:nz-npml-npmlc)
+            +1./
+            CPHx(npml+npmlc+1:nx-npml-npmlc,
+                npml+npmlc+1:ny-npml-npmlc,
+                npml+npmlc+1:nz-npml-npmlc)
+            .*
+            CQHx(npml+npmlc+1:nx-npml-npmlc,
+                npml+npmlc+1:ny-npml-npmlc,
+                npml+npmlc+1:nz-npml-npmlc)
+            ./dy.*
+            (Ez1(npml+npmlc+1:nx-npml-npmlc,
+                npml+npmlc+1+1:ny-npml-npmlc+1,
+                npml+npmlc+1:nz-npml-npmlc)
+            -Ez1(npml+npmlc+1:nx-npml-npmlc,
+                npml+npmlc+1:ny-npml-npmlc,
+                npml+npmlc+1:nz-npml-npmlc))
+            -1./
+            CPHx(npml+npmlc+1:nx-npml-npmlc,
+                npml+npmlc+1:ny-npml-npmlc,
+                npml+npmlc+1:nz-npml-npmlc)
+            .*
+            CQHx(npml+npmlc+1:nx-npml-npmlc,
+                npml+npmlc+1:ny-npml-npmlc,
+                npml+npmlc+1:nz-npml-npmlc)
+            ./dz.*
+            (Ey1(npml+npmlc+1:nx-npml-npmlc,
+                npml+npmlc+1:ny-npml-npmlc,
+                npml+npmlc+1+1:nz-npml-npmlc+1)
+            -
+            Ey1(npml+npmlc+1:nx-npml-npmlc,
+                npml+npmlc+1:ny-npml-npmlc,
+                npml+npmlc+1:nz-npml-npmlc));
+            %Hy1--------------------------------------------------------------------------
+            Hy1(npml+npmlc+1:nx-npml-npmlc,
+                npml+npmlc+1:ny-npml-npmlc,
+                npml+npmlc+1:nz-npml-npmlc)=
+            1./
+            CPHy(npml+npmlc+1:nx-npml-npmlc,
+                npml+npmlc+1:ny-npml-npmlc,
+                npml+npmlc+1:nz-npml-npmlc).*Hy1(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc)...
+            +1./CPHy(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc).*CQHy(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc)./dz.*
+            (Ex1(npml+npmlc+1:nx-npml-npmlc,
+                npml+npmlc+1:ny-npml-npmlc,
+                npml+npmlc+1+1:nz-npml-npmlc+1)
+            -Ex1(npml+npmlc+1:nx-npml-npmlc,
+                npml+npmlc+1:ny-npml-npmlc,
+                npml+npmlc+1:nz-npml-npmlc))...
+            -1./CPHy(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc).*CQHy(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc)./dx.*
+            (Ez1(npml+npmlc+1+1:nx-npml-npmlc+1,
+                npml+npmlc+1:ny-npml-npmlc,
+                npml+npmlc+1:nz-npml-npmlc)
+            -Ez1(npml+npmlc+1:nx-npml-npmlc,
+                npml+npmlc+1:ny-npml-npmlc,
+                npml+npmlc+1:nz-npml-npmlc));
             
-            Hx1(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml)=1./CPHx(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml).*Hx1(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml)...
-            +1./CPHx(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml).*CQHx(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml)./dy.*(Ez1(npml+npml+1:nx-npml-npml,npml+npml+1+1:ny-npml-npml+1,npml+npml+1:nz-npml-npml)-Ez1(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml))...    
-            -1./CPHx(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml).*CQHx(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml)./dz.*(Ey1(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1+1:nz-npml-npml+1)-Ey1(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml));
-                
-            Hy1(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml)=1./CPHy(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml).*Hy1(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml)...
-            +1./CPHy(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml).*CQHy(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml)./dz.*(Ex1(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1+1:nz-npml-npml+1)-Ex1(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml))...
-            -1./CPHy(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml).*CQHy(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml)./dx.*(Ez1(npml+npml+1+1:nx-npml-npml+1,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml)-Ez1(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml));
-            
-            Hz1(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml)=1./CPHz(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml).*Hz1(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml)...
-            +1./CPHz(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml).*CQHz(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml)./dx.*(Ey1(npml+npml+1+1:nx-npml-npml+1,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml)-Ey1(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml))...
-            -1./CPHz(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml).*CQHz(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml)./dy.*(Ex1(npml+npml+1:nx-npml-npml,npml+npml+1+1:ny-npml-npml+1,npml+npml+1:nz-npml-npml)-Ex1(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml)); 
+            Hz1(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc)=1./CPHz(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc).*Hz1(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc)...
+            +1./CPHz(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc).*CQHz(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc)./dx.*(Ey1(npml+npmlc+1+1:nx-npml-npmlc+1,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc)-Ey1(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc))...
+            -1./CPHz(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc).*CQHz(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc)./dy.*(Ex1(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1+1:ny-npml-npmlc+1,npml+npmlc+1:nz-npml-npmlc)-Ex1(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc)); 
 
-            Ex1(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml)=1./CAEx(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml).*Ex1(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml)...
-                -1./CAEx(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml).*CBEx(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml)./dy.*(Hz1(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml)-Hz1(npml+npml+1:nx-npml-npml,npml+npml:ny-npml-npml-1,npml+npml+1:nz-npml-npml))...
-                +1./CAEx(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml).*CBEx(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml)./dz.*(Hy1(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml)-Hy1(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml:nz-npml-npml-1));
+            Ex1(npml+npmlc+1:nx-npml-npmlc,
+                npml+npmlc+1:ny-npml-npmlc,
+                npml+npmlc+1:nz-npml-npmlc)=
+            1./
+            CAEx(npml+npmlc+1:nx-npml-npmlc,
+                npml+npmlc+1:ny-npml-npmlc,
+                npml+npmlc+1:nz-npml-npmlc)
+            .*
+            Ex1(npml+npmlc+1:nx-npml-npmlc,
+                npml+npmlc+1:ny-npml-npmlc,
+                npml+npmlc+1:nz-npml-npmlc)
+            -1./
+            CAEx(npml+npmlc+1:nx-npml-npmlc,
+                npml+npmlc+1:ny-npml-npmlc,
+                npml+npmlc+1:nz-npml-npmlc)
+            .*
+            CBEx(npml+npmlc+1:nx-npml-npmlc,
+                npml+npmlc+1:ny-npml-npmlc,
+                npml+npmlc+1:nz-npml-npmlc)
+            ./dy.*
+            (Hz1(npml+npmlc+1:nx-npml-npmlc,
+                npml+npmlc+1:ny-npml-npmlc,
+                npml+npmlc+1:nz-npml-npmlc)
+            -Hz1(npml+npmlc+1:nx-npml-npmlc,
+                npml+npmlc:ny-npml-npmlc-1,
+                npml+npmlc+1:nz-npml-npmlc))
+            +1./
+            CAEx(npml+npmlc+1:nx-npml-npmlc,
+                npml+npmlc+1:ny-npml-npmlc,
+                npml+npmlc+1:nz-npml-npmlc)
+            .*
+            CBEx(npml+npmlc+1:nx-npml-npmlc,
+                npml+npmlc+1:ny-npml-npmlc,
+                npml+npmlc+1:nz-npml-npmlc)
+            ./dz.*
+            (Hy1(npml+npmlc+1:nx-npml-npmlc,
+                npml+npmlc+1:ny-npml-npmlc,
+                npml+npmlc+1:nz-npml-npmlc)
+            -Hy1(npml+npmlc+1:nx-npml-npmlc,
+                npml+npmlc+1:ny-npml-npmlc,
+                npml+npmlc:nz-npml-npmlc-1));
                 
-            Ey1(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml)=1./CAEy(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml).*Ey1(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml)...
-                -1./CAEy(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml).*CBEy(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml)./dz.*(Hx1(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml)-Hx1(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml:nz-npml-npml-1))...
-                +1./CAEy(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml).*CBEy(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml)./dx.*(Hz1(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml)-Hz1(npml+npml:nx-npml-npml-1,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml));
+            Ey1(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc)=1./CAEy(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc).*Ey1(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc)...
+                -1./CAEy(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc).*CBEy(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc)./dz.*(Hx1(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc)-Hx1(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc:nz-npml-npmlc-1))...
+                +1./CAEy(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc).*CBEy(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc)./dx.*(Hz1(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc)-Hz1(npml+npmlc:nx-npml-npmlc-1,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc));
              
-            Ez1(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml)=1./CAEz(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml).*Ez1(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml)...
-                -1./CAEz(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml).*CBEz(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml)./dx.*(Hy1(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml)-Hy1(npml+npml:nx-npml-npml-1,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml))...
-                +1./CAEz(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml).*CBEz(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml)./dy.*(Hx1(npml+npml+1:nx-npml-npml,npml+npml+1:ny-npml-npml,npml+npml+1:nz-npml-npml)-Hx1(npml+npml+1:nx-npml-npml,npml+npml:ny-npml-npml-1,npml+npml+1:nz-npml-npml));
-        end %end of if(j==it)&else
-        
+            Ez1(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc)=1./CAEz(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc).*Ez1(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc)...
+                -1./CAEz(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc).*CBEz(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc)./dx.*(Hy1(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc)-Hy1(npml+npmlc:nx-npml-npmlc-1,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc))...
+                +1./CAEz(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc).*CBEz(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc)./dy.*(Hx1(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc)-Hx1(npml+npmlc+1:nx-npml-npmlc,npml+npmlc:ny-npml-npmlc-1,npml+npmlc+1:nz-npml-npmlc));
+        end
+        %fan=Ex(npml+1:nx-npml,npml+1:ny-npml,npml+1:nz-npml);
         huanyuan=Ex1(npml+1:nx-npml,npml+1:ny-npml,npml+1:nz-npml);
-        %ns=ns+huanyuan.*fan;
-        %zv=zv+huanyuan.*huanyuan;
-        %fv=ns./zv;
+%         
+%       ns=ns+huanyuan.*fan;
+%       zv=zv+huanyuan.*huanyuan;
+%         fv=ns./zv;
+        
         ns=ns+mean(huanyuan.*fan,4);
         zv=zv+mean(huanyuan.*huanyuan,4);
         fv=fv+mean(fan.*fan,4);
     end % end of for j=single(it):-1:single(1)
 
-end % end of parfor i=single(1):single(length(fswzx))
+end % end of for i.....
+
+
+save('ns.mat');
+save('zv.mat');
+save('fv.mat');
+
+figure
+set(gcf,'outerposition',get(0,'screensize'))
+imagesc(dz.*(1:nz-2*npml),dy.*(1:ny-2*npml),squeeze(ns(nx./2,:,:)))
+colorbar
+colormap(jet)
+set(gca,'FontName','Times New Roman','FontSize',36)
+xlabel('\fontname{锟斤拷锟斤拷}探锟斤拷锟斤拷锟絓fontname{Times New Roman}/m')
+ylabel('\fontname{锟斤拷锟斤拷}探锟斤拷锟斤拷锟絓fontname{Times New Roman}/m')
+getframe(gcf);
+figure
+set(gcf,'outerposition',get(0,'screensize'))
+imagesc(dz.*(1:nz-2*npml),dy.*(1:ny-2*npml),squeeze(fv(nx./2,:,:)))
+colorbar
+colormap(jet)
+set(gca,'FontName','Times New Roman','FontSize',36)
+xlabel('\fontname{锟斤拷锟斤拷}探锟斤拷锟斤拷锟絓fontname{Times New Roman}/m')
+ylabel('\fontname{锟斤拷锟斤拷}探锟斤拷锟斤拷锟絓fontname{Times New Roman}/m')
+getframe(gcf);
+
+
+figure
+set(gcf,'outerposition',get(0,'screensize'))
+imagesc(dz.*(1:nz-2*npml),dy.*(1:ny-2*npml),squeeze(ns(nx./2,:,:)./zv(nx./2,:,:)))
+colorbar
+colormap(jet)
+set(gca,'FontName','Times New Roman','FontSize',36)
+xlabel('\fontname{锟斤拷锟斤拷}探锟斤拷锟斤拷锟絓fontname{Times New Roman}/m')
+ylabel('\fontname{锟斤拷锟斤拷}探锟斤拷锟斤拷锟絓fontname{Times New Roman}/m')
+getframe(gcf);
+
+figure
+set(gcf,'outerposition',get(0,'screensize'))
+imagesc(dz.*(1:nz-2*npml),dy.*(1:ny-2*npml),squeeze(ns(nx./2,:,:)./fv(nx./2,:,:)))
+colorbar
+colormap(jet)
+set(gca,'FontName','Times New Roman','FontSize',36)
+xlabel('\fontname{锟斤拷锟斤拷}探锟斤拷锟斤拷锟絓fontname{Times New Roman}/m')
+ylabel('\fontname{锟斤拷锟斤拷}探锟斤拷锟斤拷锟絓fontname{Times New Roman}/m')
+getframe(gcf);
+
+figure
+set(gcf,'outerposition',get(0,'screensize'))
+imagesc(dz.*(1:nz-2*npml),dy.*(1:ny-2*npml),squeeze(ns(nx./2,:,:)./sqrt(zv(nx./2,:,:).*fv(nx./2,:,:))))
+colorbar
+colormap(jet)
+set(gca,'FontName','Times New Roman','FontSize',36)
+xlabel('\fontname{锟斤拷锟斤拷}探锟斤拷锟斤拷锟絓fontname{Times New Roman}/m')
+ylabel('\fontname{锟斤拷锟斤拷}探锟斤拷锟斤拷锟絓fontname{Times New Roman}/m')
+getframe(gcf);
+
+
+toc;

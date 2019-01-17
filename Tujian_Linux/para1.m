@@ -88,3 +88,17 @@ V=zeros(it,1);
 end
 
 save('E_obs.mat')
+
+figure
+set(gcf,'outerposition',get(0,'screensize'))
+imagesc(dt.*(1:it)/1e-9,dy.*(1:ny-2*npml),E_obs)
+colorbar
+colormap(jet)
+set(gca,'FontName','Times New Roman','FontSize',36)
+xlabel('\fontname{ï¿½ï¿½ï¿½ï¿½}Ì½ï¿½ï¿½ï¿½ï¿½ï¿½\fontname{Times New Roman}/m')
+ylabel('\fontname{ï¿½ï¿½ï¿½ï¿½}Ê±ï¿½ï¿½\fontname{Times New Roman}/ns')
+caxis([-0.01 0.01])
+getframe(gcf);
+
+
+toc;
