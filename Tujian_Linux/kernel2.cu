@@ -14,7 +14,6 @@
 #include "global_variables.cpp"
 #include <direct.h>
 
-
 __global__ void print_dev_matrix(float *A, int i, int j, int k, int xdim, int ydim, int zdim)
 {
 	int	idx = i * ydim*zdim + j * zdim + k;
@@ -1350,6 +1349,32 @@ void read_float(const char *name, float *a, int n1, int n2, int n3)
 	return;
 }
 
+void print_nzf(const char *name, float *a, int n1, int n2, int n3)
+{
+	FILE *fp = fopen(name, "w+");
+	if (fp == NULL) // 判断文件读入是否正确
+	{
+		printf("fopen %s error! \n", name);
+		return;
+	}
+	printf("fopen %s ok! \n", name);
+	for (int k = 0; k < n3; k++)
+	{
+		for (int j = 0; j < n2; j++)
+		{
+			for (int i = 0; i < n1; i++)
+			{
+				fprintf(fp, "%8f ", a + i * n2*n3 + j * n3 + k); // 输出a[i][j][k]			
+			}
+
+		}
+	}
+	printf("print %s OK\n", name);
+
+	fclose(fp);
+	return;
+}
+
 void read_data_from_txt()
 {
 	read_float("data_zhengyan\\CAEx.txt", (float*)CAEx, nx, ny + 1, nz + 1);
@@ -1479,7 +1504,7 @@ void read_data_from_txt()
 
 void print_E_obs()
 {
-	const char *name = "C:\\Users\\sky\\Desktop\\Tujian_VS\\output\\E_obs.txt";
+	const char *name = "output\\E_obs.txt";
 	FILE *fp = fopen(name, "w+");
 	if (fp == NULL) // 判断文件读入是否正确
 	{
@@ -1492,7 +1517,6 @@ void print_E_obs()
 
 	for (int i = 0; i < szfsw; i++)
 	{
-
 		for (int j = 0; j < it; j++)
 		{
 			fprintf(fp, "%8f ", E_obs[j][i]);
@@ -2175,9 +2199,12 @@ cudaError_t gpu_parallel_one()
 		}
 	}
 
+	cudaDeviceSynchronize();
+
 	printf("finish calc 1 !\n");
 
-	cudaDeviceSynchronize();
+	// 输出结果
+	print_E_obs();
 
 	return cudaStatus;
 }
@@ -2196,7 +2223,7 @@ cudaError_t gpu_parallel_two()
 	}
 
 	int i, j;
-	for (i = 0; i < 10; i++)
+	for (i = 0; i < szfsw; i++)
 	{
 		// 111111
 		gpu_memory_set_zero(1); // flag == 1 将GPU显存中的E*, UE**, H*, UH**, (V, E*_zheng_*, H*_zheng_*, E*_zheng_last, H*_zheng_last, fan, huanyuan)置零
@@ -2316,10 +2343,34 @@ cudaError_t gpu_parallel_two()
 			gpu_nzf << <grid_nzf, block_nzf >> > (dev_fv, dev_fan, dev_fan);
 		}
 	}
+	cudaStatus = cudaMemcpy(ns, dev_ns, sizeof(ns), cudaMemcpyDeviceToHost);
+	if (cudaStatus != cudaSuccess)
+	{
+		printf("dev_ns --> ns cudaMemcpy failed: %s\n", cudaGetErrorString(cudaStatus));
+		return cudaStatus;
+	}
+	cudaStatus = cudaMemcpy(fv, dev_fv, sizeof(fv), cudaMemcpyDeviceToHost);
+	if (cudaStatus != cudaSuccess)
+	{
+		printf("dev_fv --> fv cudaMemcpy failed: %s\n", cudaGetErrorString(cudaStatus));
+		return cudaStatus;
+	}
+	cudaStatus = cudaMemcpy(zv, dev_zv, sizeof(zv), cudaMemcpyDeviceToHost);
+	if (cudaStatus != cudaSuccess)
+	{
+		printf("dev_zv --> ns cudaMemcpy failed: %s\n", cudaGetErrorString(cudaStatus));
+		return cudaStatus;
+	}
+
+
+
+	cudaDeviceSynchronize();
 
 	printf("finish calc 2!\n");
 
-	cudaDeviceSynchronize();
+	print_nzf("nzf/ns.txt", (float*)ns, nx - 2 * npml, ny - 2 * npml, nz - 2 * npml);
+	print_nzf("nzf/fv.txt", (float*)fv, nx - 2 * npml, ny - 2 * npml, nz - 2 * npml);
+	print_nzf("nzf/zv.txt", (float*)zv, nx - 2 * npml, ny - 2 * npml, nz - 2 * npml);
 
 	return cudaStatus;
 }
@@ -2355,10 +2406,20 @@ int main()
 	gpu_memory_malloc();
 	gpu_memory_copy();
 
-	// 调用gpu运算
-	cudaStatus = gpu_parallel_two();
-	if (cudaStatus != cudaSuccess) { printf("gpu_parallel_two failed!"); return 1; }
-	else { printf("gpu_parallel_two success!\n"); }
+	// 调用gpu运算并输出到文件
+	if (isPianYi)
+	{
+		cudaStatus = gpu_parallel_two();
+		if (cudaStatus != cudaSuccess) { printf("gpu_parallel_two failed!"); return 1; }
+		else { printf("gpu_parallel_two success!\n"); }
+	}
+	else
+	{
+		cudaStatus = gpu_parallel_one();
+		if (cudaStatus != cudaSuccess) { printf("gpu_parallel_one failed!"); return 1; }
+		else { printf("gpu_parallel_one success!\n"); }
+	}
+
 
 	// 释放显存空间
 	gpu_memory_free();
@@ -2367,10 +2428,7 @@ int main()
 	cudaStatus = cudaDeviceReset();
 	if (cudaStatus != cudaSuccess) { printf("cudaDeviceReset failed!"); return 1; }
 
-	// 输出结果
-	print_E_obs();
-
-	// 释放内存
+	// 释放内存空间
 	freeMemory();
 	return 0;
 }

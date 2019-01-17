@@ -1,78 +1,78 @@
 tic;
+path = 'C:\Users\sky\Desktop\Tujian_github\Tujian_Linux\data_zhengyan';
+dlmwrite([path,'\CAEx.txt'],CAEx,'delimiter',' ','precision',10, 'newline', 'pc');
+dlmwrite([path,'\CAEy.txt'],CAEy,'delimiter',' ','precision',10, 'newline', 'pc');
+dlmwrite([path,'\CAEz.txt'],CAEz,'delimiter',' ','precision',10, 'newline', 'pc');
 
-dlmwrite('C:\Users\sky\Desktop\Tujian_mac\data_zhengyan\CAEx.txt',CAEx,'delimiter',' ','precision',10, 'newline', 'pc');
-dlmwrite('C:\Users\sky\Desktop\Tujian_mac\data_zhengyan\CAEy.txt',CAEy,'delimiter',' ','precision',10, 'newline', 'pc');
-dlmwrite('C:\Users\sky\Desktop\Tujian_mac\data_zhengyan\CAEz.txt',CAEz,'delimiter',' ','precision',10, 'newline', 'pc');
+dlmwrite([path,'\CBEx.txt'],CBEx,'delimiter',' ','precision',10, 'newline', 'pc');
+dlmwrite([path,'\CBEy.txt'],CBEy,'delimiter',' ','precision',10, 'newline', 'pc');
+dlmwrite([path,'\CBEz.txt'],CBEz,'delimiter',' ','precision',10, 'newline', 'pc');
 
-dlmwrite('C:\Users\sky\Desktop\Tujian_mac\data_zhengyan\CBEx.txt',CBEx,'delimiter',' ','precision',10, 'newline', 'pc');
-dlmwrite('C:\Users\sky\Desktop\Tujian_mac\data_zhengyan\CBEy.txt',CBEy,'delimiter',' ','precision',10, 'newline', 'pc');
-dlmwrite('C:\Users\sky\Desktop\Tujian_mac\data_zhengyan\CBEz.txt',CBEz,'delimiter',' ','precision',10, 'newline', 'pc');
+dlmwrite([path,'\CPHx.txt'],CPHx,'delimiter',' ','precision',10, 'newline', 'pc');
+dlmwrite([path,'\CPHy.txt'],CPHy,'delimiter',' ','precision',10, 'newline', 'pc');
+dlmwrite([path,'\CPHz.txt'],CPHz,'delimiter',' ','precision',10, 'newline', 'pc');
 
-dlmwrite('C:\Users\sky\Desktop\Tujian_mac\data_zhengyan\CPHx.txt',CPHx,'delimiter',' ','precision',10, 'newline', 'pc');
-dlmwrite('C:\Users\sky\Desktop\Tujian_mac\data_zhengyan\CPHy.txt',CPHy,'delimiter',' ','precision',10, 'newline', 'pc');
-dlmwrite('C:\Users\sky\Desktop\Tujian_mac\data_zhengyan\CPHz.txt',CPHz,'delimiter',' ','precision',10, 'newline', 'pc');
-
-dlmwrite('C:\Users\sky\Desktop\Tujian_mac\data_zhengyan\CQHx.txt',CQHx,'delimiter',' ','precision',10, 'newline', 'pc');
-dlmwrite('C:\Users\sky\Desktop\Tujian_mac\data_zhengyan\CQHy.txt',CQHy,'delimiter',' ','precision',10, 'newline', 'pc');
-dlmwrite('C:\Users\sky\Desktop\Tujian_mac\data_zhengyan\CQHz.txt',CQHz,'delimiter',' ','precision',10, 'newline', 'pc');
+dlmwrite([path,'\CQHx.txt'],CQHx,'delimiter',' ','precision',10, 'newline', 'pc');
+dlmwrite([path,'\CQHy.txt'],CQHy,'delimiter',' ','precision',10, 'newline', 'pc');
+dlmwrite([path,'\CQHz.txt'],CQHz,'delimiter',' ','precision',10, 'newline', 'pc');
 
 %RAE
-dlmwrite('C:\Users\sky\Desktop\Tujian_mac\data_zhengyan\RAExy.txt',RAExy,'delimiter',' ','precision',10, 'newline', 'pc');
-dlmwrite('C:\Users\sky\Desktop\Tujian_mac\data_zhengyan\RAExz.txt',RAExz,'delimiter',' ','precision',10, 'newline', 'pc');
-dlmwrite('C:\Users\sky\Desktop\Tujian_mac\data_zhengyan\RAEyx.txt',RAEyx,'delimiter',' ','precision',10, 'newline', 'pc');
-dlmwrite('C:\Users\sky\Desktop\Tujian_mac\data_zhengyan\RAEyz.txt',RAEyz,'delimiter',' ','precision',10, 'newline', 'pc');
-dlmwrite('C:\Users\sky\Desktop\Tujian_mac\data_zhengyan\RAEzx.txt',RAEzx,'delimiter',' ','precision',10, 'newline', 'pc');
-dlmwrite('C:\Users\sky\Desktop\Tujian_mac\data_zhengyan\RAEzy.txt',RAEzy,'delimiter',' ','precision',10, 'newline', 'pc');
+dlmwrite([path,'\RAExy.txt'],RAExy,'delimiter',' ','precision',10, 'newline', 'pc');
+dlmwrite([path,'\RAExz.txt'],RAExz,'delimiter',' ','precision',10, 'newline', 'pc');
+dlmwrite([path,'\RAEyx.txt'],RAEyx,'delimiter',' ','precision',10, 'newline', 'pc');
+dlmwrite([path,'\RAEyz.txt'],RAEyz,'delimiter',' ','precision',10, 'newline', 'pc');
+dlmwrite([path,'\RAEzx.txt'],RAEzx,'delimiter',' ','precision',10, 'newline', 'pc');
+dlmwrite([path,'\RAEzy.txt'],RAEzy,'delimiter',' ','precision',10, 'newline', 'pc');
 
 %RAH
-dlmwrite('C:\Users\sky\Desktop\Tujian_mac\data_zhengyan\RAHxy.txt',RAHxy,'delimiter',' ','precision',10, 'newline', 'pc');
-dlmwrite('C:\Users\sky\Desktop\Tujian_mac\data_zhengyan\RAHxz.txt',RAHxz,'delimiter',' ','precision',10, 'newline', 'pc');
-dlmwrite('C:\Users\sky\Desktop\Tujian_mac\data_zhengyan\RAHyx.txt',RAHyx,'delimiter',' ','precision',10, 'newline', 'pc');
-dlmwrite('C:\Users\sky\Desktop\Tujian_mac\data_zhengyan\RAHyz.txt',RAHyz,'delimiter',' ','precision',10, 'newline', 'pc');
-dlmwrite('C:\Users\sky\Desktop\Tujian_mac\data_zhengyan\RAHzx.txt',RAHzx,'delimiter',' ','precision',10, 'newline', 'pc');
-dlmwrite('C:\Users\sky\Desktop\Tujian_mac\data_zhengyan\RAHzy.txt',RAHzy,'delimiter',' ','precision',10, 'newline', 'pc');
+dlmwrite([path,'\RAHxy.txt'],RAHxy,'delimiter',' ','precision',10, 'newline', 'pc');
+dlmwrite([path,'\RAHxz.txt'],RAHxz,'delimiter',' ','precision',10, 'newline', 'pc');
+dlmwrite([path,'\RAHyx.txt'],RAHyx,'delimiter',' ','precision',10, 'newline', 'pc');
+dlmwrite([path,'\RAHyz.txt'],RAHyz,'delimiter',' ','precision',10, 'newline', 'pc');
+dlmwrite([path,'\RAHzx.txt'],RAHzx,'delimiter',' ','precision',10, 'newline', 'pc');
+dlmwrite([path,'\RAHzy.txt'],RAHzy,'delimiter',' ','precision',10, 'newline', 'pc');
 
 %RBE
-dlmwrite('C:\Users\sky\Desktop\Tujian_mac\data_zhengyan\RBExy.txt',RBExy,'delimiter',' ','precision',10, 'newline', 'pc');
-dlmwrite('C:\Users\sky\Desktop\Tujian_mac\data_zhengyan\RBExz.txt',RBExz,'delimiter',' ','precision',10, 'newline', 'pc');
-dlmwrite('C:\Users\sky\Desktop\Tujian_mac\data_zhengyan\RBEyx.txt',RBEyx,'delimiter',' ','precision',10, 'newline', 'pc');
-dlmwrite('C:\Users\sky\Desktop\Tujian_mac\data_zhengyan\RBEyz.txt',RBEyz,'delimiter',' ','precision',10, 'newline', 'pc');
-dlmwrite('C:\Users\sky\Desktop\Tujian_mac\data_zhengyan\RBEzx.txt',RBEzx,'delimiter',' ','precision',10, 'newline', 'pc');
-dlmwrite('C:\Users\sky\Desktop\Tujian_mac\data_zhengyan\RBEzy.txt',RBEzy,'delimiter',' ','precision',10, 'newline', 'pc');
+dlmwrite([path,'\RBExy.txt'],RBExy,'delimiter',' ','precision',10, 'newline', 'pc');
+dlmwrite([path,'\RBExz.txt'],RBExz,'delimiter',' ','precision',10, 'newline', 'pc');
+dlmwrite([path,'\RBEyx.txt'],RBEyx,'delimiter',' ','precision',10, 'newline', 'pc');
+dlmwrite([path,'\RBEyz.txt'],RBEyz,'delimiter',' ','precision',10, 'newline', 'pc');
+dlmwrite([path,'\RBEzx.txt'],RBEzx,'delimiter',' ','precision',10, 'newline', 'pc');
+dlmwrite([path,'\RBEzy.txt'],RBEzy,'delimiter',' ','precision',10, 'newline', 'pc');
 
 %RBH
-dlmwrite('C:\Users\sky\Desktop\Tujian_mac\data_zhengyan\RBHxy.txt',RBHxy,'delimiter',' ','precision',10, 'newline', 'pc');
-dlmwrite('C:\Users\sky\Desktop\Tujian_mac\data_zhengyan\RBHxz.txt',RBHxz,'delimiter',' ','precision',10, 'newline', 'pc');
-dlmwrite('C:\Users\sky\Desktop\Tujian_mac\data_zhengyan\RBHyx.txt',RBHyx,'delimiter',' ','precision',10, 'newline', 'pc');
-dlmwrite('C:\Users\sky\Desktop\Tujian_mac\data_zhengyan\RBHyz.txt',RBHyz,'delimiter',' ','precision',10, 'newline', 'pc');
-dlmwrite('C:\Users\sky\Desktop\Tujian_mac\data_zhengyan\RBHzx.txt',RBHzx,'delimiter',' ','precision',10, 'newline', 'pc');
-dlmwrite('C:\Users\sky\Desktop\Tujian_mac\data_zhengyan\RBHzy.txt',RBHzy,'delimiter',' ','precision',10, 'newline', 'pc');
+dlmwrite([path,'\RBHxy.txt'],RBHxy,'delimiter',' ','precision',10, 'newline', 'pc');
+dlmwrite([path,'\RBHxz.txt'],RBHxz,'delimiter',' ','precision',10, 'newline', 'pc');
+dlmwrite([path,'\RBHyx.txt'],RBHyx,'delimiter',' ','precision',10, 'newline', 'pc');
+dlmwrite([path,'\RBHyz.txt'],RBHyz,'delimiter',' ','precision',10, 'newline', 'pc');
+dlmwrite([path,'\RBHzx.txt'],RBHzx,'delimiter',' ','precision',10, 'newline', 'pc');
+dlmwrite([path,'\RBHzy.txt'],RBHzy,'delimiter',' ','precision',10, 'newline', 'pc');
 
 %fsw
-dlmwrite('C:\Users\sky\Desktop\Tujian_mac\data_zhengyan\fswzx.txt',fswzx,'delimiter',' ','precision','%d', 'newline', 'pc');
-dlmwrite('C:\Users\sky\Desktop\Tujian_mac\data_zhengyan\fswzy.txt',fswzy,'delimiter',' ','precision','%d', 'newline', 'pc');
-dlmwrite('C:\Users\sky\Desktop\Tujian_mac\data_zhengyan\fswzz.txt',fswzz,'delimiter',' ','precision','%d', 'newline', 'pc');
+dlmwrite([path,'\fswzx.txt'],fswzx,'delimiter',' ','precision','%d', 'newline', 'pc');
+dlmwrite([path,'\fswzy.txt'],fswzy,'delimiter',' ','precision','%d', 'newline', 'pc');
+dlmwrite([path,'\fswzz.txt'],fswzz,'delimiter',' ','precision','%d', 'newline', 'pc');
 
-dlmwrite('C:\Users\sky\Desktop\Tujian_mac\data_zhengyan\jswzx.txt',jswzx,'delimiter',' ','precision','%d', 'newline', 'pc');
-dlmwrite('C:\Users\sky\Desktop\Tujian_mac\data_zhengyan\jswzy.txt',jswzy,'delimiter',' ','precision','%d', 'newline', 'pc');
-dlmwrite('C:\Users\sky\Desktop\Tujian_mac\data_zhengyan\jswzz.txt',jswzz,'delimiter',' ','precision','%d', 'newline', 'pc');
+dlmwrite([path,'\jswzx.txt'],jswzx,'delimiter',' ','precision','%d', 'newline', 'pc');
+dlmwrite([path,'\jswzy.txt'],jswzy,'delimiter',' ','precision','%d', 'newline', 'pc');
+dlmwrite([path,'\jswzz.txt'],jswzz,'delimiter',' ','precision','%d', 'newline', 'pc');
 
 %k*E* & k*H*
-dlmwrite('C:\Users\sky\Desktop\Tujian_mac\data_zhengyan\kx_Ey.txt',kx_Ey,'delimiter',' ','precision',10, 'newline', 'pc');
-dlmwrite('C:\Users\sky\Desktop\Tujian_mac\data_zhengyan\kx_Ez.txt',kx_Ez,'delimiter',' ','precision',10, 'newline', 'pc');
-dlmwrite('C:\Users\sky\Desktop\Tujian_mac\data_zhengyan\kx_Hy.txt',kx_Hy,'delimiter',' ','precision',10, 'newline', 'pc');
-dlmwrite('C:\Users\sky\Desktop\Tujian_mac\data_zhengyan\kx_Hz.txt',kx_Hz,'delimiter',' ','precision',10, 'newline', 'pc');
+dlmwrite([path,'\kx_Ey.txt'],kx_Ey,'delimiter',' ','precision',10, 'newline', 'pc');
+dlmwrite([path,'\kx_Ez.txt'],kx_Ez,'delimiter',' ','precision',10, 'newline', 'pc');
+dlmwrite([path,'\kx_Hy.txt'],kx_Hy,'delimiter',' ','precision',10, 'newline', 'pc');
+dlmwrite([path,'\kx_Hz.txt'],kx_Hz,'delimiter',' ','precision',10, 'newline', 'pc');
 
-dlmwrite('C:\Users\sky\Desktop\Tujian_mac\data_zhengyan\ky_Ex.txt',ky_Ex,'delimiter',' ','precision',10, 'newline', 'pc');
-dlmwrite('C:\Users\sky\Desktop\Tujian_mac\data_zhengyan\ky_Ez.txt',ky_Ez,'delimiter',' ','precision',10, 'newline', 'pc');
-dlmwrite('C:\Users\sky\Desktop\Tujian_mac\data_zhengyan\ky_Hx.txt',ky_Hx,'delimiter',' ','precision',10, 'newline', 'pc');
-dlmwrite('C:\Users\sky\Desktop\Tujian_mac\data_zhengyan\ky_Hz.txt',ky_Hz,'delimiter',' ','precision',10, 'newline', 'pc');
+dlmwrite([path,'\ky_Ex.txt'],ky_Ex,'delimiter',' ','precision',10, 'newline', 'pc');
+dlmwrite([path,'\ky_Ez.txt'],ky_Ez,'delimiter',' ','precision',10, 'newline', 'pc');
+dlmwrite([path,'\ky_Hx.txt'],ky_Hx,'delimiter',' ','precision',10, 'newline', 'pc');
+dlmwrite([path,'\ky_Hz.txt'],ky_Hz,'delimiter',' ','precision',10, 'newline', 'pc');
 
-dlmwrite('C:\Users\sky\Desktop\Tujian_mac\data_zhengyan\kz_Ex.txt',kz_Ex,'delimiter',' ','precision',10, 'newline', 'pc');
-dlmwrite('C:\Users\sky\Desktop\Tujian_mac\data_zhengyan\kz_Ey.txt',kz_Ey,'delimiter',' ','precision',10, 'newline', 'pc');
-dlmwrite('C:\Users\sky\Desktop\Tujian_mac\data_zhengyan\kz_Hx.txt',kz_Hx,'delimiter',' ','precision',10, 'newline', 'pc');
-dlmwrite('C:\Users\sky\Desktop\Tujian_mac\data_zhengyan\kz_Hy.txt',kz_Hy,'delimiter',' ','precision',10, 'newline', 'pc');
+dlmwrite([path,'\kz_Ex.txt'],kz_Ex,'delimiter',' ','precision',10, 'newline', 'pc');
+dlmwrite([path,'\kz_Ey.txt'],kz_Ey,'delimiter',' ','precision',10, 'newline', 'pc');
+dlmwrite([path,'\kz_Hx.txt'],kz_Hx,'delimiter',' ','precision',10, 'newline', 'pc');
+dlmwrite([path,'\kz_Hy.txt'],kz_Hy,'delimiter',' ','precision',10, 'newline', 'pc');
 
 %source
-dlmwrite('C:\Users\sky\Desktop\Tujian_mac\data_zhengyan\source.txt',source,'delimiter',' ','precision',10, 'newline', 'pc');
+dlmwrite([path,'\source.txt'],source,'delimiter',' ','precision',10, 'newline', 'pc');
 toc;

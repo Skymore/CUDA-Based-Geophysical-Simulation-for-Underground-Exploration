@@ -8,14 +8,14 @@
 #define nx (170)
 #define ny (120)
 #define nz (90)
-#define szfsw (185)
+#define szfsw (370)
 #define dx (0.01)
 #define dy (0.01)
 #define dz (0.01)
 #define pi (3.141592653589)
 #define path "C:\\Users\\sky\\Desktop\\Tujian_github\\Tujian_Linux" // 程序运行的目录
-#define cudaDevice 1 // 程序使用的gpu
-#define isPianYi true
+#define cudaDevice 0 // 程序使用的gpu
+#define isPianYi false
 /************************************************************************************
 * 内存参数表
 ************************************************************************************/
@@ -102,9 +102,6 @@ int jswzz[szfsw];
 float E_obs[it][szfsw];
 float V[it];
 float source[it];
-float ns[nx - 2 * npml][ny - 2 * npml][nz - 2 * npml];
-float fv[nx - 2 * npml][ny - 2 * npml][nz - 2 * npml];
-float zv[nx - 2 * npml][ny - 2 * npml][nz - 2 * npml];
 
 
 float kx_Ey[nx+1][ny][nz+1];
