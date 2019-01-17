@@ -1,13 +1,13 @@
 #include<math.h>
 #include<stdlib.h>
 
-#define it (800)
+#define it (1233)
 #define npml (10)
 #define npmlc (4)
 #define np (14) // np = npml + npmlc;
 #define nx (170)
 #define ny (120)
-#define nz (120)
+#define nz (90)
 #define szfsw (185)
 #define dx (0.01)
 #define dy (0.01)
@@ -15,6 +15,7 @@
 #define pi (3.141592653589)
 #define path "C:\\Users\\sky\\Desktop\\Tujian_github\\Tujian_Linux" // 程序运行的目录
 #define cudaDevice 1 // 程序使用的gpu
+#define isPianYi true
 /************************************************************************************
 * 内存参数表
 ************************************************************************************/
@@ -23,7 +24,7 @@ const float mu_0 = 4.0*pi*1.0e-7;
 const float eps_0 = 1.0 / (c*c*mu_0);
 
 const float dt = 1 / (sqrt(1 / (dx*dx)+1 / (dy*dy)+1 / (dz*dz))*c);
-const float freq = 500*1.0e6;
+const float freq = 600*1.0e6;
 
 float Ex[nx][ny+1][nz+1];
 float Ey[nx+1][ny][nz+1];
@@ -101,6 +102,10 @@ int jswzz[szfsw];
 float E_obs[it][szfsw];
 float V[it];
 float source[it];
+float ns[nx - 2 * npml][ny - 2 * npml][nz - 2 * npml];
+float fv[nx - 2 * npml][ny - 2 * npml][nz - 2 * npml];
+float zv[nx - 2 * npml][ny - 2 * npml][nz - 2 * npml];
+
 
 float kx_Ey[nx+1][ny][nz+1];
 float kx_Ez[nx+1][ny+1][nz];

@@ -8,10 +8,8 @@ clc;
 tic;
 
 % parpool('SpmdEnabled',false)
-% parpool open local 15
-
-E_obs_qzdb=load('E_obs_qzdb.mat');
-E_obs=E_obs_qzdb.E_obs_qzdb;
+% parpool open lo
+load('E_obs.mat');
 
 %*********************************************************************** 
 % 锟斤拷锟?锟斤拷
@@ -19,7 +17,7 @@ E_obs=E_obs_qzdb.E_obs_qzdb;
 c=single(2.99792458e8);             
 mu_0=single(4.0*pi*1.0e-7);       
 eps_0=single(1.0/(c*c*mu_0));      
-freq=single(500);                                               
+freq=single(600);                                               
 freq=single(freq*1.0e+6);                           
 %********************************************************************
 %锟斤拷锟斤拷锟斤拷                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
@@ -27,8 +25,8 @@ freq=single(freq*1.0e+6);
 dx=single(0.01);                                              
 dy=dx;
 dz=dx;
-dt=single(1/(sqrt(1/dx^2+1/dy^2+1/dz^2)*c));   
-it=single(1000); 
+dt=single(0.8/(sqrt(1/dx^2+1/dy^2+1/dz^2)*c));   
+it=single(round(19*1e-9/dt));
 %********************************************************************
 %PML锟斤拷锟斤拷
 %********************************************************************
@@ -59,14 +57,14 @@ for i=1:it
      source(i)=A*(1-2*(pi*freq*t)^2)*exp(-(pi*freq*t)^2);
 end
 
-figure(1);
+figure;
 plot(source);
 getframe(gca);
 
 
 %===========锟斤拷锟斤拷锟斤拷锟轿伙拷锟?==============================
 
-step=single(4);
+step=single(2);
 dancxds=(npml+1):step:(nx-npml-3);
 dancxds=length(dancxds);
 cxsl=5;
@@ -81,8 +79,6 @@ fswzy=(npml+30):step1:(npml+70);
 jswzy=(npml+30):step1:(npml+70); 
 fswzy=repelem(fswzy,dancxds);
 jswzy=repelem(jswzy,dancxds);
-
-
 
 fswzz=(nz-npml-1).*ones(1,dancxds*cxsl);
 jswzz=(nz-npml-1).*ones(1,dancxds*cxsl);
@@ -312,4 +308,3 @@ alphay=repmat(reshape(alphay,[1,2*npml,1]),[nx,1,nz-1]);
 RBHyx=single(exp(-((sigy./ky)+alphay).*(dt./eps_0)));
 RAHyx=single(sigy./(sigy.*ky+ky.^2.*alphay).*(RBHyx-1));
 clear eps_r mu_r mu sigm sigmax sigy ky alphay
-

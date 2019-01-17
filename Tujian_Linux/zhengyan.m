@@ -14,7 +14,7 @@ tic;
 c=single(2.99792458e8);             
 mu_0=single(4.0*pi*1.0e-7);       
 eps_0=single(1.0/(c*c*mu_0));      
-freq=single(500);				                               
+freq=single(600);				                               
 freq=single(freq*1.0e+6);                           
 %********************************************************************
 %参数                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
@@ -23,7 +23,7 @@ dx=single(0.01);
 dy=dx;
 dz=dx;
 dt=single(1/(sqrt(1/dx^2+1/dy^2+1/dz^2)*c));   
-it=single(1000); 
+it=single(round(19*1e-9/dt)); 
 %********************************************************************
 %PML锟斤拷锟斤拷
 %********************************************************************
@@ -31,8 +31,8 @@ npml=single(10);
 %********************************************************************
 %模型设置 
 %********************************************************************
-index=single(ones(170,120,120));
-param=[5 0.001 1 0];
+index=single(ones(170,120,90));
+param=[9 0.00001 1 0];
 
 [nx,ny,nz]=size(index);
 nx=single(nx);
@@ -44,11 +44,6 @@ param2=single(reshape(param(index,2),size(index)));
 param3=single(reshape(param(index,3),size(index)));
 param4=single(reshape(param(index,4),size(index)));
 
-param1(:,:,1:75)=10.*ones(nx,ny,75);
-param2(:,:,1:75)=0.005.*ones(nx,ny,75);
-
-param1(76:95,51:70,51:60)=ones(20,20,10);
-param2(76:95,51:70,51:60)=zeros(20,20,10);
 
 
 
@@ -56,10 +51,6 @@ param2(76:95,51:70,51:60)=zeros(20,20,10);
 %初始化
 %********************************************************************
 
-[x,y,z]=meshgrid(1:ny,1:nx,1:nz);
-sx=single(60);sy=single(85);sz=single(60);
-slice(x,y,z,param1,sx,sy,sz);
-xlabel('x');ylabel('y');zlabel('z')
 
 %********************************************************************
 %中间变量
@@ -359,7 +350,7 @@ plot(source);
 getframe(gca);
 
 %===========收发天线设置改动过==============================
-step=single(4);
+step=single(2);
 dancxds=(npml+1):step:(nx-npml-3);
 dancxds=length(dancxds);
 cxsl=5;
