@@ -4,7 +4,6 @@
 * 说明:
 *		计算第二部分的并行。
 ************************************************************************************/
-
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
 #include <stdio.h>
@@ -12,7 +11,9 @@
 #include <string.h>
 #include "unistd.h"
 #include "global_variables.cpp"
-#include <direct.h>
+#include <unistd.h>  //linux
+//#include <direct.h>  //windows
+
 
 __global__ void print_dev_matrix(float *A, int i, int j, int k, int xdim, int ydim, int zdim)
 {
@@ -1364,7 +1365,7 @@ void print_nzf(const char *name, float *a, int n1, int n2, int n3)
 		{
 			for (int i = 0; i < n1; i++)
 			{
-				fprintf(fp, "%8f ", a + i * n2*n3 + j * n3 + k); // 输出a[i][j][k]			
+				fprintf(fp, "%8f ", *(a + i * n2*n3 + j * n3 + k)); // 输出a[i][j][k]			
 			}
 
 		}
@@ -1377,134 +1378,136 @@ void print_nzf(const char *name, float *a, int n1, int n2, int n3)
 
 void read_data_from_txt()
 {
-	read_float("data_zhengyan\\CAEx.txt", (float*)CAEx, nx, ny + 1, nz + 1);
-	read_float("data_zhengyan\\CBEx.txt", (float*)CBEx, nx, ny + 1, nz + 1);
-	read_float("data_zhengyan\\RAEyz.txt", (float*)RAEyz, nx, 2 * (npml - 1), nz - 1);
-	read_float("data_zhengyan\\RBEyz.txt", (float*)RBEyz, nx, 2 * (npml - 1), nz - 1);
-	read_float("data_zhengyan\\RAEzy.txt", (float*)RAEzy, nx, ny - 1, 2 * (npml - 1));
-	read_float("data_zhengyan\\RBEzy.txt", (float*)RBEzy, nx, ny - 1, 2 * (npml - 1));
-	read_float("data_zhengyan\\CAEy.txt", (float*)CAEy, nx + 1, ny, nz + 1);
-	read_float("data_zhengyan\\CBEy.txt", (float*)CBEy, nx + 1, ny, nz + 1);
-	read_float("data_zhengyan\\RAEzx.txt", (float*)RAEzx, nx - 1, ny, 2 * (npml - 1));
-	read_float("data_zhengyan\\RBEzx.txt", (float*)RBEzx, nx - 1, ny, 2 * (npml - 1));
-	read_float("data_zhengyan\\RAExz.txt", (float*)RAExz, 2 * (npml - 1), ny, nz - 1);
-	read_float("data_zhengyan\\RBExz.txt", (float*)RBExz, 2 * (npml - 1), ny, nz - 1);
-	read_float("data_zhengyan\\CAEz.txt", (float*)CAEz, nx + 1, ny + 1, nz);
-	read_float("data_zhengyan\\CBEz.txt", (float*)CBEz, nx + 1, ny + 1, nz);
-	read_float("data_zhengyan\\RAExy.txt", (float*)RAExy, 2 * (npml - 1), ny - 1, nz);
-	read_float("data_zhengyan\\RBExy.txt", (float*)RBExy, 2 * (npml - 1), ny - 1, nz);
-	read_float("data_zhengyan\\RAEyx.txt", (float*)RAEyx, nx - 1, 2 * (npml - 1), nz);
-	read_float("data_zhengyan\\RBEyx.txt", (float*)RBEyx, nx - 1, 2 * (npml - 1), nz);
-
-	read_float("data_zhengyan\\CPHx.txt", (float*)CPHx, nx + 1, ny, nz);
-	read_float("data_zhengyan\\CQHx.txt", (float*)CQHx, nx + 1, ny, nz);
-	read_float("data_zhengyan\\RAHyz.txt", (float*)RAHyz, nx - 1, 2 * npml, nz);
-	read_float("data_zhengyan\\RBHyz.txt", (float*)RBHyz, nx - 1, 2 * npml, nz);
-	read_float("data_zhengyan\\RAHzy.txt", (float*)RAHzy, nx - 1, ny, 2 * npml);
-	read_float("data_zhengyan\\RBHzy.txt", (float*)RBHzy, nx - 1, ny, 2 * npml);
-	read_float("data_zhengyan\\CPHy.txt", (float*)CPHy, nx, ny + 1, nz);
-	read_float("data_zhengyan\\CQHy.txt", (float*)CQHy, nx, ny + 1, nz);
-	read_float("data_zhengyan\\RAHzx.txt", (float*)RAHzx, nx, ny - 1, 2 * npml);
-	read_float("data_zhengyan\\RBHzx.txt", (float*)RBHzx, nx, ny - 1, 2 * npml);
-	read_float("data_zhengyan\\RAHxz.txt", (float*)RAHxz, 2 * npml, ny - 1, nz);
-	read_float("data_zhengyan\\RBHxz.txt", (float*)RBHxz, 2 * npml, ny - 1, nz);
-	read_float("data_zhengyan\\CPHz.txt", (float*)CPHz, nx, ny, nz + 1);
-	read_float("data_zhengyan\\CQHz.txt", (float*)CQHz, nx, ny, nz + 1);
-	read_float("data_zhengyan\\RAHxy.txt", (float*)RAHxy, 2 * npml, ny, nz - 1);
-	read_float("data_zhengyan\\RBHxy.txt", (float*)RBHxy, 2 * npml, ny, nz - 1);
-	read_float("data_zhengyan\\RAHyx.txt", (float*)RAHyx, nx, 2 * npml, nz - 1);
-	read_float("data_zhengyan\\RBHyx.txt", (float*)RBHyx, nx, 2 * npml, nz - 1);
-
-	read_float("data_zhengyan\\kx_Ey.txt", (float*)kx_Ey, nx + 1, ny, nz + 1);
-	read_float("data_zhengyan\\kx_Ez.txt", (float*)kx_Ez, nx + 1, ny + 1, nz);
-	read_float("data_zhengyan\\ky_Ex.txt", (float*)ky_Ex, nx, ny + 1, nz + 1);
-	read_float("data_zhengyan\\ky_Ez.txt", (float*)ky_Ez, nx + 1, ny + 1, nz);
-	read_float("data_zhengyan\\kz_Ex.txt", (float*)kz_Ex, nx, ny + 1, nz + 1);
-	read_float("data_zhengyan\\kz_Ey.txt", (float*)kz_Ey, nx + 1, ny, nz + 1);
-
-	read_float("data_zhengyan\\kx_Hy.txt", (float*)kx_Hy, nx, ny + 1, nz);
-	read_float("data_zhengyan\\kx_Hz.txt", (float*)kx_Hz, nx, ny, nz + 1);
-	read_float("data_zhengyan\\ky_Hx.txt", (float*)ky_Hx, nx + 1, ny, nz);
-	read_float("data_zhengyan\\ky_Hz.txt", (float*)ky_Hz, nx, ny, nz + 1);
-	read_float("data_zhengyan\\kz_Hx.txt", (float*)kz_Hx, nx + 1, ny, nz);
-	read_float("data_zhengyan\\kz_Hy.txt", (float*)kz_Hy, nx, ny + 1, nz);
-
-	read_int("data_zhengyan\\fswzx.txt", (int*)fswzx, 1, 1, szfsw);
-	read_int("data_zhengyan\\fswzy.txt", (int*)fswzy, 1, 1, szfsw);
-	read_int("data_zhengyan\\fswzz.txt", (int*)fswzz, 1, 1, szfsw);
-	read_int("data_zhengyan\\jswzx.txt", (int*)jswzx, 1, 1, szfsw);
-	read_int("data_zhengyan\\jswzy.txt", (int*)jswzy, 1, 1, szfsw);
-	read_int("data_zhengyan\\jswzz.txt", (int*)jswzz, 1, 1, szfsw);
-	read_float("data_zhengyan\\source.txt", (float*)source, 1, 1, it);
 	if (isPianYi)
 	{
-		read_float("data_pianyi\\CAEx.txt", (float*)CAEx, nx, ny + 1, nz + 1);
-		read_float("data_pianyi\\CBEx.txt", (float*)CBEx, nx, ny + 1, nz + 1);
-		read_float("data_pianyi\\RAEyz.txt", (float*)RAEyz, nx, 2 * (npml - 1), nz - 1);
-		read_float("data_pianyi\\RBEyz.txt", (float*)RBEyz, nx, 2 * (npml - 1), nz - 1);
-		read_float("data_pianyi\\RAEzy.txt", (float*)RAEzy, nx, ny - 1, 2 * (npml - 1));
-		read_float("data_pianyi\\RBEzy.txt", (float*)RBEzy, nx, ny - 1, 2 * (npml - 1));
-		read_float("data_pianyi\\CAEy.txt", (float*)CAEy, nx + 1, ny, nz + 1);
-		read_float("data_pianyi\\CBEy.txt", (float*)CBEy, nx + 1, ny, nz + 1);
-		read_float("data_pianyi\\RAEzx.txt", (float*)RAEzx, nx - 1, ny, 2 * (npml - 1));
-		read_float("data_pianyi\\RBEzx.txt", (float*)RBEzx, nx - 1, ny, 2 * (npml - 1));
-		read_float("data_pianyi\\RAExz.txt", (float*)RAExz, 2 * (npml - 1), ny, nz - 1);
-		read_float("data_pianyi\\RBExz.txt", (float*)RBExz, 2 * (npml - 1), ny, nz - 1);
-		read_float("data_pianyi\\CAEz.txt", (float*)CAEz, nx + 1, ny + 1, nz);
-		read_float("data_pianyi\\CBEz.txt", (float*)CBEz, nx + 1, ny + 1, nz);
-		read_float("data_pianyi\\RAExy.txt", (float*)RAExy, 2 * (npml - 1), ny - 1, nz);
-		read_float("data_pianyi\\RBExy.txt", (float*)RBExy, 2 * (npml - 1), ny - 1, nz);
-		read_float("data_pianyi\\RAEyx.txt", (float*)RAEyx, nx - 1, 2 * (npml - 1), nz);
-		read_float("data_pianyi\\RBEyx.txt", (float*)RBEyx, nx - 1, 2 * (npml - 1), nz);
+		read_float("data_pianyi/CAEx.txt", (float*)CAEx, nx, ny + 1, nz + 1);
+		read_float("data_pianyi/CBEx.txt", (float*)CBEx, nx, ny + 1, nz + 1);
+		read_float("data_pianyi/RAEyz.txt", (float*)RAEyz, nx, 2 * (npml - 1), nz - 1);
+		read_float("data_pianyi/RBEyz.txt", (float*)RBEyz, nx, 2 * (npml - 1), nz - 1);
+		read_float("data_pianyi/RAEzy.txt", (float*)RAEzy, nx, ny - 1, 2 * (npml - 1));
+		read_float("data_pianyi/RBEzy.txt", (float*)RBEzy, nx, ny - 1, 2 * (npml - 1));
+		read_float("data_pianyi/CAEy.txt", (float*)CAEy, nx + 1, ny, nz + 1);
+		read_float("data_pianyi/CBEy.txt", (float*)CBEy, nx + 1, ny, nz + 1);
+		read_float("data_pianyi/RAEzx.txt", (float*)RAEzx, nx - 1, ny, 2 * (npml - 1));
+		read_float("data_pianyi/RBEzx.txt", (float*)RBEzx, nx - 1, ny, 2 * (npml - 1));
+		read_float("data_pianyi/RAExz.txt", (float*)RAExz, 2 * (npml - 1), ny, nz - 1);
+		read_float("data_pianyi/RBExz.txt", (float*)RBExz, 2 * (npml - 1), ny, nz - 1);
+		read_float("data_pianyi/CAEz.txt", (float*)CAEz, nx + 1, ny + 1, nz);
+		read_float("data_pianyi/CBEz.txt", (float*)CBEz, nx + 1, ny + 1, nz);
+		read_float("data_pianyi/RAExy.txt", (float*)RAExy, 2 * (npml - 1), ny - 1, nz);
+		read_float("data_pianyi/RBExy.txt", (float*)RBExy, 2 * (npml - 1), ny - 1, nz);
+		read_float("data_pianyi/RAEyx.txt", (float*)RAEyx, nx - 1, 2 * (npml - 1), nz);
+		read_float("data_pianyi/RBEyx.txt", (float*)RBEyx, nx - 1, 2 * (npml - 1), nz);
 
-		read_float("data_pianyi\\CPHx.txt", (float*)CPHx, nx + 1, ny, nz);
-		read_float("data_pianyi\\CQHx.txt", (float*)CQHx, nx + 1, ny, nz);
-		read_float("data_pianyi\\RAHyz.txt", (float*)RAHyz, nx - 1, 2 * npml, nz);
-		read_float("data_pianyi\\RBHyz.txt", (float*)RBHyz, nx - 1, 2 * npml, nz);
-		read_float("data_pianyi\\RAHzy.txt", (float*)RAHzy, nx - 1, ny, 2 * npml);
-		read_float("data_pianyi\\RBHzy.txt", (float*)RBHzy, nx - 1, ny, 2 * npml);
-		read_float("data_pianyi\\CPHy.txt", (float*)CPHy, nx, ny + 1, nz);
-		read_float("data_pianyi\\CQHy.txt", (float*)CQHy, nx, ny + 1, nz);
-		read_float("data_pianyi\\RAHzx.txt", (float*)RAHzx, nx, ny - 1, 2 * npml);
-		read_float("data_pianyi\\RBHzx.txt", (float*)RBHzx, nx, ny - 1, 2 * npml);
-		read_float("data_pianyi\\RAHxz.txt", (float*)RAHxz, 2 * npml, ny - 1, nz);
-		read_float("data_pianyi\\RBHxz.txt", (float*)RBHxz, 2 * npml, ny - 1, nz);
-		read_float("data_pianyi\\CPHz.txt", (float*)CPHz, nx, ny, nz + 1);
-		read_float("data_pianyi\\CQHz.txt", (float*)CQHz, nx, ny, nz + 1);
-		read_float("data_pianyi\\RAHxy.txt", (float*)RAHxy, 2 * npml, ny, nz - 1);
-		read_float("data_pianyi\\RBHxy.txt", (float*)RBHxy, 2 * npml, ny, nz - 1);
-		read_float("data_pianyi\\RAHyx.txt", (float*)RAHyx, nx, 2 * npml, nz - 1);
-		read_float("data_pianyi\\RBHyx.txt", (float*)RBHyx, nx, 2 * npml, nz - 1);
+		read_float("data_pianyi/CPHx.txt", (float*)CPHx, nx + 1, ny, nz);
+		read_float("data_pianyi/CQHx.txt", (float*)CQHx, nx + 1, ny, nz);
+		read_float("data_pianyi/RAHyz.txt", (float*)RAHyz, nx - 1, 2 * npml, nz);
+		read_float("data_pianyi/RBHyz.txt", (float*)RBHyz, nx - 1, 2 * npml, nz);
+		read_float("data_pianyi/RAHzy.txt", (float*)RAHzy, nx - 1, ny, 2 * npml);
+		read_float("data_pianyi/RBHzy.txt", (float*)RBHzy, nx - 1, ny, 2 * npml);
+		read_float("data_pianyi/CPHy.txt", (float*)CPHy, nx, ny + 1, nz);
+		read_float("data_pianyi/CQHy.txt", (float*)CQHy, nx, ny + 1, nz);
+		read_float("data_pianyi/RAHzx.txt", (float*)RAHzx, nx, ny - 1, 2 * npml);
+		read_float("data_pianyi/RBHzx.txt", (float*)RBHzx, nx, ny - 1, 2 * npml);
+		read_float("data_pianyi/RAHxz.txt", (float*)RAHxz, 2 * npml, ny - 1, nz);
+		read_float("data_pianyi/RBHxz.txt", (float*)RBHxz, 2 * npml, ny - 1, nz);
+		read_float("data_pianyi/CPHz.txt", (float*)CPHz, nx, ny, nz + 1);
+		read_float("data_pianyi/CQHz.txt", (float*)CQHz, nx, ny, nz + 1);
+		read_float("data_pianyi/RAHxy.txt", (float*)RAHxy, 2 * npml, ny, nz - 1);
+		read_float("data_pianyi/RBHxy.txt", (float*)RBHxy, 2 * npml, ny, nz - 1);
+		read_float("data_pianyi/RAHyx.txt", (float*)RAHyx, nx, 2 * npml, nz - 1);
+		read_float("data_pianyi/RBHyx.txt", (float*)RBHyx, nx, 2 * npml, nz - 1);
 
-		read_float("data_pianyi\\kx_Ey.txt", (float*)kx_Ey, nx + 1, ny, nz + 1);
-		read_float("data_pianyi\\kx_Ez.txt", (float*)kx_Ez, nx + 1, ny + 1, nz);
-		read_float("data_pianyi\\ky_Ex.txt", (float*)ky_Ex, nx, ny + 1, nz + 1);
-		read_float("data_pianyi\\ky_Ez.txt", (float*)ky_Ez, nx + 1, ny + 1, nz);
-		read_float("data_pianyi\\kz_Ex.txt", (float*)kz_Ex, nx, ny + 1, nz + 1);
-		read_float("data_pianyi\\kz_Ey.txt", (float*)kz_Ey, nx + 1, ny, nz + 1);
+		read_float("data_pianyi/kx_Ey.txt", (float*)kx_Ey, nx + 1, ny, nz + 1);
+		read_float("data_pianyi/kx_Ez.txt", (float*)kx_Ez, nx + 1, ny + 1, nz);
+		read_float("data_pianyi/ky_Ex.txt", (float*)ky_Ex, nx, ny + 1, nz + 1);
+		read_float("data_pianyi/ky_Ez.txt", (float*)ky_Ez, nx + 1, ny + 1, nz);
+		read_float("data_pianyi/kz_Ex.txt", (float*)kz_Ex, nx, ny + 1, nz + 1);
+		read_float("data_pianyi/kz_Ey.txt", (float*)kz_Ey, nx + 1, ny, nz + 1);
 
-		read_float("data_pianyi\\kx_Hy.txt", (float*)kx_Hy, nx, ny + 1, nz);
-		read_float("data_pianyi\\kx_Hz.txt", (float*)kx_Hz, nx, ny, nz + 1);
-		read_float("data_pianyi\\ky_Hx.txt", (float*)ky_Hx, nx + 1, ny, nz);
-		read_float("data_pianyi\\ky_Hz.txt", (float*)ky_Hz, nx, ny, nz + 1);
-		read_float("data_pianyi\\kz_Hx.txt", (float*)kz_Hx, nx + 1, ny, nz);
-		read_float("data_pianyi\\kz_Hy.txt", (float*)kz_Hy, nx, ny + 1, nz);
+		read_float("data_pianyi/kx_Hy.txt", (float*)kx_Hy, nx, ny + 1, nz);
+		read_float("data_pianyi/kx_Hz.txt", (float*)kx_Hz, nx, ny, nz + 1);
+		read_float("data_pianyi/ky_Hx.txt", (float*)ky_Hx, nx + 1, ny, nz);
+		read_float("data_pianyi/ky_Hz.txt", (float*)ky_Hz, nx, ny, nz + 1);
+		read_float("data_pianyi/kz_Hx.txt", (float*)kz_Hx, nx + 1, ny, nz);
+		read_float("data_pianyi/kz_Hy.txt", (float*)kz_Hy, nx, ny + 1, nz);
 
-		read_int("data_pianyi\\fswzx.txt", (int*)fswzx, 1, 1, szfsw);
-		read_int("data_pianyi\\fswzy.txt", (int*)fswzy, 1, 1, szfsw);
-		read_int("data_pianyi\\fswzz.txt", (int*)fswzz, 1, 1, szfsw);
-		read_int("data_pianyi\\jswzx.txt", (int*)jswzx, 1, 1, szfsw);
-		read_int("data_pianyi\\jswzy.txt", (int*)jswzy, 1, 1, szfsw);
-		read_int("data_pianyi\\jswzz.txt", (int*)jswzz, 1, 1, szfsw);
-		read_float("data_pianyi\\source.txt", (float*)source, 1, 1, it);
-		read_float("data_pianyi\\E_obs.txt", (float*)source, 1, it, szfsw);
+		read_int("data_pianyi/fswzx.txt", (int*)fswzx, 1, 1, szfsw);
+		read_int("data_pianyi/fswzy.txt", (int*)fswzy, 1, 1, szfsw);
+		read_int("data_pianyi/fswzz.txt", (int*)fswzz, 1, 1, szfsw);
+		read_int("data_pianyi/jswzx.txt", (int*)jswzx, 1, 1, szfsw);
+		read_int("data_pianyi/jswzy.txt", (int*)jswzy, 1, 1, szfsw);
+		read_int("data_pianyi/jswzz.txt", (int*)jswzz, 1, 1, szfsw);
+		read_float("data_pianyi/source.txt", (float*)source, 1, 1, it);
+		read_float("data_pianyi/E_obs.txt", (float*)source, 1, it, szfsw);
 	}
+	else
+	{
+		read_float("data_zhengyan/CAEx.txt", (float*)CAEx, nx, ny + 1, nz + 1);
+		read_float("data_zhengyan/CBEx.txt", (float*)CBEx, nx, ny + 1, nz + 1);
+		read_float("data_zhengyan/RAEyz.txt", (float*)RAEyz, nx, 2 * (npml - 1), nz - 1);
+		read_float("data_zhengyan/RBEyz.txt", (float*)RBEyz, nx, 2 * (npml - 1), nz - 1);
+		read_float("data_zhengyan/RAEzy.txt", (float*)RAEzy, nx, ny - 1, 2 * (npml - 1));
+		read_float("data_zhengyan/RBEzy.txt", (float*)RBEzy, nx, ny - 1, 2 * (npml - 1));
+		read_float("data_zhengyan/CAEy.txt", (float*)CAEy, nx + 1, ny, nz + 1);
+		read_float("data_zhengyan/CBEy.txt", (float*)CBEy, nx + 1, ny, nz + 1);
+		read_float("data_zhengyan/RAEzx.txt", (float*)RAEzx, nx - 1, ny, 2 * (npml - 1));
+		read_float("data_zhengyan/RBEzx.txt", (float*)RBEzx, nx - 1, ny, 2 * (npml - 1));
+		read_float("data_zhengyan/RAExz.txt", (float*)RAExz, 2 * (npml - 1), ny, nz - 1);
+		read_float("data_zhengyan/RBExz.txt", (float*)RBExz, 2 * (npml - 1), ny, nz - 1);
+		read_float("data_zhengyan/CAEz.txt", (float*)CAEz, nx + 1, ny + 1, nz);
+		read_float("data_zhengyan/CBEz.txt", (float*)CBEz, nx + 1, ny + 1, nz);
+		read_float("data_zhengyan/RAExy.txt", (float*)RAExy, 2 * (npml - 1), ny - 1, nz);
+		read_float("data_zhengyan/RBExy.txt", (float*)RBExy, 2 * (npml - 1), ny - 1, nz);
+		read_float("data_zhengyan/RAEyx.txt", (float*)RAEyx, nx - 1, 2 * (npml - 1), nz);
+		read_float("data_zhengyan/RBEyx.txt", (float*)RBEyx, nx - 1, 2 * (npml - 1), nz);
 
+		read_float("data_zhengyan/CPHx.txt", (float*)CPHx, nx + 1, ny, nz);
+		read_float("data_zhengyan/CQHx.txt", (float*)CQHx, nx + 1, ny, nz);
+		read_float("data_zhengyan/RAHyz.txt", (float*)RAHyz, nx - 1, 2 * npml, nz);
+		read_float("data_zhengyan/RBHyz.txt", (float*)RBHyz, nx - 1, 2 * npml, nz);
+		read_float("data_zhengyan/RAHzy.txt", (float*)RAHzy, nx - 1, ny, 2 * npml);
+		read_float("data_zhengyan/RBHzy.txt", (float*)RBHzy, nx - 1, ny, 2 * npml);
+		read_float("data_zhengyan/CPHy.txt", (float*)CPHy, nx, ny + 1, nz);
+		read_float("data_zhengyan/CQHy.txt", (float*)CQHy, nx, ny + 1, nz);
+		read_float("data_zhengyan/RAHzx.txt", (float*)RAHzx, nx, ny - 1, 2 * npml);
+		read_float("data_zhengyan/RBHzx.txt", (float*)RBHzx, nx, ny - 1, 2 * npml);
+		read_float("data_zhengyan/RAHxz.txt", (float*)RAHxz, 2 * npml, ny - 1, nz);
+		read_float("data_zhengyan/RBHxz.txt", (float*)RBHxz, 2 * npml, ny - 1, nz);
+		read_float("data_zhengyan/CPHz.txt", (float*)CPHz, nx, ny, nz + 1);
+		read_float("data_zhengyan/CQHz.txt", (float*)CQHz, nx, ny, nz + 1);
+		read_float("data_zhengyan/RAHxy.txt", (float*)RAHxy, 2 * npml, ny, nz - 1);
+		read_float("data_zhengyan/RBHxy.txt", (float*)RBHxy, 2 * npml, ny, nz - 1);
+		read_float("data_zhengyan/RAHyx.txt", (float*)RAHyx, nx, 2 * npml, nz - 1);
+		read_float("data_zhengyan/RBHyx.txt", (float*)RBHyx, nx, 2 * npml, nz - 1);
+
+		read_float("data_zhengyan/kx_Ey.txt", (float*)kx_Ey, nx + 1, ny, nz + 1);
+		read_float("data_zhengyan/kx_Ez.txt", (float*)kx_Ez, nx + 1, ny + 1, nz);
+		read_float("data_zhengyan/ky_Ex.txt", (float*)ky_Ex, nx, ny + 1, nz + 1);
+		read_float("data_zhengyan/ky_Ez.txt", (float*)ky_Ez, nx + 1, ny + 1, nz);
+		read_float("data_zhengyan/kz_Ex.txt", (float*)kz_Ex, nx, ny + 1, nz + 1);
+		read_float("data_zhengyan/kz_Ey.txt", (float*)kz_Ey, nx + 1, ny, nz + 1);
+
+		read_float("data_zhengyan/kx_Hy.txt", (float*)kx_Hy, nx, ny + 1, nz);
+		read_float("data_zhengyan/kx_Hz.txt", (float*)kx_Hz, nx, ny, nz + 1);
+		read_float("data_zhengyan/ky_Hx.txt", (float*)ky_Hx, nx + 1, ny, nz);
+		read_float("data_zhengyan/ky_Hz.txt", (float*)ky_Hz, nx, ny, nz + 1);
+		read_float("data_zhengyan/kz_Hx.txt", (float*)kz_Hx, nx + 1, ny, nz);
+		read_float("data_zhengyan/kz_Hy.txt", (float*)kz_Hy, nx, ny + 1, nz);
+
+		read_int("data_zhengyan/fswzx.txt", (int*)fswzx, 1, 1, szfsw);
+		read_int("data_zhengyan/fswzy.txt", (int*)fswzy, 1, 1, szfsw);
+		read_int("data_zhengyan/fswzz.txt", (int*)fswzz, 1, 1, szfsw);
+		read_int("data_zhengyan/jswzx.txt", (int*)jswzx, 1, 1, szfsw);
+		read_int("data_zhengyan/jswzy.txt", (int*)jswzy, 1, 1, szfsw);
+		read_int("data_zhengyan/jswzz.txt", (int*)jswzz, 1, 1, szfsw);
+		read_float("data_zhengyan/source.txt", (float*)source, 1, 1, it);
+	}
 }
 
 void print_E_obs()
 {
-	const char *name = "output\\E_obs.txt";
+	const char *name = "output/E_obs.txt";
 	FILE *fp = fopen(name, "w+");
 	if (fp == NULL) // 判断文件读入是否正确
 	{
@@ -1532,112 +1535,111 @@ void print_E_obs()
 void gpu_memory_malloc()
 {
 	cudaError_t cudaStatus = cudaSuccess;
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
-
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");  }
 	//原来内存中存在的数组，数组大小用内存数组大小就行
 	cudaStatus = cudaMalloc((void**)&dev_CAEx, sizeof(CAEx));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_CBEx, sizeof(CBEx));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_RAEyz, sizeof(RAEyz));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_RBEyz, sizeof(RBEyz));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_RAEzy, sizeof(RAEzy));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_RBEzy, sizeof(RBEzy));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 
 	cudaStatus = cudaMalloc((void**)&dev_CAEy, sizeof(CAEy));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_CBEy, sizeof(CBEy));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_RAExz, sizeof(RAExz));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_RBExz, sizeof(RBExz));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_RAEzx, sizeof(RAEzx));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_RBEzx, sizeof(RBEzx));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 
 	cudaStatus = cudaMalloc((void**)&dev_CAEz, sizeof(CAEz));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_CBEz, sizeof(CBEz));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_RAExy, sizeof(RAExy));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_RBExy, sizeof(RBExy));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_RAEyx, sizeof(RAEyx));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_RBEyx, sizeof(RBEyx));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 
 	cudaStatus = cudaMalloc((void**)&dev_CPHx, sizeof(CPHx));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_CQHx, sizeof(CQHx));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_RAHyz, sizeof(RAHyz));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_RBHyz, sizeof(RBHyz));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_RAHzy, sizeof(RAHzy));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_RBHzy, sizeof(RBHzy));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 
 	cudaStatus = cudaMalloc((void**)&dev_CPHy, sizeof(CPHy));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_CQHy, sizeof(CQHy));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_RAHxz, sizeof(RAHxz));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_RBHxz, sizeof(RBHxz));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_RAHzx, sizeof(RAHzx));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_RBHzx, sizeof(RBHzx));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 
 	cudaStatus = cudaMalloc((void**)&dev_CPHz, sizeof(CPHz));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_CQHz, sizeof(CQHz));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_RAHxy, sizeof(RAHxy));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_RBHxy, sizeof(RBHxy));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_RAHyx, sizeof(RAHyx));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_RBHyx, sizeof(RBHyx));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 
 	cudaStatus = cudaMalloc((void**)&dev_kx_Ey, sizeof(kx_Ey));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_kx_Ez, sizeof(kx_Ez));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_ky_Ex, sizeof(ky_Ex));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_ky_Ez, sizeof(ky_Ez));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_kz_Ex, sizeof(kz_Ex));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_kz_Ey, sizeof(kz_Ey));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 
 	cudaStatus = cudaMalloc((void**)&dev_kx_Hy, sizeof(kx_Hy));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_kx_Hz, sizeof(kx_Hz));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_ky_Hx, sizeof(ky_Hx));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_ky_Hz, sizeof(ky_Hz));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_kz_Hx, sizeof(kz_Hx));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_kz_Hy, sizeof(kz_Hy));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 
 	//gpu显存新创建数组，原来内存中不存在
 	int szEx = nx * (ny + 1)*(nz + 1);
@@ -1648,140 +1650,138 @@ void gpu_memory_malloc()
 	int szHz = nx * ny*(nz + 1);
 
 	cudaStatus = cudaMalloc((void**)&dev_Ex, szEx * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_UEyz, szEx * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_UEzy, szEx * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 
 	cudaStatus = cudaMalloc((void**)&dev_Ey, szEy * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_UEzx, szEy * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_UExz, szEy * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 
 	cudaStatus = cudaMalloc((void**)&dev_Ez, szEz * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_UExy, szEz * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_UEyx, szEz * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 
 	cudaStatus = cudaMalloc((void**)&dev_Hx, szHx * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_UHyz, szHx * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_UHzy, szHx * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 
 	cudaStatus = cudaMalloc((void**)&dev_Hy, szHy * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_UHzx, szHy * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_UHxz, szHy * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 
 	cudaStatus = cudaMalloc((void**)&dev_Hz, szHz * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_UHxy, szHz * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_UHyx, szHz * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 
 	cudaStatus = cudaMalloc((void**)&dev_V, sizeof(V));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_E_obs, sizeof(E_obs));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_source, sizeof(source));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 
 	// 第二部分并行需要用到的变量
 
 	cudaStatus = cudaMalloc((void**)&dev_fan, sizeof(fan));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_huanyuan, sizeof(huanyuan));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_ns, sizeof(ns));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_zv, sizeof(zv));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_fv, sizeof(fv));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 
 	cudaStatus = cudaMalloc((void**)&dev_Ex1, sizeof(Ex1));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_Ey1, sizeof(Ey1));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_Ez1, sizeof(Ez1));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 
 	cudaStatus = cudaMalloc((void**)&dev_Hx1, sizeof(Hx1));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_Hy1, sizeof(Hy1));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_Hz1, sizeof(Hz1));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 
 	// 超大数组
 
 	cudaStatus = cudaMalloc((void**)&dev_Ex_zheng_1, (it)*(2 * npmlc)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_Ex_zheng_2, (it)*(nx - 2 * npml)*(2 * npmlc)*(nz - 2 * npml) * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_Ex_zheng_3, (it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npmlc) * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
 
 	cudaStatus = cudaMalloc((void**)&dev_Ey_zheng_1, (it)*(2 * npmlc)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_Ey_zheng_2, (it)*(nx - 2 * npml)*(2 * npmlc)*(nz - 2 * npml) * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_Ey_zheng_3, (it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npmlc) * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
 
 	cudaStatus = cudaMalloc((void**)&dev_Ez_zheng_1, (it)*(2 * npmlc)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_Ez_zheng_2, (it)*(nx - 2 * npml)*(2 * npmlc)*(nz - 2 * npml) * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_Ez_zheng_3, (it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npmlc) * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
 
 	cudaStatus = cudaMalloc((void**)&dev_Hx_zheng_1, (it)*(2 * npmlc)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_Hx_zheng_2, (it)*(nx - 2 * npml)*(2 * npmlc)*(nz - 2 * npml) * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_Hx_zheng_3, (it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npmlc) * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
 
 	cudaStatus = cudaMalloc((void**)&dev_Hy_zheng_1, (it)*(2 * npmlc)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_Hy_zheng_2, (it)*(nx - 2 * npml)*(2 * npmlc)*(nz - 2 * npml) * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_Hy_zheng_3, (it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npmlc) * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
 
 	cudaStatus = cudaMalloc((void**)&dev_Hz_zheng_1, (it)*(2 * npmlc)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_Hz_zheng_2, (it)*(nx - 2 * npml)*(2 * npmlc)*(nz - 2 * npml) * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_Hz_zheng_3, (it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npmlc) * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
 
 	cudaStatus = cudaMalloc((void**)&dev_Ex_zheng_last, (nx - 2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_Ey_zheng_last, (nx - 2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_Ez_zheng_last, (nx - 2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
 
 	cudaStatus = cudaMalloc((void**)&dev_Hx_zheng_last, (nx - 2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_Hy_zheng_last, (nx - 2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
 	cudaStatus = cudaMalloc((void**)&dev_Hz_zheng_last, (nx - 2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!"); goto Error; }
-Error:
-	return;
+	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
 }
 
 // flag == 0 将GPU显存中的E*, UE**, H*, UH**, (V, E_obs)置零
@@ -1885,114 +1885,111 @@ void gpu_memory_copy()
 	cudaError_t cudaStatus;
 	// Copy input vectors from host memory to GPU buffers.
 	cudaStatus = cudaMemcpy(dev_CAEx, CAEx, sizeof(CAEx), cudaMemcpyHostToDevice);
-	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!");}
 	cudaStatus = cudaMemcpy(dev_CBEx, CBEx, sizeof(CBEx), cudaMemcpyHostToDevice);
-	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!");}
 	cudaStatus = cudaMemcpy(dev_RAEyz, RAEyz, sizeof(RAEyz), cudaMemcpyHostToDevice);
-	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!");}
 	cudaStatus = cudaMemcpy(dev_RBEyz, RBEyz, sizeof(RBEyz), cudaMemcpyHostToDevice);
-	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!");}
 	cudaStatus = cudaMemcpy(dev_RAEzy, RAEzy, sizeof(RAEzy), cudaMemcpyHostToDevice);
-	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!");}
 	cudaStatus = cudaMemcpy(dev_RBEzy, RBEzy, sizeof(RBEzy), cudaMemcpyHostToDevice);
-	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!");}
 
 	cudaStatus = cudaMemcpy(dev_CAEy, CAEy, sizeof(CAEy), cudaMemcpyHostToDevice);
-	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!");}
 	cudaStatus = cudaMemcpy(dev_CBEy, CBEy, sizeof(CBEy), cudaMemcpyHostToDevice);
-	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!");}
 	cudaStatus = cudaMemcpy(dev_RAExz, RAExz, sizeof(RAExz), cudaMemcpyHostToDevice);
-	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!");}
 	cudaStatus = cudaMemcpy(dev_RBExz, RBExz, sizeof(RBExz), cudaMemcpyHostToDevice);
-	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!");}
 	cudaStatus = cudaMemcpy(dev_RAEzx, RAEzx, sizeof(RAEzx), cudaMemcpyHostToDevice);
-	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!");}
 	cudaStatus = cudaMemcpy(dev_RBEzx, RBEzx, sizeof(RBEzx), cudaMemcpyHostToDevice);
-	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!");}
 
 	cudaStatus = cudaMemcpy(dev_CAEz, CAEz, sizeof(CAEz), cudaMemcpyHostToDevice);
-	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!");}
 	cudaStatus = cudaMemcpy(dev_CBEz, CBEz, sizeof(CBEz), cudaMemcpyHostToDevice);
-	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!");}
 	cudaStatus = cudaMemcpy(dev_RAExy, RAExy, sizeof(RAExy), cudaMemcpyHostToDevice);
-	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!");}
 	cudaStatus = cudaMemcpy(dev_RBExy, RBExy, sizeof(RBExy), cudaMemcpyHostToDevice);
-	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!");}
 	cudaStatus = cudaMemcpy(dev_RAEyx, RAEyx, sizeof(RAEyx), cudaMemcpyHostToDevice);
-	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!");}
 	cudaStatus = cudaMemcpy(dev_RBEyx, RBEyx, sizeof(RBEyx), cudaMemcpyHostToDevice);
-	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!");}
 
 	cudaStatus = cudaMemcpy(dev_CPHx, CPHx, sizeof(CPHx), cudaMemcpyHostToDevice);
-	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!");}
 	cudaStatus = cudaMemcpy(dev_CQHx, CQHx, sizeof(CQHx), cudaMemcpyHostToDevice);
-	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!");}
 	cudaStatus = cudaMemcpy(dev_RAHyz, RAHyz, sizeof(RAHyz), cudaMemcpyHostToDevice);
-	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!");}
 	cudaStatus = cudaMemcpy(dev_RBHyz, RBHyz, sizeof(RBHyz), cudaMemcpyHostToDevice);
-	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!");}
 	cudaStatus = cudaMemcpy(dev_RAHzy, RAHzy, sizeof(RAHzy), cudaMemcpyHostToDevice);
-	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!");}
 	cudaStatus = cudaMemcpy(dev_RBHzy, RBHzy, sizeof(RBHzy), cudaMemcpyHostToDevice);
-	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!");}
 
 	cudaStatus = cudaMemcpy(dev_CPHy, CPHy, sizeof(CPHy), cudaMemcpyHostToDevice);
-	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!");}
 	cudaStatus = cudaMemcpy(dev_CQHy, CQHy, sizeof(CQHy), cudaMemcpyHostToDevice);
-	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!");}
 	cudaStatus = cudaMemcpy(dev_RAHxz, RAHxz, sizeof(RAHxz), cudaMemcpyHostToDevice);
-	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!");}
 	cudaStatus = cudaMemcpy(dev_RBHxz, RBHxz, sizeof(RBHxz), cudaMemcpyHostToDevice);
-	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!");}
 	cudaStatus = cudaMemcpy(dev_RAHzx, RAHzx, sizeof(RAHzx), cudaMemcpyHostToDevice);
-	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!");}
 	cudaStatus = cudaMemcpy(dev_RBHzx, RBHzx, sizeof(RBHzx), cudaMemcpyHostToDevice);
-	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!");}
 
 	cudaStatus = cudaMemcpy(dev_CPHz, CPHz, sizeof(CPHz), cudaMemcpyHostToDevice);
-	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!");}
 	cudaStatus = cudaMemcpy(dev_CQHz, CQHz, sizeof(CQHz), cudaMemcpyHostToDevice);
-	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!");}
 	cudaStatus = cudaMemcpy(dev_RAHxy, RAHxy, sizeof(RAHxy), cudaMemcpyHostToDevice);
-	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!");}
 	cudaStatus = cudaMemcpy(dev_RBHxy, RBHxy, sizeof(RBHxy), cudaMemcpyHostToDevice);
-	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!");}
 	cudaStatus = cudaMemcpy(dev_RAHyx, RAHyx, sizeof(RAHyx), cudaMemcpyHostToDevice);
-	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!");}
 	cudaStatus = cudaMemcpy(dev_RBHyx, RBHyx, sizeof(RBHyx), cudaMemcpyHostToDevice);
-	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!");}
 
 	cudaStatus = cudaMemcpy(dev_kx_Ey, kx_Ey, sizeof(kx_Ey), cudaMemcpyHostToDevice);
-	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!");}
 	cudaStatus = cudaMemcpy(dev_kx_Ez, kx_Ez, sizeof(kx_Ez), cudaMemcpyHostToDevice);
-	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!");}
 	cudaStatus = cudaMemcpy(dev_ky_Ex, ky_Ex, sizeof(ky_Ex), cudaMemcpyHostToDevice);
-	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!");}
 	cudaStatus = cudaMemcpy(dev_ky_Ez, ky_Ez, sizeof(ky_Ez), cudaMemcpyHostToDevice);
-	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!");}
 	cudaStatus = cudaMemcpy(dev_kz_Ex, kz_Ex, sizeof(kz_Ex), cudaMemcpyHostToDevice);
-	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!");}
 	cudaStatus = cudaMemcpy(dev_kz_Ey, kz_Ey, sizeof(kz_Ey), cudaMemcpyHostToDevice);
-	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!");}
 
 	cudaStatus = cudaMemcpy(dev_kx_Hy, kx_Hy, sizeof(kx_Hy), cudaMemcpyHostToDevice);
-	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!");}
 	cudaStatus = cudaMemcpy(dev_kx_Hz, kx_Hz, sizeof(kx_Hz), cudaMemcpyHostToDevice);
-	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!");}
 	cudaStatus = cudaMemcpy(dev_ky_Hx, ky_Hx, sizeof(ky_Hx), cudaMemcpyHostToDevice);
-	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!");}
 	cudaStatus = cudaMemcpy(dev_ky_Hz, ky_Hz, sizeof(ky_Hz), cudaMemcpyHostToDevice);
-	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!");}
 	cudaStatus = cudaMemcpy(dev_kz_Hx, kz_Hx, sizeof(kz_Hx), cudaMemcpyHostToDevice);
-	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!");}
 	cudaStatus = cudaMemcpy(dev_kz_Hy, kz_Hy, sizeof(kz_Hy), cudaMemcpyHostToDevice);
-	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!"); goto Error; }
+	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!");}
 
 	cudaStatus = cudaMemcpy(dev_source, source, sizeof(source), cudaMemcpyHostToDevice);
-	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!"); goto Error; }
-
-Error:
-	return;
+	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!");}
 }
 
 // 释放显存空间
@@ -2381,9 +2378,11 @@ cudaError_t gpu_parallel_two()
 int main()
 {
 	// 切换工作目录
-	_chdir(path);
+	chdir(path); //linux
+	//_chdir(path);
 	char str[80];
-	printf("Current Dir: %s \n",_getcwd(str, 80));
+	printf("Current Dir: %s \n",getcwd(str, 80)); //linux
+	//printf("Current Dir: %s \n", _getcwd(str, 80));
 	if (Hz_zheng_3 == NULL)
 	{
 		printf("malloc failed! \n");
