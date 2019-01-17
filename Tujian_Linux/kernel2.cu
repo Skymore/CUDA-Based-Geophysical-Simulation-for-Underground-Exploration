@@ -1990,6 +1990,11 @@ void gpu_memory_copy()
 
 	cudaStatus = cudaMemcpy(dev_source, source, sizeof(source), cudaMemcpyHostToDevice);
 	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!");}
+	if (isPianYi)
+	{
+		cudaStatus = cudaMemcpy(dev_E_obs, E_obs, sizeof(E_obs), cudaMemcpyHostToDevice);
+		if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!"); }
+	}
 }
 
 // 释放显存空间
