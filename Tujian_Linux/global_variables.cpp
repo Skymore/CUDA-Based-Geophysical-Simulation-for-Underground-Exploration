@@ -13,7 +13,7 @@
 #define dy (0.01)
 #define dz (0.01)
 #define pi (3.141592653589)
-#define path "/home/stu/taorui0117/Tujian_Linux" // 程序运行的目录
+#define path "/home/stu/taorui0127/Tujian_Linux" // 程序运行的目录
 #define cudaDevice 0 // 程序使用的gpu
 #define isPianYi true
 /************************************************************************************

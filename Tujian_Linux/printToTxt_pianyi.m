@@ -1,5 +1,5 @@
 tic;
-path = 'C:\Users\sky\Desktop\Tujian_github\Tujian_Linux\data_pianyi';
+path = '/Users/taorui/Documents/GitHub/Tujian_github/Tujian_Linux/data_pianyi';
 dlmwrite([path,'\CAEx.txt'],CAEx,'delimiter',',','precision',10, 'newline', 'pc');
 dlmwrite([path,'\CAEy.txt'],CAEy,'delimiter',',','precision',10, 'newline', 'pc');
 dlmwrite([path,'\CAEz.txt'],CAEz,'delimiter',',','precision',10, 'newline', 'pc');
