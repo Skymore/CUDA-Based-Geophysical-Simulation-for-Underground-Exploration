@@ -23,7 +23,8 @@ dx=single(0.01);
 dy=dx;
 dz=dx;
 dt=single(1/(sqrt(1/dx^2+1/dy^2+1/dz^2)*c));   
-it=single(round(19*1e-9/dt)); 
+% it=single(round(19*1e-9/dt)); 
+it=400;
 %********************************************************************
 %PML锟斤拷锟斤拷
 %********************************************************************
@@ -350,7 +351,7 @@ plot(source);
 getframe(gca);
 
 %===========收发天线设置改动过==============================
-step=single(2);
+step=single(8);
 dancxds=(npml+1):step:(nx-npml-3);
 dancxds=length(dancxds);
 cxsl=5;
@@ -370,5 +371,5 @@ jswzy=repelem(jswzy,dancxds);
 fswzz=(nz-npml-1).*ones(1,dancxds*cxsl);
 jswzz=(nz-npml-1).*ones(1,dancxds*cxsl);
 
-"part1 good"
+% "part1 good"
 toc

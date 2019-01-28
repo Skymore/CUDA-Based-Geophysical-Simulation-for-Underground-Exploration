@@ -1211,7 +1211,7 @@ __global__ void gpu_H1(
 {
 	int ix = blockIdx.x;
 	int iy = blockIdx.y;
-	int iz = blockIdx.z;
+	int iz = threadIdx.x;
 	int idxHx1 = (ix + np)*(ny + 0)*(nz + 0) + (iy + np)*(nz + 0) + (iz + np);
 	int idxHy1 = (ix + np)*(ny + 1)*(nz + 0) + (iy + np)*(nz + 0) + (iz + np);
 	int idxHz1 = (ix + np)*(ny + 0)*(nz + 1) + (iy + np)*(nz + 1) + (iz + np);
@@ -1253,7 +1253,7 @@ __global__ void gpu_E1(
 {
 	int ix = blockIdx.x;
 	int iy = blockIdx.y;
-	int iz = blockIdx.z;
+	int iz = threadIdx.x;
 	int idxHx1 = (ix + np)*(ny + 0)*(nz + 0) + (iy + np)*(nz + 0) + (iz + np);
 	int idxHy1 = (ix + np)*(ny + 1)*(nz + 0) + (iy + np)*(nz + 0) + (iz + np);
 	int idxHz1 = (ix + np)*(ny + 0)*(nz + 1) + (iy + np)*(nz + 1) + (iz + np);
@@ -2339,7 +2339,7 @@ cudaError_t gpu_parallel_two()
 			}
 
 			// matlab: huanyuan=Ex1(npml+1:nx-npml,npml+1:ny-npml,npml+1:nz-npml);
-			gpu_fan_huanyuan << <grid_fan_huanyuan, block_fan_huanyuan >> > (dev_huanyuan, dev_Ex);
+			gpu_fan_huanyuan << <grid_fan_huanyuan, block_fan_huanyuan >> > (dev_huanyuan, dev_Ex1);
 			gpu_nzf << <grid_nzf, block_nzf >> > (dev_ns, dev_huanyuan, dev_fan);
 			gpu_nzf << <grid_nzf, block_nzf >> > (dev_zv, dev_huanyuan, dev_huanyuan);
 			gpu_nzf << <grid_nzf, block_nzf >> > (dev_fv, dev_fan, dev_fan);

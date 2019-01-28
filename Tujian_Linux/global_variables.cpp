@@ -1,14 +1,14 @@
 #include<math.h>
 #include<stdlib.h>
 
-#define it (1233)
+#define it (400)
 #define npml (10)
 #define npmlc (4)
 #define np (14) // np = npml + npmlc;
 #define nx (170)
 #define ny (120)
 #define nz (90)
-#define szfsw (370)
+#define szfsw (95)
 #define dx (0.01)
 #define dy (0.01)
 #define dz (0.01)
@@ -199,7 +199,7 @@ float ns[nx - 2 * npml][ny - 2 * npml][nz - 2 * npml];
 float zv[nx - 2 * npml][ny - 2 * npml][nz - 2 * npml];
 float fv[nx - 2 * npml][ny - 2 * npml][nz - 2 * npml];
 /************************************************************************************
-* 显存数组
+* array in gpu memory
 ************************************************************************************/
 float *dev_Ex;
 float *dev_Ey;
