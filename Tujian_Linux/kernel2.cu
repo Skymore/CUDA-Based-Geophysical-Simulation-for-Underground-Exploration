@@ -2169,7 +2169,6 @@ void zheng_yan()
 cudaError_t gpu_parallel_one()
 {
 	cudaError_t cudaStatus = cudaSuccess;
-
 	int i, j;
 	for (i = 0; i < szfsw; i++)
 	{
@@ -2184,6 +2183,8 @@ cudaError_t gpu_parallel_one()
 
 			// matlab: Ex(fswzx(i),fswzy(i),fswzz(i))=source(j); 显存到显存
 			int idxEx = (fswzx[i] - 1) * (ny + 1) * (nz + 1) + (fswzy[i] - 1) * (nz + 1) + (fswzz[i] - 1);
+
+
 			cudaStatus = cudaMemcpy(&(dev_Ex[idxEx]), &(dev_source[j]), sizeof(float), cudaMemcpyDeviceToDevice);
 			if (cudaStatus != cudaSuccess) { printf("source --> Ex cudaMemcpy failed: %s\n", cudaGetErrorString(cudaStatus)); return cudaStatus; };
 
