@@ -15,11 +15,33 @@
 //#include <direct.h>  //windows
 
 
-__global__ void print_dev_matrix(float *A, int i, int j, int k, int xdim, int ydim, int zdim)
+__global__ void dev_matrix(float *A, int xdim, int ydim, int zdim)
 {
-	int	idx = i * ydim*zdim + j * zdim + k;
-	printf("dev_Matrix[%d][%d][%d] = %8f\n", i, j, k, A[idx]);
+	int i = blockIdx.x;
+	int j = blockIdx.y;
+	int k = threadIdx.x;
+	int idx = i * ydim * zdim + j * zdim + k;
+	if(A[idx] <=-1e-12 || A[idx] >=1e-12)
+	{
+		printf("[%d][%d][%d] = %e\n",i, j, k, A[idx]);		
+	}
 }
+
+void print_dev_matrix(float *A, int xdim, int ydim, int zdim)
+{
+	dim3 gridma(xdim, ydim);
+	dim3 blockma(zdim);
+	cudaError_t cudaStatus = cudaSuccess;
+	dev_matrix<<<gridma, blockma>>>(A, xdim, ydim, zdim);
+	cudaStatus = cudaGetLastError();
+	if (cudaStatus != cudaSuccess)
+	{
+		printf("dev_print Failed: %s\n", cudaGetErrorString(cudaStatus));
+	}
+	cudaDeviceSynchronize();
+}
+
+
 /************************************************************************************
 * GPU计算单个矩阵的函数
 ************************************************************************************/
@@ -1296,6 +1318,7 @@ __global__ void gpu_nzf(float *dev_dst, float *dev_src1, float *dev_src2)
 		blockIdx.y * (nz - 2 * npml) +
 		threadIdx.x;
 	dev_dst[idx] += dev_src1[idx] * dev_src2[idx];
+	//printf("nzf:%f\n",dev_dst[idx]);
 }
 
 void read_int(const char *name, int *a, int n1, int n2, int n3)
@@ -1339,7 +1362,11 @@ void read_float(const char *name, float *a, int n1, int n2, int n3)
 		{
 			for (int j = 0; j < n2; j++)
 			{
-				fscanf(fp, "%f", a + i * n2*n3 + j * n3 + k); // 读入a[i][j][k]			
+				fscanf(fp, "%f", a + i * n2*n3 + j * n3 + k); // 读入a[i][j][k]	
+				//if(name == "data_pianyi/source.txt")
+				//{
+				//	printf("source[%d] = %.6f\n",k,*(a + i * n2*n3 + j * n3 + k));
+				//}		
 			}
 
 		}
@@ -1365,7 +1392,7 @@ void print_nzf(const char *name, float *a, int n1, int n2, int n3)
 		{
 			for (int i = 0; i < n1; i++)
 			{
-				fprintf(fp, "%8f ", *(a + i * n2*n3 + j * n3 + k)); // 输出a[i][j][k]			
+				fprintf(fp, "%e ", *(a + i * n2*n3 + j * n3 + k)); // 输出a[i][j][k]			
 			}
 
 		}
@@ -1376,9 +1403,9 @@ void print_nzf(const char *name, float *a, int n1, int n2, int n3)
 	return;
 }
 
-void read_data_from_txt()
+void read_data_from_txt(bool pianYi)
 {
-	if (isPianYi)
+	if (pianYi)
 	{
 		read_float("data_pianyi/CAEx.txt", (float*)CAEx, nx, ny + 1, nz + 1);
 		read_float("data_pianyi/CBEx.txt", (float*)CBEx, nx, ny + 1, nz + 1);
@@ -1439,7 +1466,7 @@ void read_data_from_txt()
 		read_int("data_pianyi/jswzy.txt", (int*)jswzy, 1, 1, szfsw);
 		read_int("data_pianyi/jswzz.txt", (int*)jswzz, 1, 1, szfsw);
 		read_float("data_pianyi/source.txt", (float*)source, 1, 1, it);
-		read_float("data_pianyi/E_obs.txt", (float*)source, 1, it, szfsw);
+		read_float("data_pianyi/E_obs.txt", (float*)E_obs, 1, it, szfsw);
 	}
 	else
 	{
@@ -1529,10 +1556,29 @@ void print_E_obs()
 	printf("print %s OK\n", name);
 
 	fclose(fp);
+
+	const char *name2 = "data_pianyi/E_obs.txt";
+	fp = fopen(name2, "w+");
+	if (fp == NULL) // 判断文件读入是否正确
+	{
+		printf("fopen %s error! \n", name2);
+	}
+	printf("print fopen %s ok! \n", name2);
+	for (int i = 0; i < szfsw; i++)
+	{
+		for (int j = 0; j < it; j++)
+		{
+			fprintf(fp, "%8f ", E_obs[j][i]);
+		}
+		fprintf(fp, "\n");
+	}
+	printf("print %s OK\n", name2);
+
+	fclose(fp);
 	return;
 }
 
-void gpu_memory_malloc()
+void gpu_memory_malloc(bool pianYi)
 {
 	cudaError_t cudaStatus = cudaSuccess;
 	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");  }
@@ -1699,89 +1745,91 @@ void gpu_memory_malloc()
 	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 
 	// 第二部分并行需要用到的变量
+	if(pianYi)
+	{
+		cudaStatus = cudaMalloc((void**)&dev_fan, sizeof(fan));
+		if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
+		cudaStatus = cudaMalloc((void**)&dev_huanyuan, sizeof(huanyuan));
+		if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
+		cudaStatus = cudaMalloc((void**)&dev_ns, sizeof(ns));
+		if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
+		cudaStatus = cudaMalloc((void**)&dev_zv, sizeof(zv));
+		if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
+		cudaStatus = cudaMalloc((void**)&dev_fv, sizeof(fv));
+		if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 
-	cudaStatus = cudaMalloc((void**)&dev_fan, sizeof(fan));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
-	cudaStatus = cudaMalloc((void**)&dev_huanyuan, sizeof(huanyuan));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
-	cudaStatus = cudaMalloc((void**)&dev_ns, sizeof(ns));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
-	cudaStatus = cudaMalloc((void**)&dev_zv, sizeof(zv));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
-	cudaStatus = cudaMalloc((void**)&dev_fv, sizeof(fv));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
+		cudaStatus = cudaMalloc((void**)&dev_Ex1, sizeof(Ex1));
+		if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
+		cudaStatus = cudaMalloc((void**)&dev_Ey1, sizeof(Ey1));
+		if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
+		cudaStatus = cudaMalloc((void**)&dev_Ez1, sizeof(Ez1));
+		if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 
-	cudaStatus = cudaMalloc((void**)&dev_Ex1, sizeof(Ex1));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
-	cudaStatus = cudaMalloc((void**)&dev_Ey1, sizeof(Ey1));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
-	cudaStatus = cudaMalloc((void**)&dev_Ez1, sizeof(Ez1));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
+		cudaStatus = cudaMalloc((void**)&dev_Hx1, sizeof(Hx1));
+		if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
+		cudaStatus = cudaMalloc((void**)&dev_Hy1, sizeof(Hy1));
+		if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
+		cudaStatus = cudaMalloc((void**)&dev_Hz1, sizeof(Hz1));
+		if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
 
-	cudaStatus = cudaMalloc((void**)&dev_Hx1, sizeof(Hx1));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
-	cudaStatus = cudaMalloc((void**)&dev_Hy1, sizeof(Hy1));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
-	cudaStatus = cudaMalloc((void**)&dev_Hz1, sizeof(Hz1));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc failed!");}
+		// 超大数组
 
-	// 超大数组
+		cudaStatus = cudaMalloc((void**)&dev_Ex_zheng_1, (it)*(2 * npmlc)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
+		if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
+		cudaStatus = cudaMalloc((void**)&dev_Ex_zheng_2, (it)*(nx - 2 * npml)*(2 * npmlc)*(nz - 2 * npml) * sizeof(float));
+		if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
+		cudaStatus = cudaMalloc((void**)&dev_Ex_zheng_3, (it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npmlc) * sizeof(float));
+		if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
 
-	cudaStatus = cudaMalloc((void**)&dev_Ex_zheng_1, (it)*(2 * npmlc)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
-	cudaStatus = cudaMalloc((void**)&dev_Ex_zheng_2, (it)*(nx - 2 * npml)*(2 * npmlc)*(nz - 2 * npml) * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
-	cudaStatus = cudaMalloc((void**)&dev_Ex_zheng_3, (it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npmlc) * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
+		cudaStatus = cudaMalloc((void**)&dev_Ey_zheng_1, (it)*(2 * npmlc)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
+		if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
+		cudaStatus = cudaMalloc((void**)&dev_Ey_zheng_2, (it)*(nx - 2 * npml)*(2 * npmlc)*(nz - 2 * npml) * sizeof(float));
+		if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
+		cudaStatus = cudaMalloc((void**)&dev_Ey_zheng_3, (it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npmlc) * sizeof(float));
+		if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
 
-	cudaStatus = cudaMalloc((void**)&dev_Ey_zheng_1, (it)*(2 * npmlc)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
-	cudaStatus = cudaMalloc((void**)&dev_Ey_zheng_2, (it)*(nx - 2 * npml)*(2 * npmlc)*(nz - 2 * npml) * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
-	cudaStatus = cudaMalloc((void**)&dev_Ey_zheng_3, (it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npmlc) * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
+		cudaStatus = cudaMalloc((void**)&dev_Ez_zheng_1, (it)*(2 * npmlc)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
+		if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
+		cudaStatus = cudaMalloc((void**)&dev_Ez_zheng_2, (it)*(nx - 2 * npml)*(2 * npmlc)*(nz - 2 * npml) * sizeof(float));
+		if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
+		cudaStatus = cudaMalloc((void**)&dev_Ez_zheng_3, (it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npmlc) * sizeof(float));
+		if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
 
-	cudaStatus = cudaMalloc((void**)&dev_Ez_zheng_1, (it)*(2 * npmlc)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
-	cudaStatus = cudaMalloc((void**)&dev_Ez_zheng_2, (it)*(nx - 2 * npml)*(2 * npmlc)*(nz - 2 * npml) * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
-	cudaStatus = cudaMalloc((void**)&dev_Ez_zheng_3, (it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npmlc) * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
+		cudaStatus = cudaMalloc((void**)&dev_Hx_zheng_1, (it)*(2 * npmlc)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
+		if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
+		cudaStatus = cudaMalloc((void**)&dev_Hx_zheng_2, (it)*(nx - 2 * npml)*(2 * npmlc)*(nz - 2 * npml) * sizeof(float));
+		if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
+		cudaStatus = cudaMalloc((void**)&dev_Hx_zheng_3, (it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npmlc) * sizeof(float));
+		if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
 
-	cudaStatus = cudaMalloc((void**)&dev_Hx_zheng_1, (it)*(2 * npmlc)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
-	cudaStatus = cudaMalloc((void**)&dev_Hx_zheng_2, (it)*(nx - 2 * npml)*(2 * npmlc)*(nz - 2 * npml) * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
-	cudaStatus = cudaMalloc((void**)&dev_Hx_zheng_3, (it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npmlc) * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
+		cudaStatus = cudaMalloc((void**)&dev_Hy_zheng_1, (it)*(2 * npmlc)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
+		if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
+		cudaStatus = cudaMalloc((void**)&dev_Hy_zheng_2, (it)*(nx - 2 * npml)*(2 * npmlc)*(nz - 2 * npml) * sizeof(float));
+		if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
+		cudaStatus = cudaMalloc((void**)&dev_Hy_zheng_3, (it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npmlc) * sizeof(float));
+		if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
 
-	cudaStatus = cudaMalloc((void**)&dev_Hy_zheng_1, (it)*(2 * npmlc)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
-	cudaStatus = cudaMalloc((void**)&dev_Hy_zheng_2, (it)*(nx - 2 * npml)*(2 * npmlc)*(nz - 2 * npml) * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
-	cudaStatus = cudaMalloc((void**)&dev_Hy_zheng_3, (it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npmlc) * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
+		cudaStatus = cudaMalloc((void**)&dev_Hz_zheng_1, (it)*(2 * npmlc)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
+		if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
+		cudaStatus = cudaMalloc((void**)&dev_Hz_zheng_2, (it)*(nx - 2 * npml)*(2 * npmlc)*(nz - 2 * npml) * sizeof(float));
+		if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
+		cudaStatus = cudaMalloc((void**)&dev_Hz_zheng_3, (it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npmlc) * sizeof(float));
+		if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
 
-	cudaStatus = cudaMalloc((void**)&dev_Hz_zheng_1, (it)*(2 * npmlc)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
-	cudaStatus = cudaMalloc((void**)&dev_Hz_zheng_2, (it)*(nx - 2 * npml)*(2 * npmlc)*(nz - 2 * npml) * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
-	cudaStatus = cudaMalloc((void**)&dev_Hz_zheng_3, (it)*(nx - 2 * npml)*(ny - 2 * npml)*(2 * npmlc) * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
+		cudaStatus = cudaMalloc((void**)&dev_Ex_zheng_last, (nx - 2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
+		if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
+		cudaStatus = cudaMalloc((void**)&dev_Ey_zheng_last, (nx - 2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
+		if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
+		cudaStatus = cudaMalloc((void**)&dev_Ez_zheng_last, (nx - 2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
+		if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
 
-	cudaStatus = cudaMalloc((void**)&dev_Ex_zheng_last, (nx - 2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
-	cudaStatus = cudaMalloc((void**)&dev_Ey_zheng_last, (nx - 2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
-	cudaStatus = cudaMalloc((void**)&dev_Ez_zheng_last, (nx - 2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
-
-	cudaStatus = cudaMalloc((void**)&dev_Hx_zheng_last, (nx - 2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
-	cudaStatus = cudaMalloc((void**)&dev_Hy_zheng_last, (nx - 2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
-	cudaStatus = cudaMalloc((void**)&dev_Hz_zheng_last, (nx - 2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
-	if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
+		cudaStatus = cudaMalloc((void**)&dev_Hx_zheng_last, (nx - 2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
+		if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
+		cudaStatus = cudaMalloc((void**)&dev_Hy_zheng_last, (nx - 2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
+		if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}
+		cudaStatus = cudaMalloc((void**)&dev_Hz_zheng_last, (nx - 2 * npml)*(ny - 2 * npml)*(nz - 2 * npml) * sizeof(float));
+		if (cudaStatus != cudaSuccess) { printf("cudaMalloc Super Big Array failed!");}	
+	}
 }
 
 // flag == 0 将GPU显存中的E*, UE**, H*, UH**, (V, E_obs)置零
@@ -1862,10 +1910,10 @@ void gpu_memory_set_zero(int flag)
 		cudaMemset(dev_Hy_zheng_last, 0, sz_last);
 		cudaMemset(dev_Hz_zheng_last, 0, sz_last);
 
-		cudaMemset(dev_fan, 0, sizeof(fan));
-		cudaMemset(dev_huanyuan, 0, sizeof(huanyuan));
+		cudaMemset(dev_fan, 0, sz_last);
+		cudaMemset(dev_huanyuan, 0, sz_last);
 	}
-	else
+	else if (flag == 2)
 	{
 		cudaMemset(dev_Ex1, 0, sizeof(Ex1));
 		cudaMemset(dev_Ey1, 0, sizeof(Ey1));
@@ -1880,7 +1928,7 @@ void gpu_memory_set_zero(int flag)
 // 将内存中的变量复制到显存中
 // flag == 0 CAE CBE RAE RBE CPH CQH RAH RBH k*_E* k*_H* source
 // flag == 1 CAE CBE RAE RBE CPH CQH RAH RBH k*_E* k*_H* source
-void gpu_memory_copy()
+void gpu_memory_copy(bool pianYi)
 {
 	cudaError_t cudaStatus;
 	// Copy input vectors from host memory to GPU buffers.
@@ -1990,7 +2038,8 @@ void gpu_memory_copy()
 
 	cudaStatus = cudaMemcpy(dev_source, source, sizeof(source), cudaMemcpyHostToDevice);
 	if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!");}
-	if (isPianYi)
+
+	if (pianYi)
 	{
 		cudaStatus = cudaMemcpy(dev_E_obs, E_obs, sizeof(E_obs), cudaMemcpyHostToDevice);
 		if (cudaStatus != cudaSuccess) { printf("cudaMemcpy failed!"); }
@@ -1998,7 +2047,7 @@ void gpu_memory_copy()
 }
 
 // 释放显存空间
-void gpu_memory_free()
+void gpu_memory_free(bool pianYi)
 {
 	cudaFree(dev_Ex);
 	cudaFree(dev_Ey);
@@ -2091,43 +2140,46 @@ void gpu_memory_free()
 	cudaFree(dev_kz_Hx);
 	cudaFree(dev_kz_Hy);
 
-	cudaFree(dev_Ex_zheng_1);
-	cudaFree(dev_Ex_zheng_2);
-	cudaFree(dev_Ex_zheng_3);
+	if (pianYi)
+	{
+		cudaFree(dev_Ex_zheng_1);
+		cudaFree(dev_Ex_zheng_2);
+		cudaFree(dev_Ex_zheng_3);
 
-	cudaFree(dev_Ey_zheng_1);
-	cudaFree(dev_Ey_zheng_2);
-	cudaFree(dev_Ey_zheng_3);
+		cudaFree(dev_Ey_zheng_1);
+		cudaFree(dev_Ey_zheng_2);
+		cudaFree(dev_Ey_zheng_3);
 
-	cudaFree(dev_Ez_zheng_1);
-	cudaFree(dev_Ez_zheng_2);
-	cudaFree(dev_Ez_zheng_3);
+		cudaFree(dev_Ez_zheng_1);
+		cudaFree(dev_Ez_zheng_2);
+		cudaFree(dev_Ez_zheng_3);
 
-	cudaFree(dev_Hx_zheng_1);
-	cudaFree(dev_Hx_zheng_2);
-	cudaFree(dev_Hx_zheng_3);
+		cudaFree(dev_Hx_zheng_1);
+		cudaFree(dev_Hx_zheng_2);
+		cudaFree(dev_Hx_zheng_3);
 
-	cudaFree(dev_Hy_zheng_1);
-	cudaFree(dev_Hy_zheng_2);
-	cudaFree(dev_Hy_zheng_3);
+		cudaFree(dev_Hy_zheng_1);
+		cudaFree(dev_Hy_zheng_2);
+		cudaFree(dev_Hy_zheng_3);
 
-	cudaFree(dev_Hz_zheng_1);
-	cudaFree(dev_Hz_zheng_2);
-	cudaFree(dev_Hz_zheng_3);
+		cudaFree(dev_Hz_zheng_1);
+		cudaFree(dev_Hz_zheng_2);
+		cudaFree(dev_Hz_zheng_3);
 
-	cudaFree(dev_Ex_zheng_last);
-	cudaFree(dev_Ey_zheng_last);
-	cudaFree(dev_Ez_zheng_last);
+		cudaFree(dev_Ex_zheng_last);
+		cudaFree(dev_Ey_zheng_last);
+		cudaFree(dev_Ez_zheng_last);
 
-	cudaFree(dev_Hx_zheng_last);
-	cudaFree(dev_Hy_zheng_last);
-	cudaFree(dev_Hz_zheng_last);
+		cudaFree(dev_Hx_zheng_last);
+		cudaFree(dev_Hy_zheng_last);
+		cudaFree(dev_Hz_zheng_last);
 
-	cudaFree(dev_fan);
-	cudaFree(dev_huanyuan);
-	cudaFree(dev_ns);
-	cudaFree(dev_zv);
-	cudaFree(dev_fv);
+		cudaFree(dev_fan);
+		cudaFree(dev_huanyuan);
+		cudaFree(dev_ns);
+		cudaFree(dev_zv);
+		cudaFree(dev_fv);	
+	}
 }
 
 // gpu并行计算UH H UE E
@@ -2156,7 +2208,7 @@ void zheng_yan()
 	gpu_Ex << < gridEx, blockEx >> > (dev_Ex, dev_CAEx, dev_CBEx, dev_ky_Ex, dev_kz_Ex, dev_Hz, dev_Hy, dev_UEyz, dev_UEzy);
 	gpu_Ey << < gridEy, blockEy >> > (dev_Ey, dev_CAEy, dev_CBEy, dev_kz_Ey, dev_kx_Ey, dev_Hx, dev_Hz, dev_UEzx, dev_UExz);
 	gpu_Ez << < gridEz, blockEz >> > (dev_Ez, dev_CAEz, dev_CBEz, dev_kx_Ez, dev_ky_Ez, dev_Hy, dev_Hx, dev_UExy, dev_UEyx);
-
+	cudaDeviceSynchronize();
 	// 计算过程是否出错?
 	cudaStatus = cudaGetLastError();
 	if (cudaStatus != cudaSuccess)
@@ -2176,18 +2228,16 @@ cudaError_t gpu_parallel_one()
 
 		for (j = 0; j < it; j++)
 		{
-			if (j % 10 == 0)
+			if (j % 50 == 0)
 			{
 				printf("i = %3d / %d,  j = %4d / %d\n", i, szfsw, j, it);
 			}
 
 			// matlab: Ex(fswzx(i),fswzy(i),fswzz(i))=source(j); 显存到显存
 			int idxEx = (fswzx[i] - 1) * (ny + 1) * (nz + 1) + (fswzy[i] - 1) * (nz + 1) + (fswzz[i] - 1);
-
-
 			cudaStatus = cudaMemcpy(&(dev_Ex[idxEx]), &(dev_source[j]), sizeof(float), cudaMemcpyDeviceToDevice);
 			if (cudaStatus != cudaSuccess) { printf("source --> Ex cudaMemcpy failed: %s\n", cudaGetErrorString(cudaStatus)); return cudaStatus; };
-
+			cudaDeviceSynchronize();
 			// 调用GPU运算正演
 			zheng_yan();
 
@@ -2195,10 +2245,11 @@ cudaError_t gpu_parallel_one()
 			idxEx = (jswzx[i] - 1) * (ny + 1) * (nz + 1) + (jswzy[i] - 1) * (nz + 1) + (jswzz[i] - 1);
 			cudaStatus = cudaMemcpy(&(dev_V[j]), &(dev_Ex[idxEx]), sizeof(float), cudaMemcpyDeviceToDevice);
 			if (cudaStatus != cudaSuccess) { printf("Ex --> V cudaMemcpy failed: %s\n", cudaGetErrorString(cudaStatus)); return cudaStatus; };
-
+			cudaDeviceSynchronize();
 			// matlab: E_obs(j,i) = V(j) 显存到内存
 			cudaStatus = cudaMemcpy(&(E_obs[j][i]), &(dev_V[j]), sizeof(float), cudaMemcpyDeviceToHost);
 			if (cudaStatus != cudaSuccess) { printf("V --> E_obs cudaMemcpy failed: %s\n", cudaGetErrorString(cudaStatus)); return cudaStatus; };
+			cudaDeviceSynchronize();
 		}
 	}
 
@@ -2214,7 +2265,10 @@ cudaError_t gpu_parallel_one()
 
 cudaError_t gpu_parallel_two()
 {
+
 	cudaError_t cudaStatus = cudaSuccess;
+	
+	//ns zv fv数组清零
 	cudaMemset(dev_ns, 0, sizeof(ns));
 	cudaMemset(dev_zv, 0, sizeof(zv));
 	cudaMemset(dev_fv, 0, sizeof(fv));
@@ -2228,11 +2282,26 @@ cudaError_t gpu_parallel_two()
 	int i, j;
 	for (i = 0; i < szfsw; i++)
 	{
-		// 111111
-		gpu_memory_set_zero(1); // flag == 1 将GPU显存中的E*, UE**, H*, UH**, (V, E*_zheng_*, H*_zheng_*, E*_zheng_last, H*_zheng_last, fan, huanyuan)置零
+		// --------------------- part one ---------------------
+
+		// flag == 1 将GPU显存中的E*, UE**, H*, UH**, (V, E*_zheng_*, H*_zheng_*, E*_zheng_last, H*_zheng_last, fan, huanyuan)置零
+		gpu_memory_set_zero(1);
+		cudaDeviceSynchronize();
+
 		for (j = 0; j < it; j++)
 		{
-			if (j % 50 == 0) { printf("i = %3d / %d,  j = %4d / %d\n", i, szfsw, j, it); }
+			// 输出i j到屏幕
+			if (j%50 == 0) { printf("i = %3d / %d,  j = %4d / %d\n", i, szfsw, j, it); }
+
+			// matlab: Ex(fswzx(i), fswzy(i), fswzz(i)) = source(j);
+			int idxEx = (fswzx[i] - 1) * (ny + 1) * (nz + 1) + (fswzy[i] - 1) * (nz + 1) + (fswzz[i] - 1);
+			cudaStatus = cudaMemcpy(&(dev_Ex[idxEx]), &(dev_source[j]), sizeof(float), cudaMemcpyDeviceToDevice);
+			cudaDeviceSynchronize();
+			if (cudaStatus != cudaSuccess) 
+			{ 
+				printf("source --> Ex cudaMemcpy failed: %s\n", cudaGetErrorString(cudaStatus)); 
+				return cudaStatus; 
+			}
 
 			// 调用GPU运算正演
 			zheng_yan();
@@ -2243,38 +2312,39 @@ cudaError_t gpu_parallel_two()
 				dev_Ex, dev_Ey, dev_Ez,
 				dev_Hx, dev_Hy, dev_Hz,
 				j);
-
 			gpu_zheng_2 << <grid_zheng_2, block_zheng_2 >> > (
 				dev_Ex_zheng_2, dev_Ey_zheng_2, dev_Ez_zheng_2,
 				dev_Hx_zheng_2, dev_Hy_zheng_2, dev_Hz_zheng_2,
 				dev_Ex, dev_Ey, dev_Ez,
 				dev_Hx, dev_Hy, dev_Hz,
 				j);
-
 			gpu_zheng_3 << <grid_zheng_3, block_zheng_3 >> > (
 				dev_Ex_zheng_3, dev_Ey_zheng_3, dev_Ez_zheng_3,
 				dev_Hx_zheng_3, dev_Hy_zheng_3, dev_Hz_zheng_3,
 				dev_Ex, dev_Ey, dev_Ez,
 				dev_Hx, dev_Hy, dev_Hz,
 				j);
-
 			gpu_zheng_last << <grid_zheng_last, block_zheng_last >> > (
 				dev_Ex_zheng_last, dev_Ey_zheng_last, dev_Ez_zheng_last,
 				dev_Hx_zheng_last, dev_Hy_zheng_last, dev_Hz_zheng_last,
 				dev_Ex, dev_Ey, dev_Ez,
 				dev_Hx, dev_Hy, dev_Hz);
+			cudaDeviceSynchronize();
 		}
+		cudaStatus = cudaGetLastError();
+		printf("--------------------- part one --------------------- : %s\n", cudaGetErrorString(cudaStatus));
 
-		// 222222
+		// --------------------- part two ---------------------
 		gpu_memory_set_zero(2);
 		for (j = it - 1; j >= 0; j--)
 		{
-			//if (j % 50 == 0) { printf("i = %3d / %d,  j = %4d / %d\n", i, szfsw, j, it); }
+			if (j%50==0) { printf("i = %3d / %d,  j = %4d / %d\n", i, szfsw, j, it); }
 
 			//Ex(fswzx(i), fswzy(i), fswzz(i)) = E_obs(j, i);
 			int idxEx = (fswzx[i] - 1) * (ny + 1) * (nz + 1) + (fswzy[i] - 1) * (nz + 1) + (fswzz[i] - 1);
 			int idxE_obs = j * szfsw + i;
 			cudaStatus = cudaMemcpy(&(dev_Ex[idxEx]), &(dev_E_obs[idxE_obs]), sizeof(float), cudaMemcpyDeviceToDevice);
+			cudaDeviceSynchronize();
 			if (cudaStatus != cudaSuccess) 
 			{ 
 				printf("E_obs --> Ex cudaMemcpy failed: %s\n", cudaGetErrorString(cudaStatus));
@@ -2283,10 +2353,13 @@ cudaError_t gpu_parallel_two()
 
 			// 调用GPU运算正演
 			zheng_yan();
-
+			cudaDeviceSynchronize();
 			// matlab: fan=Ex(npml+1:nx-npml,npml+1:ny-npml,npml+1:nz-npml);
 			gpu_fan_huanyuan << <grid_fan_huanyuan, block_fan_huanyuan >> > (dev_fan, dev_Ex);
-
+			//printf("fan\n");
+			//print_dev_matrix(dev_fan, nx-2*npml, ny-2*npml, nz-2*npml);
+			cudaDeviceSynchronize();
+			//getchar();
 			if (j == it - 1)
 			{
 				gpu_back_zheng_last << <grid_zheng_last, block_zheng_last >> > (
@@ -2294,6 +2367,7 @@ cudaError_t gpu_parallel_two()
 					dev_Hx_zheng_last, dev_Hy_zheng_last, dev_Hz_zheng_last,
 					dev_Ex1, dev_Ey1, dev_Ez1,
 					dev_Hx1, dev_Hy1, dev_Hz1);
+				cudaDeviceSynchronize();
 			}
 			else //j < it - 1
 			{
@@ -2317,7 +2391,9 @@ cudaError_t gpu_parallel_two()
 					dev_Ex1, dev_Ey1, dev_Ez1,
 					dev_Hx1, dev_Hy1, dev_Hz1,
 					j);
-
+				cudaDeviceSynchronize();
+				//print_dev_Ex1();
+				//getchar();
 				// matlab: Ex1(fswzx(i), fswzy(i), fswzz(i)) = source(j);
 				int idxEx1 = (fswzx[i] - 1) * (ny + 1) * (nz + 1) + (fswzy[i] - 1) * (nz + 1) + (fswzz[i] - 1);
 				cudaStatus = cudaMemcpy(&(dev_Ex1[idxEx1]), &(dev_source[j]), sizeof(float), cudaMemcpyDeviceToDevice);
@@ -2338,14 +2414,26 @@ cudaError_t gpu_parallel_two()
 					dev_CAEx, dev_CAEy, dev_CAEz,
 					dev_CBEx, dev_CBEy, dev_CBEz);
 			}
-
 			// matlab: huanyuan=Ex1(npml+1:nx-npml,npml+1:ny-npml,npml+1:nz-npml);
 			gpu_fan_huanyuan << <grid_fan_huanyuan, block_fan_huanyuan >> > (dev_huanyuan, dev_Ex1);
+			//printf("huanyuan\n");
+			//print_dev_matrix(dev_huanyuan, nx-2*npml, ny-2*npml, nz-2*npml);
+			//cudaDeviceSynchronize();
+			//getchar();
+
 			gpu_nzf << <grid_nzf, block_nzf >> > (dev_ns, dev_huanyuan, dev_fan);
 			gpu_nzf << <grid_nzf, block_nzf >> > (dev_zv, dev_huanyuan, dev_huanyuan);
 			gpu_nzf << <grid_nzf, block_nzf >> > (dev_fv, dev_fan, dev_fan);
+			cudaDeviceSynchronize();
 		}
+		cudaStatus = cudaGetLastError();
+		printf("--------------------- part two --------------------- : %s\n", cudaGetErrorString(cudaStatus));
+		
+
+
 	}
+
+	// 将ns fv zv从显存传到内存里
 	cudaStatus = cudaMemcpy(ns, dev_ns, sizeof(ns), cudaMemcpyDeviceToHost);
 	if (cudaStatus != cudaSuccess)
 	{
@@ -2365,10 +2453,6 @@ cudaError_t gpu_parallel_two()
 		return cudaStatus;
 	}
 
-
-
-	cudaDeviceSynchronize();
-
 	printf("finish calc 2!\n");
 
 	print_nzf("nzf/ns.txt", (float*)ns, nx - 2 * npml, ny - 2 * npml, nz - 2 * npml);
@@ -2376,6 +2460,23 @@ cudaError_t gpu_parallel_two()
 	print_nzf("nzf/zv.txt", (float*)zv, nx - 2 * npml, ny - 2 * npml, nz - 2 * npml);
 
 	return cudaStatus;
+}
+
+void gpu_parallel(bool pianYi)
+{
+	cudaError_t cudaStatus;
+	if(pianYi)
+	{
+		cudaStatus = gpu_parallel_two();
+		if (cudaStatus != cudaSuccess) { printf("gpu_parallel_two failed!"); }
+		else { printf("gpu_parallel_two success!\n"); }
+	}
+	else
+	{
+		cudaStatus = gpu_parallel_one();
+		if (cudaStatus != cudaSuccess) { printf("gpu_parallel_one failed!"); }
+		else { printf("gpu_parallel_one success!\n"); }
+	}
 }
 
 /************************************************************************************
@@ -2389,17 +2490,9 @@ int main()
 	char str[80];
 	printf("Current Dir: %s \n",getcwd(str, 80)); //linux
 	//printf("Current Dir: %s \n", _getcwd(str, 80));
-	if (Hz_zheng_3 == NULL)
-	{
-		printf("malloc failed! \n");
-		return 1;
-	}
-	else
-	{
-		printf("addr of Hz_zheng_3 is %p\n", Hz_zheng_3);
-	}
+
 	// 从matlab输出的文本文件中读取数据
-	read_data_from_txt();
+	read_data_from_txt(isPianYi);
 	printf("Read Data From Txt OK ! \n");
 
 	// 选择运算使用的GPU
@@ -2407,27 +2500,17 @@ int main()
 	if (cudaStatus != cudaSuccess) { printf("cudaSetDevice failed!  Do you have a CUDA-capable GPU installed?"); return 1; }
 	else { printf("cudaSetDevice success!\n"); }
 
+
 	// 分配显存，把数据从内存传输到显存
-	gpu_memory_malloc();
-	gpu_memory_copy();
+	gpu_memory_malloc(isPianYi);
+
+	gpu_memory_copy(isPianYi);
 
 	// 调用gpu运算并输出到文件
-	if (isPianYi)
-	{
-		cudaStatus = gpu_parallel_two();
-		if (cudaStatus != cudaSuccess) { printf("gpu_parallel_two failed!"); return 1; }
-		else { printf("gpu_parallel_two success!\n"); }
-	}
-	else
-	{
-		cudaStatus = gpu_parallel_one();
-		if (cudaStatus != cudaSuccess) { printf("gpu_parallel_one failed!"); return 1; }
-		else { printf("gpu_parallel_one success!\n"); }
-	}
-
+	gpu_parallel(isPianYi);
 
 	// 释放显存空间
-	gpu_memory_free();
+	gpu_memory_free(isPianYi);
 
 	// 重置GPU
 	cudaStatus = cudaDeviceReset();

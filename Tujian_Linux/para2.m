@@ -1,10 +1,10 @@
-
+npmlc = 4;
 %=======================================================
 ns=single(zeros(nx-2*npml,ny-2*npml,nz-2*npml));
 zv=single(zeros(nx-2*npml,ny-2*npml,nz-2*npml));
 fv=single(zeros(nx-2*npml,ny-2*npml,nz-2*npml));
 
-parfor i=single(1):single(length(fswzx))
+for i=single(1):single(length(fswzx))
     Ex_zheng_1=single(zeros(2*npmlc,ny-2*npml,nz-2*npml,it));
     Ex_zheng_2=single(zeros(nx-2*npml,2*npmlc,nz-2*npml,it));
     Ex_zheng_3=single(zeros(nx-2*npml,ny-2*npml,2*npmlc,it));
@@ -264,118 +264,22 @@ parfor i=single(1):single(length(fswzx))
             Ez1(npml+1:nx-npml,npml+1:ny-npml,[npml+1:npml+npmlc nz-npml-npmlc+1:nz-npml])=Ez_zheng_3(:,:,:,j);
             
             Ex1(fswzx(i),fswzy(i),fswzz(i))=source(j);
-            %Hx1--------------------------------------------------------------------------
-            %Hx1 = 1 ./ CPHx .* Hx1 + 1 ./ CPHx .* CQHx ./ dy .* (Ez1 - Ez1) - 1 ./ CPHx .* CQHx ./ dz .* (Ey1 - Ey1)
-            Hx1(npml+npmlc+1:nx-npml-npmlc,
-                npml+npmlc+1:ny-npml-npmlc,
-                npml+npmlc+1:nz-npml-npmlc)=
-            1./
-            CPHx(npml+npmlc+1:nx-npml-npmlc,
-                npml+npmlc+1:ny-npml-npmlc,
-                npml+npmlc+1:nz-npml-npmlc)
-            .*
-            Hx1(npml+npmlc+1:nx-npml-npmlc,
-                npml+npmlc+1:ny-npml-npmlc,
-                npml+npmlc+1:nz-npml-npmlc)
-            +1./
-            CPHx(npml+npmlc+1:nx-npml-npmlc,
-                npml+npmlc+1:ny-npml-npmlc,
-                npml+npmlc+1:nz-npml-npmlc)
-            .*
-            CQHx(npml+npmlc+1:nx-npml-npmlc,
-                npml+npmlc+1:ny-npml-npmlc,
-                npml+npmlc+1:nz-npml-npmlc)
-            ./dy.*
-            (Ez1(npml+npmlc+1:nx-npml-npmlc,
-                npml+npmlc+1+1:ny-npml-npmlc+1,
-                npml+npmlc+1:nz-npml-npmlc)
-            -Ez1(npml+npmlc+1:nx-npml-npmlc,
-                npml+npmlc+1:ny-npml-npmlc,
-                npml+npmlc+1:nz-npml-npmlc))
-            -1./
-            CPHx(npml+npmlc+1:nx-npml-npmlc,
-                npml+npmlc+1:ny-npml-npmlc,
-                npml+npmlc+1:nz-npml-npmlc)
-            .*
-            CQHx(npml+npmlc+1:nx-npml-npmlc,
-                npml+npmlc+1:ny-npml-npmlc,
-                npml+npmlc+1:nz-npml-npmlc)
-            ./dz.*
-            (Ey1(npml+npmlc+1:nx-npml-npmlc,
-                npml+npmlc+1:ny-npml-npmlc,
-                npml+npmlc+1+1:nz-npml-npmlc+1)
-            -
-            Ey1(npml+npmlc+1:nx-npml-npmlc,
-                npml+npmlc+1:ny-npml-npmlc,
-                npml+npmlc+1:nz-npml-npmlc));
-            %Hy1--------------------------------------------------------------------------
-            Hy1(npml+npmlc+1:nx-npml-npmlc,
-                npml+npmlc+1:ny-npml-npmlc,
-                npml+npmlc+1:nz-npml-npmlc)=
-            1./
-            CPHy(npml+npmlc+1:nx-npml-npmlc,
-                npml+npmlc+1:ny-npml-npmlc,
-                npml+npmlc+1:nz-npml-npmlc).*Hy1(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc)...
-            +1./CPHy(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc).*CQHy(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc)./dz.*
-            (Ex1(npml+npmlc+1:nx-npml-npmlc,
-                npml+npmlc+1:ny-npml-npmlc,
-                npml+npmlc+1+1:nz-npml-npmlc+1)
-            -Ex1(npml+npmlc+1:nx-npml-npmlc,
-                npml+npmlc+1:ny-npml-npmlc,
-                npml+npmlc+1:nz-npml-npmlc))...
-            -1./CPHy(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc).*CQHy(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc)./dx.*
-            (Ez1(npml+npmlc+1+1:nx-npml-npmlc+1,
-                npml+npmlc+1:ny-npml-npmlc,
-                npml+npmlc+1:nz-npml-npmlc)
-            -Ez1(npml+npmlc+1:nx-npml-npmlc,
-                npml+npmlc+1:ny-npml-npmlc,
-                npml+npmlc+1:nz-npml-npmlc));
+            
+            Hx1(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc)=1./CPHx(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc).*Hx1(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc)...
+            +1./CPHx(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc).*CQHx(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc)./dy.*(Ez1(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1+1:ny-npml-npmlc+1,npml+npmlc+1:nz-npml-npmlc)-Ez1(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc))...    
+            -1./CPHx(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc).*CQHx(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc)./dz.*(Ey1(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1+1:nz-npml-npmlc+1)-Ey1(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc));
+                
+            Hy1(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc)=1./CPHy(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc).*Hy1(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc)...
+            +1./CPHy(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc).*CQHy(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc)./dz.*(Ex1(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1+1:nz-npml-npmlc+1)-Ex1(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc))...
+            -1./CPHy(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc).*CQHy(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc)./dx.*(Ez1(npml+npmlc+1+1:nx-npml-npmlc+1,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc)-Ez1(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc));
             
             Hz1(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc)=1./CPHz(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc).*Hz1(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc)...
             +1./CPHz(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc).*CQHz(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc)./dx.*(Ey1(npml+npmlc+1+1:nx-npml-npmlc+1,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc)-Ey1(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc))...
             -1./CPHz(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc).*CQHz(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc)./dy.*(Ex1(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1+1:ny-npml-npmlc+1,npml+npmlc+1:nz-npml-npmlc)-Ex1(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc)); 
 
-            Ex1(npml+npmlc+1:nx-npml-npmlc,
-                npml+npmlc+1:ny-npml-npmlc,
-                npml+npmlc+1:nz-npml-npmlc)=
-            1./
-            CAEx(npml+npmlc+1:nx-npml-npmlc,
-                npml+npmlc+1:ny-npml-npmlc,
-                npml+npmlc+1:nz-npml-npmlc)
-            .*
-            Ex1(npml+npmlc+1:nx-npml-npmlc,
-                npml+npmlc+1:ny-npml-npmlc,
-                npml+npmlc+1:nz-npml-npmlc)
-            -1./
-            CAEx(npml+npmlc+1:nx-npml-npmlc,
-                npml+npmlc+1:ny-npml-npmlc,
-                npml+npmlc+1:nz-npml-npmlc)
-            .*
-            CBEx(npml+npmlc+1:nx-npml-npmlc,
-                npml+npmlc+1:ny-npml-npmlc,
-                npml+npmlc+1:nz-npml-npmlc)
-            ./dy.*
-            (Hz1(npml+npmlc+1:nx-npml-npmlc,
-                npml+npmlc+1:ny-npml-npmlc,
-                npml+npmlc+1:nz-npml-npmlc)
-            -Hz1(npml+npmlc+1:nx-npml-npmlc,
-                npml+npmlc:ny-npml-npmlc-1,
-                npml+npmlc+1:nz-npml-npmlc))
-            +1./
-            CAEx(npml+npmlc+1:nx-npml-npmlc,
-                npml+npmlc+1:ny-npml-npmlc,
-                npml+npmlc+1:nz-npml-npmlc)
-            .*
-            CBEx(npml+npmlc+1:nx-npml-npmlc,
-                npml+npmlc+1:ny-npml-npmlc,
-                npml+npmlc+1:nz-npml-npmlc)
-            ./dz.*
-            (Hy1(npml+npmlc+1:nx-npml-npmlc,
-                npml+npmlc+1:ny-npml-npmlc,
-                npml+npmlc+1:nz-npml-npmlc)
-            -Hy1(npml+npmlc+1:nx-npml-npmlc,
-                npml+npmlc+1:ny-npml-npmlc,
-                npml+npmlc:nz-npml-npmlc-1));
+            Ex1(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc)=1./CAEx(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc).*Ex1(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc)...
+                -1./CAEx(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc).*CBEx(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc)./dy.*(Hz1(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc)-Hz1(npml+npmlc+1:nx-npml-npmlc,npml+npmlc:ny-npml-npmlc-1,npml+npmlc+1:nz-npml-npmlc))...
+                +1./CAEx(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc).*CBEx(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc)./dz.*(Hy1(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc)-Hy1(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc:nz-npml-npmlc-1));
                 
             Ey1(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc)=1./CAEy(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc).*Ey1(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc)...
                 -1./CAEy(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc).*CBEy(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc)./dz.*(Hx1(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc)-Hx1(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc:nz-npml-npmlc-1))...
@@ -384,7 +288,7 @@ parfor i=single(1):single(length(fswzx))
             Ez1(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc)=1./CAEz(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc).*Ez1(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc)...
                 -1./CAEz(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc).*CBEz(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc)./dx.*(Hy1(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc)-Hy1(npml+npmlc:nx-npml-npmlc-1,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc))...
                 +1./CAEz(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc).*CBEz(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc)./dy.*(Hx1(npml+npmlc+1:nx-npml-npmlc,npml+npmlc+1:ny-npml-npmlc,npml+npmlc+1:nz-npml-npmlc)-Hx1(npml+npmlc+1:nx-npml-npmlc,npml+npmlc:ny-npml-npmlc-1,npml+npmlc+1:nz-npml-npmlc));
-        end
+          end
         %fan=Ex(npml+1:nx-npml,npml+1:ny-npml,npml+1:nz-npml);
         huanyuan=Ex1(npml+1:nx-npml,npml+1:ny-npml,npml+1:nz-npml);
 %         
@@ -395,8 +299,14 @@ parfor i=single(1):single(length(fswzx))
         ns=ns+mean(huanyuan.*fan,4);
         zv=zv+mean(huanyuan.*huanyuan,4);
         fv=fv+mean(fan.*fan,4);
+        
+        %ÔÚcudaÀï°´ÕâÑùËãµÄ
+        %ns=ns+(huanyuan.*fan);
+        %zv=zv+(huanyuan.*huanyuan);
+        %fv=fv+(fan.*fan);
+        
     end % end of for j=single(it):-1:single(1)
-
+    test = 0;
 end % end of for i.....
 
 
@@ -410,8 +320,8 @@ imagesc(dz.*(1:nz-2*npml),dy.*(1:ny-2*npml),squeeze(ns(nx./2,:,:)))
 colorbar
 colormap(jet)
 set(gca,'FontName','Times New Roman','FontSize',36)
-xlabel('\fontname{é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·}æŽ¢é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·é”Ÿçµ“fontname{Times New Roman}/m')
-ylabel('\fontname{é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·}æŽ¢é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·é”Ÿçµ“fontname{Times New Roman}/m')
+xlabel('\fontname{???¤æ?·é???¤æ??}?¢é???¤æ?·é???¤æ?·é??çµ?fontname{Times New Roman}/m')
+ylabel('\fontname{???¤æ?·é???¤æ??}?¢é???¤æ?·é???¤æ?·é??çµ?fontname{Times New Roman}/m')
 getframe(gcf);
 figure
 set(gcf,'outerposition',get(0,'screensize'))
@@ -419,8 +329,8 @@ imagesc(dz.*(1:nz-2*npml),dy.*(1:ny-2*npml),squeeze(fv(nx./2,:,:)))
 colorbar
 colormap(jet)
 set(gca,'FontName','Times New Roman','FontSize',36)
-xlabel('\fontname{é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·}æŽ¢é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·é”Ÿçµ“fontname{Times New Roman}/m')
-ylabel('\fontname{é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·}æŽ¢é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·é”Ÿçµ“fontname{Times New Roman}/m')
+xlabel('\fontname{???¤æ?·é???¤æ??}?¢é???¤æ?·é???¤æ?·é??çµ?fontname{Times New Roman}/m')
+ylabel('\fontname{???¤æ?·é???¤æ??}?¢é???¤æ?·é???¤æ?·é??çµ?fontname{Times New Roman}/m')
 getframe(gcf);
 
 
@@ -430,8 +340,8 @@ imagesc(dz.*(1:nz-2*npml),dy.*(1:ny-2*npml),squeeze(ns(nx./2,:,:)./zv(nx./2,:,:)
 colorbar
 colormap(jet)
 set(gca,'FontName','Times New Roman','FontSize',36)
-xlabel('\fontname{é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·}æŽ¢é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·é”Ÿçµ“fontname{Times New Roman}/m')
-ylabel('\fontname{é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·}æŽ¢é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·é”Ÿçµ“fontname{Times New Roman}/m')
+xlabel('\fontname{???¤æ?·é???¤æ??}?¢é???¤æ?·é???¤æ?·é??çµ?fontname{Times New Roman}/m')
+ylabel('\fontname{???¤æ?·é???¤æ??}?¢é???¤æ?·é???¤æ?·é??çµ?fontname{Times New Roman}/m')
 getframe(gcf);
 
 figure
@@ -440,8 +350,8 @@ imagesc(dz.*(1:nz-2*npml),dy.*(1:ny-2*npml),squeeze(ns(nx./2,:,:)./fv(nx./2,:,:)
 colorbar
 colormap(jet)
 set(gca,'FontName','Times New Roman','FontSize',36)
-xlabel('\fontname{é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·}æŽ¢é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·é”Ÿçµ“fontname{Times New Roman}/m')
-ylabel('\fontname{é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·}æŽ¢é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·é”Ÿçµ“fontname{Times New Roman}/m')
+xlabel('\fontname{???¤æ?·é???¤æ??}?¢é???¤æ?·é???¤æ?·é??çµ?fontname{Times New Roman}/m')
+ylabel('\fontname{???¤æ?·é???¤æ??}?¢é???¤æ?·é???¤æ?·é??çµ?fontname{Times New Roman}/m')
 getframe(gcf);
 
 figure
@@ -450,8 +360,8 @@ imagesc(dz.*(1:nz-2*npml),dy.*(1:ny-2*npml),squeeze(ns(nx./2,:,:)./sqrt(zv(nx./2
 colorbar
 colormap(jet)
 set(gca,'FontName','Times New Roman','FontSize',36)
-xlabel('\fontname{é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·}æŽ¢é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·é”Ÿçµ“fontname{Times New Roman}/m')
-ylabel('\fontname{é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·}æŽ¢é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·é”Ÿçµ“fontname{Times New Roman}/m')
+xlabel('\fontname{???¤æ?·é???¤æ??}?¢é???¤æ?·é???¤æ?·é??çµ?fontname{Times New Roman}/m')
+ylabel('\fontname{???¤æ?·é???¤æ??}?¢é???¤æ?·é???¤æ?·é??çµ?fontname{Times New Roman}/m')
 getframe(gcf);
 
 
