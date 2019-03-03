@@ -1221,7 +1221,24 @@ __global__ void gpu_fan_huanyuan(float *dev_dst, float *dev_Ex)
 		(iz + npml);
 	dev_dst[lidfan] = dev_Ex[lidEx];
 }
+__global__ void gpu_fan_huanyuan_Ey(float *dev_dst, float *dev_Ey)
+{
+	int ix = blockIdx.x;
+	int iy = blockIdx.y;
+	int iz = threadIdx.x;
 
+	int lidfan, lidEy; //**_zheng_* 前半部分的位置
+
+	lidfan =
+		ix * (ny - 2 * npml) * (nz - 2 * npml) +
+		iy * (nz - 2 * npml) +
+		iz;
+	lidEy =
+		(ix + npml) * (ny + 0) * (nz + 1) +
+		(iy + npml) * (nz + 1) +
+		(iz + npml);
+	dev_dst[lidfan] = dev_Ey[lidEy];
+}
 
 dim3 grid_HE1(nx - np - np, ny - np - np);
 dim3 block_HE1(nz - np - np);
@@ -2234,18 +2251,38 @@ cudaError_t gpu_parallel_one()
 			}
 
 			// matlab: Ex(fswzx(i),fswzy(i),fswzz(i))=source(j); 显存到显存
-			int idxEx = (fswzx[i] - 1) * (ny + 1) * (nz + 1) + (fswzy[i] - 1) * (nz + 1) + (fswzz[i] - 1);
-			cudaStatus = cudaMemcpy(&(dev_Ex[idxEx]), &(dev_source[j]), sizeof(float), cudaMemcpyDeviceToDevice);
-			if (cudaStatus != cudaSuccess) { printf("source --> Ex cudaMemcpy failed: %s\n", cudaGetErrorString(cudaStatus)); return cudaStatus; };
+			if (i < cxsl * dancxds)
+			{
+				int idxEx = (fswzx[i] - 1) * (ny + 1) * (nz + 1) + (fswzy[i] - 1) * (nz + 1) + (fswzz[i] - 1);
+				cudaStatus = cudaMemcpy(&(dev_Ex[idxEx]), &(dev_source[j]), sizeof(float), cudaMemcpyDeviceToDevice);
+				if (cudaStatus != cudaSuccess) { printf("source --> Ex cudaMemcpy failed: %s\n", cudaGetErrorString(cudaStatus)); return cudaStatus; };
+			}
+			else
+			{
+				int idxEy = (fswzx[i] - 1) * (ny + 0) * (nz + 1) + (fswzy[i] - 1) * (nz + 1) + (fswzz[i] - 1);
+				cudaStatus = cudaMemcpy(&(dev_Ey[idxEy]), &(dev_source[j]), sizeof(float), cudaMemcpyDeviceToDevice);
+				if (cudaStatus != cudaSuccess) { printf("source --> Ey cudaMemcpy failed: %s\n", cudaGetErrorString(cudaStatus)); return cudaStatus; };
+			}
 			cudaDeviceSynchronize();
+
 			// 调用GPU运算正演
 			zheng_yan();
 
 			// matlab: V(j)=Ex(jswzx(i), jswzy(i), jswzz(i)); 显存到显存
-			idxEx = (jswzx[i] - 1) * (ny + 1) * (nz + 1) + (jswzy[i] - 1) * (nz + 1) + (jswzz[i] - 1);
-			cudaStatus = cudaMemcpy(&(dev_V[j]), &(dev_Ex[idxEx]), sizeof(float), cudaMemcpyDeviceToDevice);
-			if (cudaStatus != cudaSuccess) { printf("Ex --> V cudaMemcpy failed: %s\n", cudaGetErrorString(cudaStatus)); return cudaStatus; };
+			if (i < cxsl * dancxds)
+			{
+				idxEx = (jswzx[i] - 1) * (ny + 1) * (nz + 1) + (jswzy[i] - 1) * (nz + 1) + (jswzz[i] - 1);
+				cudaStatus = cudaMemcpy(&(dev_V[j]), &(dev_Ex[idxEx]), sizeof(float), cudaMemcpyDeviceToDevice);
+				if (cudaStatus != cudaSuccess) { printf("Ex --> V cudaMemcpy failed: %s\n", cudaGetErrorString(cudaStatus)); return cudaStatus; };
+			}
+			else
+			{
+				idxEy = (jswzx[i] - 1) * (ny + 0) * (nz + 1) + (jswzy[i] - 1) * (nz + 1) + (jswzz[i] - 1);
+				cudaStatus = cudaMemcpy(&(dev_V[j]), &(dev_Ey[idxEy]), sizeof(float), cudaMemcpyDeviceToDevice);
+				if (cudaStatus != cudaSuccess) { printf("Ex --> V cudaMemcpy failed: %s\n", cudaGetErrorString(cudaStatus)); return cudaStatus; };			
+			}
 			cudaDeviceSynchronize();
+
 			// matlab: E_obs(j,i) = V(j) 显存到内存
 			cudaStatus = cudaMemcpy(&(E_obs[j][i]), &(dev_V[j]), sizeof(float), cudaMemcpyDeviceToHost);
 			if (cudaStatus != cudaSuccess) { printf("V --> E_obs cudaMemcpy failed: %s\n", cudaGetErrorString(cudaStatus)); return cudaStatus; };
@@ -2294,14 +2331,20 @@ cudaError_t gpu_parallel_two()
 			if (j%50 == 0) { printf("i = %3d / %d,  j = %4d / %d\n", i, szfsw, j, it); }
 
 			// matlab: Ex(fswzx(i), fswzy(i), fswzz(i)) = source(j);
-			int idxEx = (fswzx[i] - 1) * (ny + 1) * (nz + 1) + (fswzy[i] - 1) * (nz + 1) + (fswzz[i] - 1);
-			cudaStatus = cudaMemcpy(&(dev_Ex[idxEx]), &(dev_source[j]), sizeof(float), cudaMemcpyDeviceToDevice);
-			cudaDeviceSynchronize();
-			if (cudaStatus != cudaSuccess) 
-			{ 
-				printf("source --> Ex cudaMemcpy failed: %s\n", cudaGetErrorString(cudaStatus)); 
-				return cudaStatus; 
+
+			if(i < cxsl * dancxds)
+			{
+				int idxEx = (fswzx[i] - 1) * (ny + 1) * (nz + 1) + (fswzy[i] - 1) * (nz + 1) + (fswzz[i] - 1);
+				cudaStatus = cudaMemcpy(&(dev_Ex[idxEx]), &(dev_source[j]), sizeof(float), cudaMemcpyDeviceToDevice);
+				if (cudaStatus != cudaSuccess) { printf("source --> Ex cudaMemcpy failed: %s\n", cudaGetErrorString(cudaStatus)); return cudaStatus; }
 			}
+			else
+			{
+				int idxEy = (fswzx[i] - 1) * (ny + 0) * (nz + 1) + (fswzy[i] - 1) * (nz + 1) + (fswzz[i] - 1);
+				cudaStatus = cudaMemcpy(&(dev_Ey[idxEy]), &(dev_source[j]), sizeof(float), cudaMemcpyDeviceToDevice);
+				if (cudaStatus != cudaSuccess) { printf("source --> Ey cudaMemcpy failed: %s\n", cudaGetErrorString(cudaStatus)); return cudaStatus; }
+			}
+			cudaDeviceSynchronize();
 
 			// 调用GPU运算正演
 			zheng_yan();
@@ -2341,21 +2384,35 @@ cudaError_t gpu_parallel_two()
 			if (j%50==0) { printf("i = %3d / %d,  j = %4d / %d\n", i, szfsw, j, it); }
 
 			//Ex(fswzx(i), fswzy(i), fswzz(i)) = E_obs(j, i);
-			int idxEx = (fswzx[i] - 1) * (ny + 1) * (nz + 1) + (fswzy[i] - 1) * (nz + 1) + (fswzz[i] - 1);
+
 			int idxE_obs = j * szfsw + i;
-			cudaStatus = cudaMemcpy(&(dev_Ex[idxEx]), &(dev_E_obs[idxE_obs]), sizeof(float), cudaMemcpyDeviceToDevice);
-			cudaDeviceSynchronize();
-			if (cudaStatus != cudaSuccess) 
-			{ 
-				printf("E_obs --> Ex cudaMemcpy failed: %s\n", cudaGetErrorString(cudaStatus));
-				return cudaStatus; 
+			if (i < cxsl * dancxds)
+			{
+				int idxEx = (fswzx[i] - 1) * (ny + 1) * (nz + 1) + (fswzy[i] - 1) * (nz + 1) + (fswzz[i] - 1);
+				cudaStatus = cudaMemcpy(&(dev_Ex[idxEx]), &(dev_E_obs[idxE_obs]), sizeof(float), cudaMemcpyDeviceToDevice);
+				if (cudaStatus != cudaSuccess) { printf("E_obs --> Ex cudaMemcpy failed: %s\n", cudaGetErrorString(cudaStatus)); return cudaStatus; }				
 			}
+			else
+			{
+				int idxEy = (fswzx[i] - 1) * (ny + 0) * (nz + 1) + (fswzy[i] - 1) * (nz + 1) + (fswzz[i] - 1);
+				cudaStatus = cudaMemcpy(&(dev_Ey[idxEy]), &(dev_E_obs[idxE_obs]), sizeof(float), cudaMemcpyDeviceToDevice);
+				if (cudaStatus != cudaSuccess) { printf("E_obs --> Ey cudaMemcpy failed: %s\n", cudaGetErrorString(cudaStatus)); return cudaStatus; }								
+			}
+			cudaDeviceSynchronize();
 
 			// 调用GPU运算正演
 			zheng_yan();
 			cudaDeviceSynchronize();
 			// matlab: fan=Ex(npml+1:nx-npml,npml+1:ny-npml,npml+1:nz-npml);
-			gpu_fan_huanyuan << <grid_fan_huanyuan, block_fan_huanyuan >> > (dev_fan, dev_Ex);
+			if (i < cxsl * dancxds)
+			{
+				gpu_fan_huanyuan << <grid_fan_huanyuan, block_fan_huanyuan >> > (dev_fan, dev_Ex);				
+			}
+			else
+			{
+				gpu_fan_huanyuan_Ey << <grid_fan_huanyuan, block_fan_huanyuan >> > (dev_fan, dev_Ey);
+			}
+
 			//printf("fan\n");
 			//print_dev_matrix(dev_fan, nx-2*npml, ny-2*npml, nz-2*npml);
 			cudaDeviceSynchronize();
@@ -2394,14 +2451,21 @@ cudaError_t gpu_parallel_two()
 				cudaDeviceSynchronize();
 				//print_dev_Ex1();
 				//getchar();
+
 				// matlab: Ex1(fswzx(i), fswzy(i), fswzz(i)) = source(j);
-				int idxEx1 = (fswzx[i] - 1) * (ny + 1) * (nz + 1) + (fswzy[i] - 1) * (nz + 1) + (fswzz[i] - 1);
-				cudaStatus = cudaMemcpy(&(dev_Ex1[idxEx1]), &(dev_source[j]), sizeof(float), cudaMemcpyDeviceToDevice);
-				if (cudaStatus != cudaSuccess) 
-				{ 
-					printf("source --> Ex1 cudaMemcpy failed: %s\n", cudaGetErrorString(cudaStatus)); 
-					return cudaStatus; 
+				if (i < cxsl * dancxds)
+				{
+					int idxEx1 = (fswzx[i] - 1) * (ny + 1) * (nz + 1) + (fswzy[i] - 1) * (nz + 1) + (fswzz[i] - 1);
+					cudaStatus = cudaMemcpy(&(dev_Ex1[idxEx1]), &(dev_source[j]), sizeof(float), cudaMemcpyDeviceToDevice);
+					if (cudaStatus != cudaSuccess) { printf("source --> Ex1 cudaMemcpy failed: %s\n", cudaGetErrorString(cudaStatus)); return cudaStatus; }			
 				}
+				else
+				{
+					int idxEy1 = (fswzx[i] - 1) * (ny + 0) * (nz + 1) + (fswzy[i] - 1) * (nz + 1) + (fswzz[i] - 1);
+					cudaStatus = cudaMemcpy(&(dev_Ey1[idxEy1]), &(dev_source[j]), sizeof(float), cudaMemcpyDeviceToDevice);
+					if (cudaStatus != cudaSuccess) { printf("source --> Ey1 cudaMemcpy failed: %s\n", cudaGetErrorString(cudaStatus)); return cudaStatus; }			
+				}
+				cudaDeviceSynchronize();
 
 				gpu_H1 << <grid_HE1, block_HE1 >> > (
 					dev_Hx1, dev_Hy1, dev_Hz1,
@@ -2415,7 +2479,15 @@ cudaError_t gpu_parallel_two()
 					dev_CBEx, dev_CBEy, dev_CBEz);
 			}
 			// matlab: huanyuan=Ex1(npml+1:nx-npml,npml+1:ny-npml,npml+1:nz-npml);
-			gpu_fan_huanyuan << <grid_fan_huanyuan, block_fan_huanyuan >> > (dev_huanyuan, dev_Ex1);
+			if (i < cxsl * dancxds)
+			{
+				gpu_fan_huanyuan << <grid_fan_huanyuan, block_fan_huanyuan >> > (dev_huanyuan, dev_Ex1);				
+			}
+			else
+			{
+				gpu_fan_huanyuan_Ey << <grid_fan_huanyuan, block_fan_huanyuan >> > (dev_huanyuan, dev_Ey1);
+			}
+
 			//printf("huanyuan\n");
 			//print_dev_matrix(dev_huanyuan, nx-2*npml, ny-2*npml, nz-2*npml);
 			//cudaDeviceSynchronize();
