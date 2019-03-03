@@ -2271,13 +2271,13 @@ cudaError_t gpu_parallel_one()
 			// matlab: V(j)=Ex(jswzx(i), jswzy(i), jswzz(i)); 显存到显存
 			if (i < cxsl * dancxds)
 			{
-				idxEx = (jswzx[i] - 1) * (ny + 1) * (nz + 1) + (jswzy[i] - 1) * (nz + 1) + (jswzz[i] - 1);
+				int idxEx = (jswzx[i] - 1) * (ny + 1) * (nz + 1) + (jswzy[i] - 1) * (nz + 1) + (jswzz[i] - 1);
 				cudaStatus = cudaMemcpy(&(dev_V[j]), &(dev_Ex[idxEx]), sizeof(float), cudaMemcpyDeviceToDevice);
 				if (cudaStatus != cudaSuccess) { printf("Ex --> V cudaMemcpy failed: %s\n", cudaGetErrorString(cudaStatus)); return cudaStatus; };
 			}
 			else
 			{
-				idxEy = (jswzx[i] - 1) * (ny + 0) * (nz + 1) + (jswzy[i] - 1) * (nz + 1) + (jswzz[i] - 1);
+				int idxEy = (jswzx[i] - 1) * (ny + 0) * (nz + 1) + (jswzy[i] - 1) * (nz + 1) + (jswzz[i] - 1);
 				cudaStatus = cudaMemcpy(&(dev_V[j]), &(dev_Ey[idxEy]), sizeof(float), cudaMemcpyDeviceToDevice);
 				if (cudaStatus != cudaSuccess) { printf("Ex --> V cudaMemcpy failed: %s\n", cudaGetErrorString(cudaStatus)); return cudaStatus; };			
 			}
