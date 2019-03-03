@@ -1309,20 +1309,20 @@ __global__ void gpu_E1(
 	const float rfCAEx = 1 / dev_CAEx[idxEx1];// 倒数reciprocal of fCAEx
 	const float fCBEx = dev_CBEx[idxEx1];
 	dev_Ex1[idxEx1] = rfCAEx * dev_Ex1[idxEx1]
-		+ rfCAEx * fCBEx / dy * (dev_Hz1[idxHz1] - dev_Hz1[idxHz1 - delHz1_Ex1])
-		- rfCAEx * fCBEx / dz * (dev_Hy1[idxHy1] - dev_Hy1[idxHy1 - delHy1_Ex1]);
+		- rfCAEx * fCBEx / dy * (dev_Hz1[idxHz1] - dev_Hz1[idxHz1 - delHz1_Ex1])
+		+ rfCAEx * fCBEx / dz * (dev_Hy1[idxHy1] - dev_Hy1[idxHy1 - delHy1_Ex1]);
 
 	const float rfCAEy = 1 / dev_CAEy[idxEy1];// 倒数reciprocal of fCAEy
 	const float fCBEy = dev_CBEy[idxEy1];
 	dev_Ey1[idxEy1] = rfCAEy * dev_Ey1[idxEy1]
-		+ rfCAEy * fCBEy / dz * (dev_Hx1[idxHx1] - dev_Hx1[idxHx1 - delHx1_Ey1])
-		- rfCAEy * fCBEy / dx * (dev_Hz1[idxHz1] - dev_Hz1[idxHz1 - delHz1_Ey1]);
+		- rfCAEy * fCBEy / dz * (dev_Hx1[idxHx1] - dev_Hx1[idxHx1 - delHx1_Ey1])
+		+ rfCAEy * fCBEy / dx * (dev_Hz1[idxHz1] - dev_Hz1[idxHz1 - delHz1_Ey1]);
 
 	const float rfCAEz = 1 / dev_CAEz[idxEz1];// 倒数reciprocal of fCAEz
 	const float fCBEz = dev_CBEz[idxEz1];
 	dev_Ez1[idxEz1] = rfCAEz * dev_Ez1[idxEz1]
-		+ rfCAEz * fCBEz / dx * (dev_Hy1[idxHy1] - dev_Hy1[idxHy1 - delHy1_Ez1])
-		- rfCAEz * fCBEz / dy * (dev_Hx1[idxHx1] - dev_Hx1[idxHx1 - delHx1_Ez1]);
+		- rfCAEz * fCBEz / dx * (dev_Hy1[idxHy1] - dev_Hy1[idxHy1 - delHy1_Ez1])
+		+ rfCAEz * fCBEz / dy * (dev_Hx1[idxHx1] - dev_Hx1[idxHx1 - delHx1_Ez1]);
 
 }
 
