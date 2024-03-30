@@ -1,4 +1,4 @@
-#CUDA-Based Geophysical Simulation for Underground Exploration
+# CUDA-Based Geophysical Simulation for Underground Exploration
 
 Accelerating Three-Dimensional FDTD Wavefield Propagation and Reverse Time Imaging
 Using CUDA Parallel Programming
